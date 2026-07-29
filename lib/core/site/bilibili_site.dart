@@ -380,15 +380,8 @@ class BiliBiliSite implements LiveSite {
         ),
       );
     } catch (e) {
-      LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
-            (r) => r.roomId == roomId && r.platform == platform,
-          ) ??
-          LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
-      return liveRoom;
+  // API失败时抛出异常，由上层处理，不强制标记为offline
+  throw Exception("获取B站房间详情失败: $e");
     }
   }
 
