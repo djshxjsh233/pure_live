@@ -311,41 +311,45 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
   }
 
   Future<void> _refreshRoomDetails(List<LiveRoom> rooms) async {
-    final valid = rooms.where((r) => r.platform?.isNotEmpty ?? false).toList();
-    if (valid.isEmpty) return;
+  final valid = rooms.where((r) => r.platform?.isNotEmpty ?? false).toList();
+  if (valid.isEmpty) return;
 
-    _refreshStopwatch = Stopwatch()..start();
+  _refreshStopwatch = Stopwatch()..start();
 
-    final int batch = refreshConfigController.maxConcurrentRefresh.value > 0
-        ? refreshConfigController.maxConcurrentRefresh.value
-        : 5;
+  final int batch = refreshConfigController.maxConcurrentRefresh.value > 0
+      ? refreshConfigController.maxConcurrentRefresh.value
+      : 10;
 
-    for (int i = 0; i < valid.length; i += batch) {
-      final end = i + batch > valid.length ? valid.length : i + batch;
-      final batchRooms = valid.sublist(i, end);
+  for (int i = 0; i < valid.length; i += batch) {
+    final end = i + batch > valid.length ? valid.length : i + batch;
+    final batchRooms = valid.sublist(i, end);
 
+    // ✅ 每个房间独立请求，一个失败不影响同批次其他房间
+    final results = await Future.wait(batchRooms.map((room) async {
       try {
-        final futures = batchRooms
-            .map(
-              (room) => Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!),
-            )
-            .toList();
-
-        final results = await Future.wait(futures);
-        for (var updated in results) {
-          final list = List<LiveRoom>.from(SettingsService.to.fav.favoriteRooms.v);
-          final idx = list.indexWhere((e) => e.roomId == updated.roomId && e.platform == updated.platform);
-          if (idx != -1) {
-            list[idx] = updated;
-            SettingsService.to.fav.favoriteRooms.v = list;
-          }
-        }
+        return await Sites.of(room.platform!).liveSite.getRoomDetail(
+          roomId: room.roomId!,
+          platform: room.platform!,
+        );
       } catch (e) {
-        developer.log('Error refreshing room details: $e');
+        developer.log('刷新房间 ${room.roomId} 失败: $e');
+        return null; // 失败返回null，不覆盖原状态
+      }
+    }));
+
+    // ✅ 只更新成功的，失败的不动
+    for (var updated in results) {
+      if (updated == null) continue;
+      final list = List<LiveRoom>.from(SettingsService.to.fav.favoriteRooms.v);
+      final idx = list.indexWhere((e) => e.roomId == updated.roomId && e.platform == updated.platform);
+      if (idx != -1) {
+        list[idx] = updated;
+        SettingsService.to.fav.favoriteRooms.v = list;
       }
     }
+  }
 
-    _refreshStopwatch?.stop();
-    _refreshStopwatch = null;
+  _refreshStopwatch?.stop();
+  _refreshStopwatch = null;
   }
 }
