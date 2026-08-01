@@ -29,12 +29,12 @@ class BarrageController {
 
   void attach(dynamic engine) {
     _engine = engine;
-    // 重建后的 engine 已绑定：把暂停/重建期间暂存的弹幕补发，避免横屏全屏切换丢弹幕
+    // 重建后 engine 已绑定：把切换重建期间暂存的弹幕补发给新 engine，避免丢失
     if (_pendingBuffer.isNotEmpty) {
       final buf = List<dynamic>.from(_pendingBuffer);
       _pendingBuffer.clear();
       for (final item in buf) {
-        _onAddDanmaku?.call(item);
+        _engine?.pushMessage(item);
       }
     }
   }
@@ -44,14 +44,17 @@ class BarrageController {
   }
 
   void send(dynamic item) {
-    if (!running) {
-      // 全屏/横屏切换等引擎暂停/重建期间先缓存，attach 后补发
-      if (_pendingBuffer.length < 500) _pendingBuffer.add(item);
-      return;
-    }
     _totalEmittedCount++;
+    // 直接投递给当前绑定的 engine（由 attach 设置），不再依赖 widget State 的 onAddDanmaku
+    // 回调，从而避免全屏/横屏切换重建时回调指向失效 engine 导致弹幕丢失。
+    final eng = _engine;
+    if (eng != null) {
+      eng.pushMessage(item);
+    } else {
+      // engine 尚未绑定（切换重建中），先缓存，attach 后补发
+      if (_pendingBuffer.length < 500) _pendingBuffer.add(item);
+    }
     debugPrint('Send barrage item: ${item.content}');
-    _onAddDanmaku?.call(item);
   }
 
   void updateConfig(dynamic newConfig) {
