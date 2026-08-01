@@ -39,7 +39,6 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
     if (PlatformUtils.isDesktop) {
       DesktopManager.initializeListeners(this);
     }
-    initSharedMediaListener();
     initGlopalPlayer();
   }
 
@@ -66,22 +65,6 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
     super.dispose();
   }
 
-  Future<void> initSharedMediaListener() async {
-    if (Platform.isAndroid) {
-      final handler = ShareHandler.instance;
-      await handler.getInitialSharedMedia();
-      handler.sharedMediaStream.listen((SharedMedia media) async {
-        final path = media.content?.trim().toLowerCase() ?? '';
-        if (path.isEmpty) return;
-        if (path.endsWith('.m3u') || path.endsWith('.txt') || path.contains('.m3u8')) {
-        } else if (path.endsWith('.xml') || path.endsWith('.gz') || path.endsWith('.json')) {
-          await EpgImportManager().importFromSharedMedia(media);
-        } else {
-          ToastUtil.show(i18n("unsupported_file_format"));
-        }
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

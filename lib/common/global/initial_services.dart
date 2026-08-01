@@ -18,7 +18,6 @@ class InitialServices {
     // 关注
     Get.lazyPut(() => FavoriteController(), fenix: true);
     // iptv频道
-    Get.lazyPut(() => ChannelDetailController(), fenix: true);
     // 热门
     Get.lazyPut(() => PopularController(), fenix: true);
     // 分区

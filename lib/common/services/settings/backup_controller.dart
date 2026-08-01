@@ -181,5 +181,6 @@ class BackupController extends GetxController {
     final favorite = Get.find<FavoriteRoomController>().toJson();
     final history = Get.find<HistoryController>().toJson();
 
+    return {...danmaku, ...cookie, ...favorite, ...history};
   }
 }
