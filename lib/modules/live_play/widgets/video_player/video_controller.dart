@@ -317,11 +317,11 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value) return;
-    if (GlobalPlayerService.instance.playerManager.isPlayingNow) {
-      danmakuController.send(
-        BarrageItem(content: msg.message, textColor: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
-      );
-    }
+    // 弹幕是直播间聊天流，不受播放状态(isPlayingNow)限制，
+    // 避免切清晰度/全屏时播放状态短暂异常导致弹幕被拦截、偶发无弹幕。
+    danmakuController.send(
+      BarrageItem(content: msg.message, textColor: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
+    );
   }
 
 
