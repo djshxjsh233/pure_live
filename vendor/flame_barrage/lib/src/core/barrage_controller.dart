@@ -10,6 +10,7 @@ class BarrageController {
 
   bool running = true;
   int _totalEmittedCount = 0;
+  final List<dynamic> _pendingBuffer = [];
 
   dynamic get engine => _engine;
 
@@ -28,6 +29,14 @@ class BarrageController {
 
   void attach(dynamic engine) {
     _engine = engine;
+    // 重建后的 engine 已绑定：把暂停/重建期间暂存的弹幕补发，避免横屏全屏切换丢弹幕
+    if (_pendingBuffer.isNotEmpty) {
+      final buf = List<dynamic>.from(_pendingBuffer);
+      _pendingBuffer.clear();
+      for (final item in buf) {
+        _onAddDanmaku?.call(item);
+      }
+    }
   }
 
   void detach() {
@@ -35,7 +44,11 @@ class BarrageController {
   }
 
   void send(dynamic item) {
-    if (!running) return;
+    if (!running) {
+      // 全屏/横屏切换等引擎暂停/重建期间先缓存，attach 后补发
+      if (_pendingBuffer.length < 500) _pendingBuffer.add(item);
+      return;
+    }
     _totalEmittedCount++;
     debugPrint('Send barrage item: ${item.content}');
     _onAddDanmaku?.call(item);

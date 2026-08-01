@@ -208,6 +208,13 @@ class BarrageEngine extends FlameGame with TapCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
+    // 加固：若引擎未初始化或轨道为空(全屏/横屏/尺寸过渡后可能发生)，
+    // 只要有有效尺寸就强制补齐初始化，避免弹幕被永久阻断。
+    if ((!_initialized || _trackManager.tracks.isEmpty) && size.y > 0) {
+      _trackManager.initialize(_config, _calculateAllowedHeight(size.y));
+      _trackManager.forceRefresh(_config, _calculateAllowedHeight(size.y));
+      _initialized = true;
+    }
     if (!_initialized || isPaused) return;
 
     clock.tick(dt);
@@ -286,13 +293,9 @@ class BarrageEngine extends FlameGame with TapCallbacks {
     );
     _trackManager.initialize(resolvedConfig, _calculateAllowedHeight(size.y));
     if (_trackManager.tracks.isEmpty) {
-      // 加固：全屏/尺寸过渡后轨道可能为空(size 曾为 0)导致弹幕被丢弃。
-      if (size.y > 0) {
-        _trackManager.forceRefresh(resolvedConfig, _calculateAllowedHeight(size.y));
-        if (_trackManager.tracks.isEmpty) return;
-      } else {
-        return;
-      }
+      // 加固：轨道为空时强制重建（_calculateAllowedHeight 已有高度下限，通常不会为空）
+      _trackManager.forceRefresh(resolvedConfig, _calculateAllowedHeight(size.y));
+      if (_trackManager.tracks.isEmpty) return;
     }
     final fragments = _parser.parse(item.content);
     final layoutResult = _layout.layout(fragments, item: item, config: resolvedConfig);

@@ -41,34 +41,26 @@ class _FlameBarrageWidgetState extends State<FlameBarrageWidget> {
   void _initControllerCallbacks() {
     widget.controller.attach(_engine);
 
+    // 去掉 if(mounted) 检查：widget 在全屏/横屏切换时会被销毁重建，
+    // 回调总是指向最新创建的 engine，避免重建期间弹幕因 state 失效而被丢弃。
     widget.controller.onAddDanmaku = (item) {
-      if (mounted) {
-        _engine.pushMessage(item);
-      }
+      _engine.pushMessage(item);
     };
 
     widget.controller.onUpdateOption = (newConfig) {
-      if (mounted) {
-        _engine.updateConfig(newConfig);
-      }
+      _engine.updateConfig(newConfig);
     };
 
     widget.controller.onPause = () {
-      if (mounted) {
-        _engine.pause();
-      }
+      _engine.pause();
     };
 
     widget.controller.onResume = () {
-      if (mounted) {
-        _engine.resume();
-      }
+      _engine.resume();
     };
 
     widget.controller.onClear = () {
-      if (mounted) {
-        _engine.clear();
-      }
+      _engine.clear();
     };
   }
 
