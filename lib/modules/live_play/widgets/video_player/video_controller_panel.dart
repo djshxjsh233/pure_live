@@ -103,7 +103,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                 ),
                 Obx(
                   () => Offstage(
-                    offstage: controller.hideDanmaku.value,
+                    offstage: controller.hideDanmaku.value || !GlobalPlayerState.to.fullscreenUI,
                     child: DanmakuViewer(controller: controller),
                   ),
                 ),
