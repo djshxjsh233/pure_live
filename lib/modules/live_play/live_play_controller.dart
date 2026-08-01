@@ -232,26 +232,30 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
     final liveStatus = liveRoom.status! || liveRoom.isRecord!;
 
+    // 弹幕连接独立于直播状态：即使主播未开播也要能获取弹幕(聊天/送礼)，类似斗鱼。
+    // 只要能拿到房间的弹幕配置、开关打开、非快手(快手未开播可能连不上)就建立连接。
+    const danmakuExcept = [Sites.kuaishouSite];
+    if (!danmakuExcept.contains(liveRoom.platform) &&
+        liveRoom.danmakuData != null &&
+        SettingsService.to.danmaku.enableDanmakuDisplay.v) {
+      final needReconnect = _needReconnectDanmaku(liveRoom);
+      if (needReconnect) {
+        liveDanmaku.stop();
+        initDanmau();
+        liveDanmaku.start(liveRoom.danmakuData);
+        _currentDanmakuRoomId = liveRoom.roomId;
+      }
+    } else {
+      // 未开播或弹幕不可用：确保弹幕连接停止，避免残留
+      liveDanmaku.stop();
+      _currentDanmakuRoomId = '';
+    }
+
     if (liveStatus) {
       isLiving.value = true;
 
       await getPlayQualites();
       SettingsService.to.history.addRoomToHistory(liveRoom);
-
-      const except = [Sites.kuaishouSite];
-
-      if (!except.contains(liveRoom.platform) && SettingsService.to.danmaku.enableDanmakuDisplay.v) {
-        final needReconnect = _needReconnectDanmaku(liveRoom);
-        if (needReconnect) {
-          liveDanmaku.stop();
-
-          initDanmau();
-
-          liveDanmaku.start(liveRoom.danmakuData);
-
-          _currentDanmakuRoomId = liveRoom.roomId;
-        }
-      }
     } else {
       success.value = false;
       isLiving.value = false;
