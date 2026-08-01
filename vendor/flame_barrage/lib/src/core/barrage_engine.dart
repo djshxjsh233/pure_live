@@ -399,7 +399,14 @@ class BarrageEngine extends FlameGame with TapCallbacks {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    if (!_initialized) return;
+    // [诊断] 临时：未初始化时显示红色，用于定位横屏弹幕消失（初始化成功后正常渲染）
+    if (!_initialized) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x <= 0 ? 200 : size.x, size.y <= 0 ? 200 : size.y),
+        Paint()..color = const Color(0x88FF0000),
+      );
+      return;
+    }
     final double globalOpacity = _config.opacity.clamp(0.0, 1.0);
     final int len = _activeEntries.length;
     if (globalOpacity >= 1.0) {
