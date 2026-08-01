@@ -33,7 +33,7 @@ class _FlameBarrageWidgetState extends State<FlameBarrageWidget> {
       _engine.updateConfig(widget.config);
     }
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.detach();
+      oldWidget.controller.detach(_engine);
       _initControllerCallbacks();
     }
   }
@@ -66,9 +66,9 @@ class _FlameBarrageWidgetState extends State<FlameBarrageWidget> {
 
   @override
   void dispose() {
-    // 不调用 detach：横屏全屏切换时 old widget dispose 不能把 controller._engine 置 null，
-    // 否则会中断仍在渲染的 new widget 的弹幕投递（导致横屏只显示首条、后续卡住）。
-    // controller 会随 VideoController 一起销毁，engine 引用随之释放，无需在此清理。
+    // 只从 controller 的引擎栈移除自己，不影响仍在渲染的(栈顶)引擎。
+    // 这样切全屏时新引擎 attach 到栈顶正常接收弹幕，旧引擎 dispose 仅移除自身。
+    widget.controller.detach(_engine);
     super.dispose();
   }
 
