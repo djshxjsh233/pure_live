@@ -90,14 +90,14 @@ class MediaKitAdapter implements UnifiedPlayer {
 
         await native.setProperty('demuxer-lavf-analyzeduration', '10');
 
-        // ★ 直播流畅 / 网络优化 (仅网络流生效, 提高缓存放卡顿)
+        // ★ 直播流畅 / 网络优化 (仅网络流生效, 提高缓存抗抖动)
         await native.setProperty('stream-live-override', 'yes');
         await native.setProperty('cache', 'yes');
-        await native.setProperty('cache-secs', '5');
+        await native.setProperty('cache-secs', '30');
         await native.setProperty('cache-pause-initial', 'yes');
         await native.setProperty('cache-pause', 'yes');
-        await native.setProperty('demuxer-readahead-secs', '20');
-        await native.setProperty('network-timeout', '15');
+        await native.setProperty('demuxer-readahead-secs', '30');
+        await native.setProperty('network-timeout', '30');
 
         if (SettingsService.to.player.customPlayerOutput.v) {
           await native.setProperty('ao', SettingsService.to.player.audioOutputDriver.v);
