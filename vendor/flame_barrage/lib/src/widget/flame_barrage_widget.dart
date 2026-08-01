@@ -66,7 +66,9 @@ class _FlameBarrageWidgetState extends State<FlameBarrageWidget> {
 
   @override
   void dispose() {
-    widget.controller.detach();
+    // 不调用 detach：横屏全屏切换时 old widget dispose 不能把 controller._engine 置 null，
+    // 否则会中断仍在渲染的 new widget 的弹幕投递（导致横屏只显示首条、后续卡住）。
+    // controller 会随 VideoController 一起销毁，engine 引用随之释放，无需在此清理。
     super.dispose();
   }
 
