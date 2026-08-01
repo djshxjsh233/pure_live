@@ -102,9 +102,15 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                   ),
                 ),
                 Obx(
-                  () => Offstage(
-                    offstage: controller.hideDanmaku.value,
-                    child: DanmakuViewer(controller: controller),
+                  () => KeyedSubtree(
+                    // 进入/退出全屏时强制重建画面弹幕层，等效"自动刷新弹幕"，
+                    // 解决"切到横屏全屏无弹幕、需手动刷新直播间才恢复"的问题
+                    key: ValueKey(
+                        'danmakuOverlay_${GlobalPlayerState.to.fullscreenUI}'),
+                    child: Offstage(
+                      offstage: controller.hideDanmaku.value,
+                      child: DanmakuViewer(controller: controller),
+                    ),
                   ),
                 ),
                 GestureDetector(
