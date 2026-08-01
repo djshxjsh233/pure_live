@@ -38,9 +38,7 @@ class PlayerKernelSettingsPage extends GetView<SettingsService> {
             }),
             Obx(() {
               String activeKey = SettingsService.to.player.videoPlayerKey.v;
-              if (PlayerConsts.engines[activeKey] == PlayerEngine.exo) {
-                return const SizedBox.shrink();
-              }
+              
 
               return context.buildTile(
                 icon: Remix.global_line,

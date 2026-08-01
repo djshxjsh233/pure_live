@@ -6,11 +6,9 @@ class PlayerConsts {
 
   static const Map<String, PlayerEngine> engines = {
     'mpv': PlayerEngine.mediaKit,
-    'ijk': PlayerEngine.fijk,
-    'exo': PlayerEngine.exo,
   };
 
-  static const Map<String, String> names = {'mpv': 'player_mpv', 'ijk': 'player_ijk', 'exo': 'player_exo'};
+  static const Map<String, String> names = {'mpv': 'player_mpv'};
 
   static String getKeyByI18nKey(String i18nKey) {
     return names.entries.firstWhere((e) => e.value == i18nKey, orElse: () => names.entries.first).key;

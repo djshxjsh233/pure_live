@@ -2,13 +2,11 @@ import 'dart:developer';
 import 'core/player_pool.dart';
 import 'core/player_manager.dart';
 import 'models/player_engine.dart';
-import 'adapters/fijk_adapter.dart';
 import 'adapters/media_kit_adapter.dart';
 import 'core/line_fallback_manager.dart';
 import 'package:media_kit/media_kit.dart';
 import 'core/preload_player_manager.dart';
 import 'core/engine_fallback_manager.dart';
-import 'adapters/video_player_adapter.dart';
 import 'package:pure_live/common/global/platform_utils.dart';
 
 class GlobalPlayerService {
@@ -27,15 +25,12 @@ class GlobalPlayerService {
 
     MediaKit.ensureInitialized();
     // 1. Setup the Pool with a factory that knows how to create each Adapter
+    // （精简版：仅保留 MPV(media_kit) 播放器内核）
     final playerPool = PlayerPool(
       factory: (engine) async {
         switch (engine) {
           case PlayerEngine.mediaKit:
             return MediaKitAdapter();
-          case PlayerEngine.fijk:
-            return FijkAdapter();
-          case PlayerEngine.exo:
-            return BetterPlayerAdapter();
         }
       },
     );
@@ -45,7 +40,7 @@ class GlobalPlayerService {
       playerPool: playerPool,
       fallbackManager: EngineFallbackManager(
         defaultEngine: PlayerEngine.mediaKit,
-        supportedEngines: PlatformUtils.isMobile ? PlayerEngine.values : [PlayerEngine.mediaKit],
+        supportedEngines: [PlayerEngine.mediaKit],
       ),
       preloadManager: PreloadPlayerManager(),
       lineManager: LineFallbackManager(),
