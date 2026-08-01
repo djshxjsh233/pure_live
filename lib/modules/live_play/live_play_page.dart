@@ -401,8 +401,7 @@ class LivePlayPage extends GetView<LivePlayController> {
                                         const ResolutionsRow(),
                                         const Divider(height: 1),
                                         Obx(() {
-                                          if (controller.success.isFalse
-                                              {
+                                          if (controller.success.isFalse) {
                                             return const SizedBox.shrink();
                                           }
                                           final state = GlobalPlayerState.to;
