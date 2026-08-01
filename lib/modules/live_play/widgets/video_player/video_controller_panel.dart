@@ -6,7 +6,8 @@ import 'package:flutter/gestures.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/event_bus.dart';
-import 'package:flame_barrage/flame_barrage.dart';
+import 'package:pure_live/pkg/canvas_danmaku/danmaku_screen.dart';
+import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
@@ -102,10 +103,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                   ),
                 ),
                 Obx(
-                  () => Offstage(
-                    offstage: controller.hideDanmaku.value,
-                    child: DanmakuViewer(controller: controller),
-                  ),
+                  () => DanmakuViewer(controller: controller),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -380,23 +378,18 @@ class DanmakuViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => FlameBarrageWidget(
+      () => DanmakuScreen(
         controller: controller.danmakuController,
-        config: BarrageConfig(
+        option: DanmakuOption(
           fontSize: controller.danmakuFontSize.value,
           topAreaDistance: controller.danmakuTopArea.value,
           area: controller.danmakuArea.value,
           bottomAreaDistance: controller.danmakuBottomArea.value,
-          baseSpeed: controller.danmakuSpeed.value,
+          duration: controller.danmakuSpeed.value.toInt(),
           opacity: controller.danmakuOpacity.value,
-          fontWeight: FontWeight.values[controller.danmakuFontBorder.value],
+          fontWeight: controller.danmakuFontBorder.value,
           showStroke: controller.enableDanmakuStroke.value,
-          fps: controller.danmakuFps.value,
-          fontFamily: controller.danmakuFontFamilyName.value,
-          pictureCacheMaxSize: 9999,
-          barragePoolMaxSize: 300,
         ),
-        emojiAtlas: EmojiAtlas.instance,
       ),
     );
   }
