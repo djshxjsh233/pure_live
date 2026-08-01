@@ -4,9 +4,7 @@ import 'dart:developer';
 import 'video_controller_panel.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:battery_plus/battery_plus.dart';
-import 'package:pure_live/pkg/canvas_danmaku/danmaku_controller.dart';
-import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_option.dart';
-import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_content_item.dart';
+import 'package:flame_barrage/flame_barrage.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:pure_live/player/utils/fullscreen.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -118,7 +116,7 @@ class VideoController with ChangeNotifier {
     required this.isAudioOnly,
     this.onAudioOnlyChanged,
   }) {
-    danmakuController = DanmakuController();
+    danmakuController = BarrageController();
 
     hideDanmaku.value = SettingsService.to.danmaku.hideDanmaku.v;
     danmakuTopArea.value = SettingsService.to.danmaku.danmakuTopArea.v;
@@ -154,7 +152,7 @@ class VideoController with ChangeNotifier {
   final Battery _battery = Battery();
   final batteryLevel = 100.obs;
 
-  late DanmakuController danmakuController;
+  late BarrageController danmakuController;
 
   final ScrollController scheduleScrollController = ScrollController();
   late ListObserverController scheduleObserverController;
@@ -262,9 +260,6 @@ class VideoController with ChangeNotifier {
 
     hideDanmaku.value = dm.hideDanmaku.v;
     ever<bool>(hideDanmaku, (data) {
-      if (data) {
-        danmakuController.clear();
-      }
       dm.hideDanmaku.v = data;
     });
 
@@ -305,16 +300,17 @@ class VideoController with ChangeNotifier {
   }
 
   void updateDanmaku() {
-    danmakuController.updateOption(
-      DanmakuOption(
+    danmakuController.updateConfig(
+      BarrageConfig(
         fontSize: danmakuFontSize.value,
         area: danmakuArea.value,
         topAreaDistance: danmakuTopArea.value,
         bottomAreaDistance: danmakuBottomArea.value,
-        duration: danmakuSpeed.value.toInt(),
+        baseSpeed: danmakuSpeed.value,
         opacity: danmakuOpacity.value,
-        fontWeight: danmakuFontBorder.value,
+        fontWeight: FontWeight.values[danmakuFontBorder.value],
         showStroke: enableDanmakuStroke.value,
+        fps: danmakuFps.value,
       ),
     );
   }
@@ -322,12 +318,8 @@ class VideoController with ChangeNotifier {
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value) return;
     if (GlobalPlayerService.instance.playerManager.isPlayingNow) {
-      danmakuController.addDanmaku(
-        DanmakuContentItem(
-          msg.message,
-          color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
-          fontFamily: SettingsService.to.danmaku.danmakuFontFamilyName.v,
-        ),
+      danmakuController.send(
+        BarrageItem(content: msg.message, textColor: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
       );
     }
   }
