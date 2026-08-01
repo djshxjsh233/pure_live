@@ -341,7 +341,15 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
     for (var updated in results) {
       if (updated == null) continue;
       final list = List<LiveRoom>.from(SettingsService.to.fav.favoriteRooms.v);
-      final idx = list.indexWhere((e) => e.roomId == updated.roomId && e.platform == updated.platform);
+      // 优先用稳定的主播标识(userId)匹配，其次用roomId，再回退到昵称
+      // 解决抖音roomId(web_rid)每次开播会变导致匹配失败、状态不同步的问题
+      final idx = list.indexWhere((e) {
+        if (e.platform != updated.platform) return false;
+        if (e.userId != null && e.userId!.isNotEmpty && e.userId == updated.userId) return true;
+        if (e.roomId != null && e.roomId == updated.roomId) return true;
+        if (e.nick != null && e.nick!.isNotEmpty && e.roomId == null && e.nick == updated.nick) return true;
+        return false;
+      });
       if (idx != -1) {
         list[idx] = updated;
         SettingsService.to.fav.favoriteRooms.v = list;

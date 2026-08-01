@@ -200,8 +200,9 @@ class KuaishowSite implements LiveSite {
               cover: gameInfo['poster'].toString(),
               watching: titem["watchingCount"].toString(),
               roomId: author["id"],
+              userId: author["id"].toString(),
               area: gameInfo["name"],
-              title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
+              title: author['description'] != null ? author['description'].replaceAll('\n', ' ') : '',
               nick: author["name"].toString(),
               avatar: author["avatar"].toString(),
               introduction: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
@@ -354,6 +355,7 @@ class KuaishowSite implements LiveSite {
             : '${liveStream['poster'].toString()}.jpg',
         watching: jsonObj["liveroom"]["playList"][0]["isLiving"] ? gameInfo["watchingCount"].toString() : '0',
         roomId: author["id"],
+               userId: author["id"].toString(),
         area: gameInfo["name"] ?? '',
         title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
         nick: author["name"].toString(),
@@ -373,8 +375,8 @@ class KuaishowSite implements LiveSite {
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
 
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      // 请求失败时保留原状态(而非强制标记为未开播), 避免主播明明开播却因接口失败被误判下播
+      // liveRoom 来自本地favoriteRooms(含原状态); 若本地无则保持初始对象
       return liveRoom;
     }
   }

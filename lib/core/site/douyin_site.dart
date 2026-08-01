@@ -308,6 +308,7 @@ class DouyinSite implements LiveSite {
       link: "https://live.douyin.com/$webRid",
       platform: Sites.douyinSite,
       area: '',
+      userId: owner["sec_uid"].toString(),
       liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
       introduction: owner["signature"].toString(),
       notice: "",
@@ -403,6 +404,7 @@ class DouyinSite implements LiveSite {
       area: '',
       status: roomStatus,
       platform: Sites.douyinSite,
+      userId: anchor["sec_uid"].toString(),
       introduction: roomInfo["title"].toString(),
       notice: "",
       danmakuData: DouyinDanmakuArgs(
