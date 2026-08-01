@@ -85,7 +85,7 @@ class BarrageController {
   int get totalEmitted => _totalEmittedCount;
 
   int get pictureCacheCount {
-    final currentEngine = _engine;
+    final currentEngine = engine;
     if (currentEngine != null) {
       try {
         return currentEngine.activeCacheSize as int;
@@ -95,7 +95,7 @@ class BarrageController {
   }
 
   int get poolObjectCount {
-    final currentEngine = _engine;
+    final currentEngine = engine;
     if (currentEngine != null) {
       try {
         return currentEngine.activePoolSize as int;
