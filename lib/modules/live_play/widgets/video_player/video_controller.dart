@@ -317,8 +317,6 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value) return;
-    // 画面滚动弹幕仅在横屏(全屏)时叠加显示；竖屏已有弹幕滚动区域，不往画面控制器堆积
-    if (!GlobalPlayerState.to.fullscreenUI) return;
     if (GlobalPlayerService.instance.playerManager.isPlayingNow) {
       danmakuController.send(
         BarrageItem(content: msg.message, textColor: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),

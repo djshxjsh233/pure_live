@@ -102,10 +102,19 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                   ),
                 ),
                 Obx(
-                  () => Offstage(
-                    offstage: controller.hideDanmaku.value || !GlobalPlayerState.to.fullscreenUI,
-                    child: DanmakuViewer(controller: controller),
-                  ),
+                  () {
+                    // 画面滚动弹幕仅在横屏(全屏)时可见；竖屏隐藏。
+                    // 用 Opacity(0)+IgnorePointer 而非卸载，保持弹幕引擎持续运行，
+                    // 避免横屏切换时冷启动导致弹幕不稳定/不显示。
+                    final show = !controller.hideDanmaku.value && GlobalPlayerState.to.fullscreenUI;
+                    return IgnorePointer(
+                      ignoring: !show,
+                      child: Opacity(
+                        opacity: show ? 1.0 : 0.0,
+                        child: DanmakuViewer(controller: controller),
+                      ),
+                    );
+                  },
                 ),
                 GestureDetector(
                   onTap: () {
