@@ -95,7 +95,6 @@ class RoutePath {
 
   static const kWebSearch = "/web_search";
 
-  static const kIptv = "/iptv";
 
   static const kSettingsTags = '/settingTags';
 }

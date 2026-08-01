@@ -8,7 +8,6 @@ import 'package:pure_live/common/services/settings/window_size_controller.dart';
 import 'package:pure_live/common/services/settings/app_settings_controller.dart';
 import 'package:pure_live/common/services/settings/font_settings_controller.dart';
 import 'package:pure_live/common/services/settings/favorite_room_controller.dart';
-import 'package:pure_live/common/services/settings/iptv_settings_controller.dart';
 import 'package:pure_live/common/services/settings/exit_settings_controller.dart';
 import 'package:pure_live/common/services/settings/theme_settings_controller.dart';
 import 'package:pure_live/common/services/settings/proxy_settings_controller.dart';
@@ -157,7 +156,6 @@ class LegacySettingsMigration {
     Get.find<FavoriteRoomController>().fromJson(legacy);
     Get.find<HistoryController>().fromJson(legacy);
     Get.find<WebDavController>().fromJson(legacy);
-    Get.find<IptvSettingsController>().fromJson(legacy);
     Get.find<CookieSettingsController>().fromJson(legacy);
     Get.find<ProxySettingsController>().fromJson(legacy);
     Get.find<WindowSizeController>().fromJson(legacy);

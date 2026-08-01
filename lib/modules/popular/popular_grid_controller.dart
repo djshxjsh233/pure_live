@@ -1,48 +1,5 @@
 import 'package:pure_live/common/index.dart';
 
-class PopularLocalReactiveController extends LocalReactivePageController<LiveRoom> {
-  final Site site;
-  PopularLocalReactiveController(this.site) {
-    onExternalRefresh = () async {
-      await loadData();
-    };
-  }
-
-  @override
-  Future<void> loadData() async {
-    loadding.value = true;
-    pageEmpty.value = false;
-    try {
-      final rooms = await getLocalRawData();
-      updateLocalReactivePool(rooms);
-    } catch (e) {
-      list.clear();
-      pageEmpty.value = true;
-    } finally {
-      loadding.value = false;
-    }
-  }
-
-  Future<List<LiveRoom>> getLocalRawData() async {
-    try {
-      return await site.liveSite.getRecommendRooms(page: 1, pageSize: pageSize.value);
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<LiveRoom>> refreshNetworkStatus(List<LiveRoom> currentPool, int page, int pageSize) async {
-    try {
-      return await site.liveSite.getRecommendRooms(page: page, pageSize: pageSize);
-    } catch (e) {
-      if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
-        throw Exception("loginRequired");
-      }
-      rethrow;
-    }
-  }
-}
-
 class PopularServerAllController extends ServerAllPageController<LiveRoom> {
   final Site site;
   PopularServerAllController(this.site);

@@ -74,13 +74,6 @@ class LiveUrlTool {
       return [id, Sites.kuaishouSite];
     }
 
-    // 网易CC
-    if (realUrl.contains("cc.163.com")) {
-      realUrl = realUrl.trimEndChar('/');
-      var reg = RegExp(r"cc\.163\.com/([a-zA-Z0-9]+)$");
-      String id = reg.firstMatch(realUrl)?.group(1) ?? "";
-      return [id, Sites.ccSite];
-    }
 
     return [];
   }
