@@ -5,7 +5,7 @@ List<LiveRoom> _dedupeRooms(List<LiveRoom> rooms) {
   final seen = <String>{};
   final out = <LiveRoom>[];
   for (final r in rooms) {
-    final id = '${r.platform?.id ?? ''}_${r.roomId ?? ''}';
+    final id = '${r.platform ?? ''}_${r.roomId ?? ''}';
     if (seen.add(id)) {
       out.add(r);
     }
