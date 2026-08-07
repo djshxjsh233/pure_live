@@ -150,11 +150,21 @@ class DouyinSite implements LiveSite {
       for (var subItem in subList) {
         categories_.add(parseArea(subItem));
       }
-      var category = LiveCategory(
-        children: categories_,
-        id: '${item["partition"]["id_str"]},${item["partition"]["type"]}',
-        name: asT<String?>(item["partition"]["title"]) ?? "",
+      var pid = '${item["partition"]["id_str"]},${item["partition"]["type"]}';
+      var pname = asT<String?>(item["partition"]["title"]) ?? "";
+      // 在首位插入顶级分类自身：让无子分区的一级分类(如聊天/音乐/文化)也能进入直播间
+      categories_.insert(
+        0,
+        LiveArea(
+          areaId: pid,
+          typeName: pname,
+          areaType: pid,
+          areaName: pname,
+          areaPic: "",
+          platform: Sites.douyinSite,
+        ),
       );
+      var category = LiveCategory(children: categories_, id: pid, name: pname);
       categories.add(category);
     }
     return categories;
