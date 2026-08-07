@@ -46,6 +46,7 @@ abstract class ServerFixedPageController<T> extends BasePageScrollAndStateBone<T
   @override
   Future<void> loadData() async {
     if (loadding.value) return;
+    loadding.value = true;
     totalCount.value = null;
 
     if (Get.width > 680 && _slicedSmallCache.containsKey(currentPage)) {
@@ -55,11 +56,13 @@ abstract class ServerFixedPageController<T> extends BasePageScrollAndStateBone<T
       pageEmpty.value = list.isEmpty;
       finishRefreshControllers(canLoadMore.value ? IndicatorResult.success : IndicatorResult.noMore);
       scrollToTopImmediate();
+      loadding.value = false;
       return;
     }
 
     final bool isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
+      loadding.value = false;
       finishRefreshControllers(IndicatorResult.fail);
       return;
     }

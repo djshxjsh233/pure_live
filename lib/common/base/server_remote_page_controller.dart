@@ -104,6 +104,7 @@ abstract class ServerRemotePageController<T> extends BasePageScrollAndStateBone<
   @override
   Future<void> loadData() async {
     if (loadding.value) return;
+    loadding.value = true;
     totalCount.value = null;
 
     if (Get.width > 680 && _pageCache.containsKey(currentPage)) {
@@ -113,18 +114,19 @@ abstract class ServerRemotePageController<T> extends BasePageScrollAndStateBone<
       pageEmpty.value = list.isEmpty;
       finishRefreshControllers(canLoadMore.value ? IndicatorResult.success : IndicatorResult.noMore);
       scrollToTopImmediate();
+      loadding.value = false;
       return;
     }
 
     final bool isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
+      loadding.value = false;
       finishRefreshControllers(IndicatorResult.fail);
       return;
     }
 
     final int previousPageSnapshot = currentPage;
     try {
-      loadding.value = true;
       pageError.value = false;
       pageEmpty.value = false;
       notLogin.value = false;

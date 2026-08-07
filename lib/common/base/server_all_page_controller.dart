@@ -39,20 +39,22 @@ abstract class ServerAllPageController<T> extends BasePageScrollAndStateBone<T> 
   @override
   Future<void> loadData() async {
     if (loadding.value) return;
+    loadding.value = true;
 
     if (_rawAllData != null) {
       processLocalPaging();
+      loadding.value = false;
       return;
     }
 
     final bool isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
+      loadding.value = false;
       finishRefreshControllers(IndicatorResult.fail);
       return;
     }
 
     try {
-      loadding.value = true;
       pageError.value = false;
       pageEmpty.value = false;
       notLogin.value = false;
