@@ -9,7 +9,7 @@ class AreaGridView extends StatefulWidget {
   const AreaGridView(this.tag, {super.key});
   AreasListController get controller => Get.find<AreasListController>(tag: tag);
 
-  bool get isFlatten => tag == Sites.douyinSite;
+  bool get isFlatten => tag == Sites.douyinSite && tag == 'never_flatten';
 
   @override
   State<AreaGridView> createState() => _AreaGridViewState();

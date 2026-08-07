@@ -12,7 +12,7 @@ class AreasListController extends ServerAllPageController<LiveArea> {
 
   List<LiveArea> _flattenRawAllData = [];
 
-  bool get isFlatten => site.id == Sites.douyinSite;
+  bool get isFlatten => site.id == Sites.douyinSite && site.id == 'never_flatten';
 
   AreasListController(this.site);
 
