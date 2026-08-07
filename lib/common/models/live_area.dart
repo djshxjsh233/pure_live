@@ -1,1 +1,44 @@
-Y2xhc3MgTGl2ZUFyZWEgewogIFN0cmluZz8gcGxhdGZvcm0gPSAnJzsKICBTdHJpbmc/IGFyZWFUeXBlID0gJyc7CiAgU3RyaW5nPyB0eXBlTmFtZSA9ICcnOwogIFN0cmluZz8gYXJlYUlkID0gJyc7CiAgU3RyaW5nPyBhcmVhTmFtZSA9ICcnOwogIFN0cmluZz8gYXJlYVBpYyA9ICcnOwogIFN0cmluZz8gc2hvcnROYW1lID0gJyc7CiAgTGlzdDxMaXZlQXJlYT4/IGNoaWxkcmVuOwoKICBMaXZlQXJlYSh7CiAgICB0aGlzLnBsYXRmb3JtLAogICAgdGhpcy5hcmVhVHlwZSwKICAgIHRoaXMudHlwZU5hbWUsCiAgICB0aGlzLmFyZWFJZCwKICAgIHRoaXMuYXJlYU5hbWUsCiAgICB0aGlzLmFyZWFQaWMsCiAgICB0aGlzLnNob3J0TmFtZSwKICAgIHRoaXMuY2hpbGRyZW4sCiAgfSk7CgogIExpdmVBcmVhLmZyb21Kc29uKE1hcDxTdHJpbmcsIGR5bmFtaWM+IGpzb24pCiAgICAgIDogcGxhdGZvcm0gPSBqc29uWydwbGF0Zm9ybSddID8/ICcnLAogICAgICAgIGFyZWFUeXBlID0ganNvblsnYXJlYVR5cGUnXSA/PyAnJywKICAgICAgICB0eXBlTmFtZSA9IGpzb25bJ3R5cGVOYW1lJ10gPz8gJycsCiAgICAgICAgYXJlYUlkID0ganNvblsnYXJlYUlkJ10gPz8gJycsCiAgICAgICAgYXJlYU5hbWUgPSBqc29uWydhcmVhTmFtZSddID8/ICcnLAogICAgICAgIGFyZWFQaWMgPSBqc29uWydhcmVhUGljJ10gPz8gJycsCiAgICAgICAgc2hvcnROYW1lID0ganNvblsnc2hvcnROYW1lJ10gPz8gJycsCiAgICAgICAgY2hpbGRyZW4gPSAoanNvblsnY2hpbGRyZW4nXSBhcyBMaXN0PykKICAgICAgICAgICAgPy5tYXAoKGUpID0+IExpdmVBcmVhLmZyb21Kc29uKE1hcDxTdHJpbmcsIGR5bmFtaWM+LmZyb20oZSA/PyB7fSkpKQogICAgICAgICAgICAudG9MaXN0KCk7CgogIE1hcDxTdHJpbmcsIGR5bmFtaWM+IHRvSnNvbigpID0+IDxTdHJpbmcsIGR5bmFtaWM+ewogICAgICAgICdwbGF0Zm9ybSc6IHBsYXRmb3JtLAogICAgICAgICdhcmVhVHlwZSc6IGFyZWFUeXBlLAogICAgICAgICd0eXBlTmFtZSc6IHR5cGVOYW1lLAogICAgICAgICdhcmVhSWQnOiBhcmVhSWQsCiAgICAgICAgJ2FyZWFOYW1lJzogYXJlYU5hbWUsCiAgICAgICAgJ2FyZWFQaWMnOiBhcmVhUGljLAogICAgICAgICdzaG9ydE5hbWUnOiBzaG9ydE5hbWUsCiAgICAgICAgJ2NoaWxkcmVuJzogY2hpbGRyZW4/Lm1hcCgoZSkgPT4gZS50b0pzb24oKSkudG9MaXN0KCksCiAgICAgIH07Cn0=
+class LiveArea {
+  String? platform = '';
+  String? areaType = '';
+  String? typeName = '';
+  String? areaId = '';
+  String? areaName = '';
+  String? areaPic = '';
+  String? shortName = '';
+  List<LiveArea>? children;
+
+  LiveArea({
+    this.platform,
+    this.areaType,
+    this.typeName,
+    this.areaId,
+    this.areaName,
+    this.areaPic,
+    this.shortName,
+    this.children,
+  });
+
+  LiveArea.fromJson(Map<String, dynamic> json)
+      : platform = json['platform'] ?? '',
+        areaType = json['areaType'] ?? '',
+        typeName = json['typeName'] ?? '',
+        areaId = json['areaId'] ?? '',
+        areaName = json['areaName'] ?? '',
+        areaPic = json['areaPic'] ?? '',
+        shortName = json['shortName'] ?? '',
+        children = (json['children'] as List?)
+            ?.map((e) => LiveArea.fromJson(Map<String, dynamic>.from(e ?? {})))
+            .toList();
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'platform': platform,
+        'areaType': areaType,
+        'typeName': typeName,
+        'areaId': areaId,
+        'areaName': areaName,
+        'areaPic': areaPic,
+        'shortName': shortName,
+        'children': children?.map((e) => e.toJson()).toList(),
+      };
+}
