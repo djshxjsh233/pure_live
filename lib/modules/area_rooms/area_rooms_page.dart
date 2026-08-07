@@ -60,6 +60,7 @@ class _AreasRoomPageState extends State<AreasRoomPage> {
           },
         ),
         floatingActionButton: FavoriteAreaFloatingButton(area: widget.subCategory),
+        floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       ),
     );
   }
