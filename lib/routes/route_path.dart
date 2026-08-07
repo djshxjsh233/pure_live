@@ -1,1 +1,103 @@
-Ly8vIOi3r+eUsei3r+W+hApjbGFzcyBSb3V0ZVBhdGggewogIC8vLyDpppbpobUKICBzdGF0aWMgY29uc3Qga1NwbGFzaCA9ICIvc3BsYXNoIjsKCiAgLy8vIOmmlumhtQogIHN0YXRpYyBjb25zdCBrSW5pdGlhbCA9ICIvaG9tZSI7CgogIC8vLyDlhbPms6gKICBzdGF0aWMgY29uc3Qga0Zhdm9yaXRlID0gIi9mYXZvcml0ZSI7CgogIC8vLyDlhbPms6gKICBzdGF0aWMgY29uc3Qga0Zhdm9yaXRlQXJlYXMgPSAiL2Zhdm9yaXRlQXJlYXMiOwoKICAvLy8g54Ot6ZeoCiAgc3RhdGljIGNvbnN0IGtQb3B1bGFyID0gIi9wb3B1bGFyIjsKCiAgLy8vIOWIhuexuwogIHN0YXRpYyBjb25zdCBrQXJlYXMgPSAiL2FyZWFzIjsKCiAgLy8vIOWIhuexu+aIv+mXtAogIHN0YXRpYyBjb25zdCBrQXJlYVJvb21zID0gIi9hcmVhX3Jvb21zIjsKCiAgLy8vIOWIhuexu+WtkOe6p++8iOS4iee6p+WIhuexu+e9keagvO+8jOWmguaKlumfsyLnq57mioDmuLjmiI8i5LiL55qE5YW35L2T5ri45oiP77yJCiAgc3RhdGljIGNvbnN0IGtBcmVhU3ViQXJlYXMgPSAiL2FyZWFfc3ViYXJlYXMiOwoKICAvLy8g5pKt5pS+6aG16Z2iCiAgc3RhdGljIGNvbnN0IGtMaXZlUGxheSA9ICIvbGl2ZV9wbGF5IjsKCiAgLy8vIOaQnOe0ogogIHN0YXRpYyBjb25zdCBrU2VhcmNoID0gIi9zZWFyY2giOwoKICAvLy8g6K6+572uCiAgc3RhdGljIGNvbnN0IGtTZXR0aW5ncyA9ICIvc2V0dGluZ3MiOwoKICAvLy8g5pys5Zyw5oGi5aSNCiAgc3RhdGljIGNvbnN0IGtCYWNrdXAgPSAiL2JhY2t1cCI7CgogIC8vLyDlhbPkuo4KICBzdGF0aWMgY29uc3Qga0Fib3V0ID0gIi9hYm91dCI7CgogIC8vLyDniYjmnKzljoblj7LorrDlvZUKICBzdGF0aWMgY29uc3Qga1ZlcnNpb25IaXN0b3J5ID0gIi92ZXJzaW9uX2hpc3RvcnkiOwoKICAvLy8g5Y6G5Y+y6K6w5b2VCiAgc3RhdGljIGNvbnN0IGtIaXN0b3J5ID0gIi9oaXN0b3J5IjsKCiAgLy8vIOaNkOi1oAogIHN0YXRpYyBjb25zdCBrRG9uYXRlID0gIi9kb25hdGUiOwoKICAvLy8g5oiR55qECiAgc3RhdGljIGNvbnN0IGtNaW5lID0gIi9taW5lIjsKCiAgLy8vIOeZu+mZhgogIHN0YXRpYyBjb25zdCBrU2lnbkluID0gIi9zaWduX2luIjsKCiAgLy8vIOeZu+mZhgogIHN0YXRpYyBjb25zdCBrVXNlck1hbmFnZSA9ICIvdXNlcl9tYW5hZ2UiOwoKICAvLy8g55m76ZmGCiAgc3RhdGljIGNvbnN0IGtVcGRhdGVQYXNzd29yZCA9ICIvdXBkYXRlX3Bhc3N3b3JkIjsKCiAgLy8vIOW8ueW5lei/h+a7pAoKICBzdGF0aWMgY29uc3Qga1NldHRpbmdzRGFubXVTaGllbGQgPSAiL3NoaWVsZCI7CgogIHN0YXRpYyBjb25zdCBrU2V0dGluZ3NIb3RBcmVhcyA9ICIvaG90X2FyZWFzIjsKCiAgLy8vIGtCaWxpQmlsaVFSTG9naW4KICBzdGF0aWMgY29uc3Qga1NldHRpbmdzQWNjb3VudCA9ICIvc2V0dGluZ3NfYWNjb3VudCI7CgogIHN0YXRpYyBjb25zdCBrQmlsaUJpbGlRUkxvZ2luID0gIi9iaWxpYmlsaV9xcl9sb2dpbiI7CgogIHN0YXRpYyBjb25zdCBrQmlsaUJpbGlXZWJMb2dpbiA9ICIvYmlsaWJpbGlfd2ViX2xvZ2luIjsKCiAgLy8vIHdlYnZpZXcKICBzdGF0aWMgY29uc3Qga1dlYnZpZXcgPSAiL3dlYnZpZXdfYWxsIjsKCiAgLy8vIGtUb29sYm94CiAgc3RhdGljIGNvbnN0IGtUb29sYm94ID0gIi90b29sX2JveCI7CgogIHN0YXRpYyBjb25zdCBrSHV5YUNvb2tpZSA9ICIvaHV5YV9jb29raWUiOwoKICAvLyBXZWJEYXZQYWdlCiAgc3RhdGljIGNvbnN0IGtXZWJEYXZQYWdlID0gIi93ZWJfZGF2X3BhZ2UiOwoKICBzdGF0aWMgY29uc3Qga0RvdXl1Q29va2llID0gIi9kb3V5dV9jb29raWUiOwoKICBzdGF0aWMgY29uc3Qga0t1YWlzaG91Q29va2llID0gIi9rdWFpc2hvdV9jb29raWUiOwoKICBzdGF0aWMgY29uc3Qga1ZlcnNpb25QYWdlID0gIi92ZXJzaW9uX3BhZ2UiOwoKICBzdGF0aWMgY29uc3Qga1JlY29yZFBhZ2UgPSAiL3JlY29yZF9tYW5uYWdlciI7CgogIHN0YXRpYyBjb25zdCBrUmVjb3JkU2V0dGluZ3MgPSAiL3JlY29yZF9zZXR0aW5ncyI7CgogIHN0YXRpYyBjb25zdCBrUmVjb3JkSGlzdG9yeSA9ICIvcmVjb3JkX2hpc3RvcnkiOwoKICBzdGF0aWMgY29uc3Qga1dlYlNlYXJjaCA9ICIvd2ViX3NlYXJjaCI7CgoKICBzdGF0aWMgY29uc3Qga1NldHRpbmdzVGFncyA9ICcvc2V0dGluZ1RhZ3MnOwp9
+/// 路由路径
+class RoutePath {
+  /// 首页
+  static const kSplash = "/splash";
+
+  /// 首页
+  static const kInitial = "/home";
+
+  /// 关注
+  static const kFavorite = "/favorite";
+
+  /// 关注
+  static const kFavoriteAreas = "/favoriteAreas";
+
+  /// 热门
+  static const kPopular = "/popular";
+
+  /// 分类
+  static const kAreas = "/areas";
+
+  /// 分类房间
+  static const kAreaRooms = "/area_rooms";
+
+  /// 分类子级（三级分类网格，如抖音"竞技游戏"下的具体游戏）
+  static const kAreaSubAreas = "/area_subareas";
+
+  /// 播放页面
+  static const kLivePlay = "/live_play";
+
+  /// 搜索
+  static const kSearch = "/search";
+
+  /// 设置
+  static const kSettings = "/settings";
+
+  /// 本地恢复
+  static const kBackup = "/backup";
+
+  /// 关于
+  static const kAbout = "/about";
+
+  /// 版本历史记录
+  static const kVersionHistory = "/version_history";
+
+  /// 历史记录
+  static const kHistory = "/history";
+
+  /// 捐赠
+  static const kDonate = "/donate";
+
+  /// 我的
+  static const kMine = "/mine";
+
+  /// 登陆
+  static const kSignIn = "/sign_in";
+
+  /// 登陆
+  static const kUserManage = "/user_manage";
+
+  /// 登陆
+  static const kUpdatePassword = "/update_password";
+
+  /// 弹幕过滤
+
+  static const kSettingsDanmuShield = "/shield";
+
+  static const kSettingsHotAreas = "/hot_areas";
+
+  /// kBiliBiliQRLogin
+  static const kSettingsAccount = "/settings_account";
+
+  static const kBiliBiliQRLogin = "/bilibili_qr_login";
+
+  static const kBiliBiliWebLogin = "/bilibili_web_login";
+
+  /// webview
+  static const kWebview = "/webview_all";
+
+  /// kToolbox
+  static const kToolbox = "/tool_box";
+
+  static const kHuyaCookie = "/huya_cookie";
+
+  // WebDavPage
+  static const kWebDavPage = "/web_dav_page";
+
+  static const kDouyuCookie = "/douyu_cookie";
+
+  static const kKuaishouCookie = "/kuaishou_cookie";
+
+  static const kVersionPage = "/version_page";
+
+  static const kRecordPage = "/record_mannager";
+
+  static const kRecordSettings = "/record_settings";
+
+  static const kRecordHistory = "/record_history";
+
+  static const kWebSearch = "/web_search";
+
+
+  static const kSettingsTags = '/settingTags';
+}

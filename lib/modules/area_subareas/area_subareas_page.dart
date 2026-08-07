@@ -1,1 +1,37 @@
-aW1wb3J0ICdwYWNrYWdlOnB1cmVfbGl2ZS9jb21tb24vaW5kZXguZGFydCc7CmltcG9ydCAncGFja2FnZTp3YXRlcmZhbGxfZmxvdy93YXRlcmZhbGxfZmxvdy5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOnB1cmVfbGl2ZS9tb2R1bGVzL2FyZWFzL3dpZGdldHMvYXJlYV9jYXJkLmRhcnQnOwoKLy8vIOWIhuexu+WtkOe6p+mhte+8muWxleekuuafkOS4quS6jOe6p+WIhuexu+S4i+eahOS4iee6p+WIhuexu++8iOWmgiLnq57mioDmuLjmiI8i5LiL55qE5YW35L2T5ri45oiP77yJCi8vLyDlpI3nlKggQXJlYUNhcmQg5ZGI546w5LiJ57qn572R5qC877yM54K55Ye75LiJ57qn5YiG57G76L+b5YWl5oi/6Ze06aG144CCCmNsYXNzIEFyZWFTdWJBcmVhc1BhZ2UgZXh0ZW5kcyBTdGF0ZWxlc3NXaWRnZXQgewogIGZpbmFsIFNpdGUgc2l0ZTsKICBmaW5hbCBMaXZlQXJlYSBjYXRlZ29yeTsKCiAgY29uc3QgQXJlYVN1YkFyZWFzUGFnZSh7c3VwZXIua2V5LCByZXF1aXJlZCB0aGlzLnNpdGUsIHJlcXVpcmVkIHRoaXMuY2F0ZWdvcnl9KTsKCiAgQG92ZXJyaWRlCiAgV2lkZ2V0IGJ1aWxkKEJ1aWxkQ29udGV4dCBjb250ZXh0KSB7CiAgICBmaW5hbCBMaXN0PExpdmVBcmVhPiBjaGlsZHJlbiA9IGNhdGVnb3J5LmNoaWxkcmVuID8/IFtdOwogICAgcmV0dXJuIFNjYWZmb2xkKAogICAgICBhcHBCYXI6IEFwcEJhcih0aXRsZTogVGV4dChjYXRlZ29yeS5hcmVhTmFtZSA/PyAnJykpLAogICAgICBib2R5OiBMYXlvdXRCdWlsZGVyKAogICAgICAgIGJ1aWxkZXI6IChjb250ZXh0LCBjb25zdHJhaW50KSB7CiAgICAgICAgICBmaW5hbCB3aWR0aCA9IGNvbnN0cmFpbnQubWF4V2lkdGg7CiAgICAgICAgICBmaW5hbCBjcm9zc0F4aXNDb3VudCA9IHdpZHRoID4gMTI4MCA/IDkgOiAod2lkdGggPiA5NjAgPyA3IDogKHdpZHRoID4gNjQwID8gNSA6IDMpKTsKICAgICAgICAgIHJldHVybiBXYXRlcmZhbGxGbG93LmJ1aWxkZXIoCiAgICAgICAgICAgIHBhZGRpbmc6IGNvbnN0IEVkZ2VJbnNldHMuZnJvbUxUUkIoNiwgNiwgNiwgODApLAogICAgICAgICAgICBncmlkRGVsZWdhdGU6IFNsaXZlcldhdGVyZmFsbEZsb3dEZWxlZ2F0ZVdpdGhGaXhlZENyb3NzQXhpc0NvdW50KAogICAgICAgICAgICAgIGxhc3RDaGlsZExheW91dFR5cGVCdWlsZGVyOiAoaW5kZXgpID0+IExhc3RDaGlsZExheW91dFR5cGUubm9uZSwKICAgICAgICAgICAgICBjcm9zc0F4aXNDb3VudDogY3Jvc3NBeGlzQ291bnQsCiAgICAgICAgICAgICAgY3Jvc3NBeGlzU3BhY2luZzogU2V0dGluZ3NTZXJ2aWNlLnRvLnRoZW1lLmNyb3NzQXhpc1NwYWNpbmcudiwKICAgICAgICAgICAgICBtYWluQXhpc1NwYWNpbmc6IFNldHRpbmdzU2VydmljZS50by50aGVtZS5tYWluQXhpc1NwYWNpbmcudiwKICAgICAgICAgICAgKSwKICAgICAgICAgICAgaXRlbUNvdW50OiBjaGlsZHJlbi5sZW5ndGgsCiAgICAgICAgICAgIGl0ZW1CdWlsZGVyOiAoY29udGV4dCwgaW5kZXgpID0+IEFyZWFDYXJkKGNhdGVnb3J5OiBjaGlsZHJlbltpbmRleF0pLAogICAgICAgICAgKTsKICAgICAgICB9LAogICAgICApLAogICAgKTsKICB9Cn0=
+import 'package:pure_live/common/index.dart';
+import 'package:waterfall_flow/waterfall_flow.dart';
+import 'package:pure_live/modules/areas/widgets/area_card.dart';
+
+/// 分类子级页：展示某个二级分类下的三级分类（如"竞技游戏"下的具体游戏）
+/// 复用 AreaCard 呈现三级网格，点击三级分类进入房间页。
+class AreaSubAreasPage extends StatelessWidget {
+  final Site site;
+  final LiveArea category;
+
+  const AreaSubAreasPage({super.key, required this.site, required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<LiveArea> children = category.children ?? [];
+    return Scaffold(
+      appBar: AppBar(title: Text(category.areaName ?? '')),
+      body: LayoutBuilder(
+        builder: (context, constraint) {
+          final width = constraint.maxWidth;
+          final crossAxisCount = width > 1280 ? 9 : (width > 960 ? 7 : (width > 640 ? 5 : 3));
+          return WaterfallFlow.builder(
+            padding: const EdgeInsets.fromLTRB(6, 6, 6, 80),
+            gridDelegate: SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+              lastChildLayoutTypeBuilder: (index) => LastChildLayoutType.none,
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: SettingsService.to.theme.crossAxisSpacing.v,
+              mainAxisSpacing: SettingsService.to.theme.mainAxisSpacing.v,
+            ),
+            itemCount: children.length,
+            itemBuilder: (context, index) => AreaCard(category: children[index]),
+          );
+        },
+      ),
+    );
+  }
+}
