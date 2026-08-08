@@ -357,9 +357,19 @@ class KuaishowSite implements LiveSite {
 
   @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+    // 快手列表接口(home/list + gameboard/list)匿名直达所有在播房间的有效 playUrls,
+    // 与浏览器秒播机制一致。优先匹配列表拿到 playUrls, 避免逐房间慢速页面抓取。
     try {
-      // 优先移动版页面(livev.m.chenzhongtech.com): 快手已把直播流数据从桌面站 SSR 挪到移动版,
-      // 桌面 u/{id} 的 __INITIAL_STATE__ 里 liveStream 已是占位壳(请求过快)。
+      final listRoom = await _fetchLiveRoomFromLists(roomId, platform);
+      if (listRoom != null && (listRoom.data as List?)?.isNotEmpty == true) {
+        return listRoom;
+      }
+    } catch (e) {
+      developer.log('快手列表匹配失败: $e');
+    }
+
+    try {
+      // 列表匹配不到时, 走移动版页面(livev.m.chenzhongtech.com)实时取流
       final mobileRoom = await _fetchMobileRoomDetail(roomId, platform);
       if (mobileRoom != null) return mobileRoom;
     } catch (e) {
@@ -628,23 +638,26 @@ class KuaishowSite implements LiveSite {
           }
         }
       }
-      // 2) 游戏分区分页列表(gameboard/list), 覆盖更广的在播房间
-      for (int categoryId = 1; categoryId <= 8 && newCache.length < 500; categoryId++) {
-        final gbText = await HttpClient.instance.getJson(
+      // 2) 游戏分区分页列表(gameboard/list) 并行拉取, 覆盖更广的在播房间
+      final futures = <Future>[];
+      for (int categoryId = 1; categoryId <= 8; categoryId++) {
+        futures.add(HttpClient.instance.getJson(
           "https://live.kuaishou.com/live_api/gameboard/list",
           queryParameters: {"filterType": 0, "pageSize": 20, "gameId": '$categoryId', "page": 1},
           header: headers,
-        );
-        final list = gbText['data']?['list'] ?? [];
-        for (final item in list) {
-          final author = item['author'] ?? {};
-          final id = author['id']?.toString() ?? '';
-          if (id.isEmpty) continue;
-          final entry = Map<String, dynamic>.from(item);
-          entry['author'] = author;
-          newCache[id] = entry;
-        }
+        ).then((gbText) {
+          final list = gbText['data']?['list'] ?? [];
+          for (final item in list) {
+            final author = item['author'] ?? {};
+            final id = author['id']?.toString() ?? '';
+            if (id.isEmpty) continue;
+            final entry = Map<String, dynamic>.from(item);
+            entry['author'] = author;
+            newCache[id] = entry;
+          }
+        }).catchError((_) {}));
       }
+      await Future.wait(futures);
       _listRoomCache = newCache;
     } catch (e) {
       _listCacheTime = null;
