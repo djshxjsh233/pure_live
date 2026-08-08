@@ -190,13 +190,24 @@ class KuaishowSite implements LiveSite {
           qulityList = adaptationSet["representation"] as List;
         }
       }
+    } else if (data is List && data.isNotEmpty && data[0] is Map && data[0]["url"] != null) {
+      // 快手移动版新结构: [{url, bitrate, codec, cdn, ...}] 直接就是流地址
+      qulityList = data as List;
     }
 
     for (var quality in qulityList) {
+      var qName = quality["name"];
+      var qSort = quality["level"];
+      if (qName == null && qSort == null && quality["url"] != null) {
+        // 快手移动版新结构: 只有 url/bitrate/cdn, 用 bitrate 生成清晰度名
+        qName = '${quality["bitrate"] ?? 0}kbps';
+        qSort = quality["bitrate"] ?? 0;
+      }
+      if (quality["url"] == null) continue;
       var qualityItem = LivePlayQuality(
-        quality: quality["name"],
-        sort: quality["level"],
-        data: <String>[quality["url"]],
+        quality: qName?.toString() ?? '默认',
+        sort: qSort is num ? qSort.toInt() : 0,
+        data: <String>[quality["url"].toString()],
       );
       qualities.add(qualityItem);
     }
@@ -346,6 +357,15 @@ class KuaishowSite implements LiveSite {
 
   @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
+    try {
+      // 优先移动版页面(livev.m.chenzhongtech.com): 快手已把直播流数据从桌面站 SSR 挪到移动版,
+      // 桌面 u/{id} 的 __INITIAL_STATE__ 里 liveStream 已是占位壳(请求过快)。
+      final mobileRoom = await _fetchMobileRoomDetail(roomId, platform);
+      if (mobileRoom != null) return mobileRoom;
+    } catch (e) {
+      developer.log('快手移动版详情失败: $e');
+    }
+
     headers['cookie'] = cookie;
     var url = "https://live.kuaishou.com/u/$roomId";
     var mHeaders = headers;
@@ -410,6 +430,158 @@ class KuaishowSite implements LiveSite {
       // 请求失败时保留原状态(如强制标记为未开播), 避免主播明明已开播却因接口失败被误判下播
       return liveRoom;
     }
+  }
+
+  /// 移动版页面(livev.m.chenzhongtech.com/fw/live/{id}) 会直接返回真实 playUrls(新结构)。
+  /// 桌面站 SSR 已不输出直播流, 必须用移动域名+移动UA 才能拿到。
+  Future<LiveRoom?> _fetchMobileRoomDetail(String roomId, String platform) async {
+    try {
+      final mUrl = 'https://livev.m.chenzhongtech.com/fw/live/$roomId';
+      final mobileHeaders = <String, dynamic>{
+        'User-Agent':
+            'Mozilla/5.0 (Linux; Android 16; 25102RKBEC Build/BP2A.250605.031.A3) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/143.0.7499.192 Mobile Safari/537.36',
+        'accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'sec-ch-ua': '"Android WebView";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+        'sec-ch-ua-mobile': '?1',
+        'sec-ch-ua-platform': '"Android"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Referer': 'https://livev.m.chenzhongtech.com/',
+      };
+      if (SettingsService.to.cookieManager.kuaishouCookie.v.isNotEmpty) {
+        mobileHeaders['cookie'] = SettingsService.to.cookieManager.kuaishouCookie.v;
+      }
+      final mText = await HttpClient.instance.getText(mUrl, queryParameters: {}, header: mobileHeaders);
+      if (!mText.contains('"playUrls"') || !mText.contains('"liveStream"')) {
+        return null;
+      }
+      return _parseMobileRoom(mText, platform);
+    } catch (e) {
+      developer.log('快手移动版解析失败: $e');
+      return null;
+    }
+  }
+
+  LiveRoom? _parseMobileRoom(String html, String platform) {
+    try {
+      final initState = _extractInitState(html);
+      if (initState == null) return null;
+      final roomObj = _findLiveRoom(initState);
+      if (roomObj == null) return null;
+      final liveStream = roomObj['liveStream'] ?? {};
+      final user = liveStream['user'] ?? {};
+      final isLiving = liveStream['living'] == true || (liveStream['playUrls'] ?? []).isNotEmpty;
+      // 画质列表: multiResolutionPlayUrls 是 [{name, level, urls:[{url,...}]}]
+      // 直接映射为 [{name, level, url}] 供 getPlayQualites 使用
+      final qualities = <Map<String, dynamic>>[];
+      final multi = liveStream['multiResolutionPlayUrls'];
+      if (multi is List) {
+        for (final m in multi) {
+          if (m is! Map) continue;
+          final urls = m['urls'];
+          if (urls is List && urls.isNotEmpty && urls[0] is Map && urls[0]['url'] != null) {
+            qualities.add({
+              'name': m['name'] ?? '',
+              'level': m['level'] ?? 0,
+              'url': urls[0]['url'],
+            });
+          }
+        }
+      }
+      // 兜底: 没有多档画质时用单档 playUrls
+      if (qualities.isEmpty) {
+        final playUrls = liveStream['playUrls'];
+        if (playUrls is List) {
+          for (final u in playUrls) {
+            if (u is Map && u['url'] != null) {
+              qualities.add({
+                'name': '默认',
+                'level': 0,
+                'url': u['url'],
+              });
+            }
+          }
+        }
+      }
+      return LiveRoom(
+        cover: (user['headurl'] ?? liveStream['coverUrl'] ?? '').toString(),
+        watching: (roomObj['currentWatching'] ?? 0).toString(),
+        roomId: user['kwaiId']?.toString() ?? '',
+        userId: (user['user_id'] ?? liveStream['liveStreamId'] ?? '').toString(),
+        area: (roomObj['host-name'] ?? '').toString(),
+        title: (liveStream['caption'] ?? '').toString(),
+        nick: (user['user_name'] ?? '').toString(),
+        avatar: (user['headurl'] ?? '').toString(),
+        introduction: (liveStream['caption'] ?? '').toString(),
+        notice: (liveStream['caption'] ?? '').toString(),
+        status: isLiving,
+        liveStatus: isLiving ? LiveStatus.live : LiveStatus.offline,
+        platform: platform,
+        link: (liveStream['liveStreamId'] ?? '').toString(),
+        data: qualities,
+      );
+    } catch (e) {
+      developer.log('快手移动版解析失败2: $e');
+      return null;
+    }
+  }
+
+  /// 提取 window.INIT_STATE 后面的 JSON 对象
+  Map<String, dynamic>? _extractInitState(String html) {
+    final idx = html.indexOf('window.INIT_STATE');
+    if (idx < 0) return null;
+    final eq = html.indexOf('=', idx);
+    if (eq < 0) return null;
+    var start = eq + 1;
+    while (start < html.length && (html[start] == ' ' || html[start] == '\n' || html[start] == '\r' || html[start] == '\t')) start++;
+    if (start >= html.length || html[start] != '{') return null;
+    var depth = 0;
+    var inStr = false;
+    var i = start;
+    while (i < html.length) {
+      final c = html[i];
+      if (inStr) {
+        if (c == '\\') {
+          i += 2;
+          continue;
+        }
+        if (c == '"') inStr = false;
+      } else {
+        if (c == '"') {
+          inStr = true;
+        } else if (c == '{') {
+          depth++;
+        } else if (c == '}') {
+          depth--;
+          if (depth == 0) {
+            final raw = html.substring(start, i + 1);
+            return jsonDecode(raw.replaceAll('undefined', 'null'));
+          }
+        }
+      }
+      i++;
+    }
+    return null;
+  }
+
+  /// 递归查找包含 liveStream.playUrls 的房间对象
+  dynamic _findLiveRoom(dynamic node) {
+    if (node is Map) {
+      final ls = node['liveStream'];
+      if (ls is Map && ls['playUrls'] != null) return node;
+      for (final v in node.values) {
+        final r = _findLiveRoom(v);
+        if (r != null) return r;
+      }
+    } else if (node is List) {
+      for (final v in node) {
+        final r = _findLiveRoom(v);
+        if (r != null) return r;
+      }
+    }
+    return null;
   }
 
   /// 后台列表接口可稳定返回在播房间的有效 playUrls,
