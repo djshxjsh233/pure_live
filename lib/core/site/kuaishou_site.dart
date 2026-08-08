@@ -18,8 +18,8 @@ class KuaishowSite implements LiveSite {
   // 列表接口结果缓存: 快手列表接口一次返回大量在播房间, 全量拉一次并缓存可避免关注页批量刷新时逐房间打 home/list + gameboard
   static Map<String, Map<String, dynamic>> _listRoomCache = {};
   static DateTime? _listCacheTime;
-  // 5 分钟过期
-  static const Duration _listCacheTtl = Duration(minutes: 5);
+  // 快手流地址带时效签名(约10分钟内过期), 播放必须是新鲜链接, 不做长缓存
+  static const Duration _listCacheTtl = Duration(seconds: 20);
 
   @override
   String id = "kuaishou";
