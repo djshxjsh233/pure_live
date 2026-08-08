@@ -15,6 +15,12 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 
 class KuaishowSite implements LiveSite {
+  // 列表接口结果缓存: 快手列表接口一次返回大量在播房间, 全量拉一次并缓存可避免关注页批量刷新时逐房间打 home/list + gameboard
+  static Map<String, Map<String, dynamic>> _listRoomCache = {};
+  static DateTime? _listCacheTime;
+  // 5 分钟过期
+  static const Duration _listCacheTtl = Duration(minutes: 5);
+
   @override
   String id = "kuaishou";
 
@@ -152,6 +158,7 @@ class KuaishowSite implements LiveSite {
         liveStatus: LiveStatus.live,
         status: true,
         platform: Sites.kuaishouSite,
+        data: item["playUrls"],
       );
       items.add(roomItem);
     }
@@ -162,7 +169,28 @@ class KuaishowSite implements LiveSite {
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
     developer.log(detail.data.toString(), name: 'detail.data');
-    var qulityList = detail.data["h264"]["adaptationSet"]["representation"];
+    // 兼容两种 playUrls 结构:
+    // 列表接口: [{adaptationSet:{representation:[...]}}]
+    // 详情接口: {h264:{adaptationSet:{representation:[...]}}, hevc:{...}}
+    var data = detail.data;
+    if (data == null) return Future.value(qualities);
+    List qulityList = [];
+    if (data is List) {
+      if (data.isNotEmpty && data[0] is Map) {
+        var adaptationSet = data[0]["adaptationSet"];
+        if (adaptationSet is Map && adaptationSet["representation"] is List) {
+          qulityList = adaptationSet["representation"] as List;
+        }
+      }
+    } else if (data is Map) {
+      var h264 = data["h264"];
+      if (h264 is Map) {
+        var adaptationSet = h264["adaptationSet"];
+        if (adaptationSet is Map && adaptationSet["representation"] is List) {
+          qulityList = adaptationSet["representation"] as List;
+        }
+      }
+    }
 
     for (var quality in qulityList) {
       var qualityItem = LivePlayQuality(
@@ -369,16 +397,107 @@ class KuaishowSite implements LiveSite {
         data: liveStream["playUrls"],
       );
     } catch (e) {
+      // SSR 拿不到时回退到列表接口(home/list + gameboard/list), 按 roomId 匹配在播房间与 playUrls
+      final fallback = await _fetchLiveRoomFromLists(roomId, platform);
+      if (fallback != null) return fallback;
+
       LiveRoom liveRoom =
           SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
 
-      // 请求失败时保留原状态(而非强制标记为未开播), 避免主播明明开播却因接口失败被误判下播
-      // liveRoom 来自本地favoriteRooms(含原状态); 若本地无则保持初始对象
+      // 请求失败时保留原状态(如强制标记为未开播), 避免主播明明已开播却因接口失败被误判下播
       return liveRoom;
     }
+  }
+
+  /// 后台列表接口可稳定返回在播房间的有效 playUrls,
+  /// 在 SSR 页面被反爬/占位时按 roomId 匹配, 取回流地址用于播放。
+  Future<LiveRoom?> _fetchLiveRoomFromLists(String roomId, String platform) async {
+    try {
+      await _ensureListCache();
+      final hit = _listRoomCache[roomId];
+      if (hit != null) return _roomFromListItem(hit, hit['author'], platform);
+      // 缓存里没有: 刷新一次(可能新开播)
+      _listRoomCache = {};
+      _listCacheTime = null;
+      await _ensureListCache();
+      final hit2 = _listRoomCache[roomId];
+      if (hit2 != null) return _roomFromListItem(hit2, hit2['author'], platform);
+    } catch (e) {
+      developer.log('快手列表回退失败: $e');
+    }
+    return null;
+  }
+
+  Future<void> _ensureListCache() async {
+    if (_listCacheTime != null) {
+      if (DateTime.now().difference(_listCacheTime!) < _listCacheTtl) return;
+    }
+    _listCacheTime = DateTime.now();
+    final newCache = <String, Map<String, dynamic>>{};
+    try {
+      // 1. 首页推荐(home/list)
+      final homeText = await HttpClient.instance.getJson(
+        "https://live.kuaishou.com/live_api/home/list",
+        header: headers,
+      );
+      final homeList = homeText['data']['list'] ?? [];
+      for (final section in homeList) {
+        for (final game in section['gameLiveInfo'] ?? <dynamic>[]) {
+          for (final item in game['liveInfo'] ?? <dynamic>[]) {
+            final author = item['author'] ?? {};
+            final id = author['id']?.toString() ?? '';
+            if (id.isEmpty) continue;
+            final entry = Map<String, dynamic>.from(item);
+            entry['author'] = author;
+            newCache[id] = entry;
+          }
+        }
+      }
+      // 2) 游戏分区分页列表(gameboard/list), 覆盖更广的在播房间
+      for (int categoryId = 1; categoryId <= 8 && newCache.length < 500; categoryId++) {
+        final gbText = await HttpClient.instance.getJson(
+          "https://live.kuaishou.com/live_api/gameboard/list",
+          queryParameters: {"filterType": 0, "pageSize": 20, "gameId": '$categoryId', "page": 1},
+          header: headers,
+        );
+        final list = gbText['data']?['list'] ?? [];
+        for (final item in list) {
+          final author = item['author'] ?? {};
+          final id = author['id']?.toString() ?? '';
+          if (id.isEmpty) continue;
+          final entry = Map<String, dynamic>.from(item);
+          entry['author'] = author;
+          newCache[id] = entry;
+        }
+      }
+      _listRoomCache = newCache;
+    } catch (e) {
+      _listCacheTime = null;
+      developer.log('快手列表拉取失败: $e');
+    }
+  }
+
+  LiveRoom _roomFromListItem(dynamic item, dynamic author, String platform) {
+    final gameInfo = item['gameInfo'] ?? {};
+    return LiveRoom(
+      cover: isImage(item['poster']) ? item['poster'].toString() : '${item['poster'].toString()}.jpg',
+      watching: (item['watchingCount'] ?? 0).toString(),
+      roomId: author['id']?.toString() ?? '',
+      userId: author['id']?.toString() ?? '',
+      area: (gameInfo['name'] ?? '').toString(),
+      title: (author['description'] ?? '').toString().replaceAll('\n', ' '),
+      nick: (author['name'] ?? '').toString(),
+      avatar: (author['avatar'] ?? '').toString(),
+      introduction: (author['description'] ?? '').toString(),
+      notice: (author['description'] ?? '').toString(),
+      status: true,
+      liveStatus: LiveStatus.live,
+      platform: platform,
+      data: item['playUrls'],
+    );
   }
 
   @override
