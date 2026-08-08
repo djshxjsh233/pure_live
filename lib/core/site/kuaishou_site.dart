@@ -356,8 +356,43 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
+  // did/cookie 就位标记
+  bool _didReady = false;
+
+  /// 快手对匿名请求有风控, 必须先建立 did 会话(访问主页种 did + misc2 上报注册)再取流。
+  /// App 内未填登录 cookie 时走这套自动建立匿名会话; 已填则直接使用。
+  Future<void> _ensureDidSession() async {
+    if (_didReady) return;
+    try {
+      final hasUserCookie =
+          SettingsService.to.cookieManager.kuaishouCookie.v.isNotEmpty;
+      if (!hasUserCookie) {
+        // 匿名: 种 did
+        if (cookieObj['did'] == null || cookieObj['did'] == '') {
+          try {
+            await getCookie('https://live.kuaishou.com/');
+          } catch (e) {
+            developer.log('快手种did失败: $e');
+          }
+        }
+        if (cookieObj['did'] != null && cookieObj['did'] != '') {
+          try {
+            await registerDid();
+          } catch (e) {
+            developer.log('快手registerDid失败: $e');
+          }
+        }
+      }
+      _didReady = true;
+    } catch (e) {
+      developer.log('快手did会话初始化失败: $e');
+    }
+  }
+
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
-    // 快手列表接口(home/list + gameboard/list)匿名直达所有在播房间的有效 playUrls,
+    // 先建立 did 会话(匿名自动/已登录直接), 再取流
+    await _ensureDidSession();
+    // 快手列表接口(home/list + gameboard/list)匿名直达在播房间的有效 playUrls:
     // 与浏览器秒播机制一致。优先匹配列表拿到 playUrls, 避免逐房间慢速页面抓取。
     try {
       final listRoom = await _fetchLiveRoomFromLists(roomId, platform);
