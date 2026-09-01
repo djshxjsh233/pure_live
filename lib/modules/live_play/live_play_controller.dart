@@ -429,9 +429,12 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
       _refreshingForPlayer = true;
       try {
         CoreLog.i("🔄 播放失败，自动重新获取 [${currentSite.id}] 流地址");
+        final retryRoomId = detail.value?.roomId ?? room.roomId;
+        final retryPlatform = detail.value?.platform ?? room.platform;
+        if (retryRoomId == null || retryPlatform == null) return;
         final liveRoom = await currentSite.liveSite.getRoomDetail(
-          roomId: detail.value?.roomId ?? room.roomId,
-          platform: detail.value?.platform ?? room.platform,
+          roomId: retryRoomId,
+          platform: retryPlatform,
         );
         if (liveRoom.liveStatus == LiveStatus.live || liveRoom.status == true) {
           detail.value = liveRoom;
