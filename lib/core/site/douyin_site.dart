@@ -47,6 +47,11 @@ class DouyinSite implements LiveSite {
   /// web_rid → 真实房间 id_str 缓存（浏览器进房必带 room_id_str，贴近此行为可降低风控）
   static final Map<String, String> _webRidRoomIdCache = {};
 
+  /// web_rid → 完整房间数据缓存（含 stream_url）。来源：列表接口/HTML页面/enter API
+  /// 进房时优先取缓存=零网络请求秒开，与浏览器从列表点进直接播放同理
+  static final Map<String, MapEntry<DateTime, Map>> _roomInfoCache = {};
+  static const Duration _roomCacheLifetime = Duration(minutes: 5);
+
   /// 动态 cookie 有效时长（ttwid 一般有效一年，这里保守点 30 分钟刷新一次）
   static const Duration _dynamicCookieLifetime = Duration(minutes: 30);
 
@@ -268,6 +273,10 @@ class DouyinSite implements LiveSite {
     for (var item in result["data"]["data"]) {
       // 记录真实房间ID，进房时将 room_id_str 带上（贴近浏览器行为，降低风控）
       _webRidRoomIdCache[item["web_rid"].toString()] = item["room"]?["id_str"]?.toString() ?? "";
+      if (item["room"] is Map && (item["room"] as Map).isNotEmpty) {
+        _roomInfoCache[item["web_rid"].toString()] =
+            MapEntry(DateTime.now(), item["room"] as Map);
+      }
       var roomItem = LiveRoom(
         roomId: item["web_rid"],
         title: item["room"]["title"].toString(),
@@ -320,6 +329,10 @@ class DouyinSite implements LiveSite {
       for (var item in result["data"]["data"]) {
         // 记录真实房间ID，进房时将 room_id_str 带上（贴近浏览器行为，降低风控）
         _webRidRoomIdCache[item["web_rid"].toString()] = item["room"]?["id_str"]?.toString() ?? "";
+      if (item["room"] is Map && (item["room"] as Map).isNotEmpty) {
+        _roomInfoCache[item["web_rid"].toString()] =
+            MapEntry(DateTime.now(), item["room"] as Map);
+      }
         var roomItem = LiveRoom(
           roomId: item["web_rid"],
           title: item["room"]["title"].toString(),
@@ -400,28 +413,30 @@ class DouyinSite implements LiveSite {
   /// - 返回直播间信息
   /// - 容错策略：API(abogus签名) → 强刷cookie重试API(防偶发风控) → HTML页面解析兜底
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
-    // 第一级：API（含 abogus 签名）。成功即返回（offline 也是明确状态，无需重试）
-    try {
-      var result = await _getRoomDetailByWebRidApi(webRid);
-      return result;
-    } catch (e) {
-      CoreLog.error("douyin API取房间失败: $e");
+    // 第一级：房间缓存（来自列表接口，含流地址）。零网络请求秒开，浏览器从列表点进即播同理
+    final cached = _roomInfoCache[webRid];
+    if (cached != null && DateTime.now().difference(cached.key) < _roomCacheLifetime) {
+      return _buildLiveRoomFromRoomMap(webRid, cached.value);
     }
-    // 第二级：强制刷新 cookie 后重试 API（API异常多为过期cookie/旧msToken导致的风控，换新会话即恢复）
+    // 第二级：HTML 页面解析（浏览器主数据源，SSR 内嵌完整房间+流地址；已兼容转义state/RENDER_DATA）
     try {
-      // 清除可能已失效的一次性 room_id 缓存（主播重新开播后旧 id 作废）
-      _webRidRoomIdCache.remove(webRid);
-      await _refreshDynamicCookie(force: true);
-      var result = await _getRoomDetailByWebRidApi(webRid);
-      return result;
+      final room = await _getRoomDetailByWebRidHtml(webRid);
+      if (room.liveStatus != LiveStatus.unknown && room.data is Map && (room.data as Map).isNotEmpty) {
+        _roomInfoCache[webRid] = MapEntry(DateTime.now(), room.data as Map);
+      }
+      return room;
     } catch (e) {
-      CoreLog.error("douyin API重试取房间失败: $e");
+      CoreLog.error("douyin HTML获取房间失败: $e");
     }
-    // 第三级：HTML 页面解析兜底（浏览器同款数据源）
+    // 第三级：enter API（浏览器 JS 的增量刷新通道，web端流地址主来源之一）
     try {
-      return await _getRoomDetailByWebRidHtml(webRid);
+      final room = await _getRoomDetailByWebRidApi(webRid);
+      if (room.liveStatus != LiveStatus.unknown && room.data is Map && (room.data as Map).isNotEmpty) {
+        _roomInfoCache[webRid] = MapEntry(DateTime.now(), room.data as Map);
+      }
+      return room;
     } catch (e) {
-      CoreLog.error("douyin HTML兜底取房间失败: $e");
+      CoreLog.error("douyin enter API获取房间失败: $e");
     }
     return LiveRoom(
       roomId: webRid,
@@ -430,91 +445,117 @@ class DouyinSite implements LiveSite {
     );
   }
 
+  /// 统一由 roomMap 构造 LiveRoom（列表/HTML/enter API 三种来源同构）
+  /// [danmakuRoomId] 真实房间id(弹幕用); [fallbackNick]/[fallbackAvatar] 未开播时用user/anchor信息
+  LiveRoom _buildLiveRoomFromRoomMap(String webRid, Map room,
+      {String? danmakuRoomId,
+      String? userUniqueId,
+      String? fallbackNick,
+      String? fallbackAvatar}) {
+    final status = (room["status"] as num?)?.toInt() ?? 0;
+    final streamUrl = room["stream_url"];
+    final hasStream = streamUrl is Map && streamUrl.isNotEmpty;
+    // partition 列表接口 room.status=0 但 stream_url 有数据=在播，用双条件判定
+    final isLive = status == 2 || hasStream;
+    final owner = room["owner"] is Map ? room["owner"] as Map : <String, dynamic>{};
+    final coverMap = room["cover"];
+    String cover = "";
+    if (coverMap is Map && coverMap["url_list"] is List && (coverMap["url_list"] as List).isNotEmpty) {
+      cover = coverMap["url_list"][0].toString();
+    }
+    final avatarMap = owner["avatar_thumb"];
+    String avatar = "";
+    if (avatarMap is Map && avatarMap["url_list"] is List && (avatarMap["url_list"] as List).isNotEmpty) {
+      avatar = avatarMap["url_list"][0].toString();
+    }
+    if (avatar.isEmpty && fallbackAvatar != null) avatar = fallbackAvatar;
+    final viewStats = room["room_view_stats"];
+    final watching = viewStats is Map ? (viewStats["display_value"]?.toString() ?? '') : '';
+    final cookieVal = cookie.isNotEmpty ? cookie : kDefaultCookie;
+    return LiveRoom(
+      roomId: webRid,
+      title: room["title"]?.toString() ?? '',
+      cover: cover,
+      nick: isLive ? (owner["nickname"]?.toString() ?? (fallbackNick ?? '')) : (fallbackNick ?? ''),
+      avatar: avatar,
+      watching: watching,
+      status: isLive,
+      liveStatus: isLive ? LiveStatus.live : LiveStatus.offline,
+      link: "https://live.douyin.com/$webRid",
+      platform: Sites.douyinSite,
+      area: '',
+      introduction: owner["signature"]?.toString() ?? "",
+      notice: "",
+      userId: owner["sec_uid"]?.toString() ?? "",
+      danmakuData: DouyinDanmakuArgs(
+        webRid: webRid,
+        roomId: danmakuRoomId ?? (room["id_str"]?.toString() ?? ""),
+        userId: userUniqueId ?? generateRandomNumber(12).toString(),
+        cookie: cookieVal,
+      ),
+      data: streamUrl is Map ? streamUrl : <String, dynamic>{},
+    );
+  }
+
   /// 通过WebRid访问直播间API，从API中获取直播间信息
   /// - [webRid] 直播间RID
   /// - 返回直播间信息
   Future<LiveRoom> _getRoomDetailByWebRidApi(String webRid) async {
-    // 读取房间信息
-    var data = await _getRoomDataByApi(webRid);
-
-    var roomData = data["data"][0];
-    var userData = data["user"];
-    var roomId = roomData["id_str"].toString();
-
-    // 读取用户唯一ID，用于弹幕连接
-    // 似乎这个参数不是必须的，先随机生成一个
-    //var userUniqueId = await _getUserUniqueId(webRid);
-    var userUniqueId = generateRandomNumber(12).toString();
-
-    var owner = roomData["owner"];
-
-    var roomStatus = (asT<int?>(roomData["status"]) ?? 0) == 2;
-
-    // 主要是为了获取cookie,用于弹幕websocket连接
-    var headers = await getRequestHeaders();
-    return LiveRoom(
-      roomId: webRid,
-      title: roomData["title"].toString(),
-      cover: roomStatus ? roomData["cover"]["url_list"][0].toString() : "",
-      nick: roomStatus ? owner["nickname"].toString() : userData["nickname"].toString(),
-      avatar: roomStatus
-          ? owner["avatar_thumb"]["url_list"][0].toString()
-          : userData["avatar_thumb"]["url_list"][0].toString(),
-      watching: roomStatus ? roomData["room_view_stats"]["display_value"].toString() : "",
-      status: roomStatus,
-      liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
-      link: "https://live.douyin.com/$webRid",
-      platform: Sites.douyinSite,
-      area: '',
-      introduction: owner?["signature"]?.toString() ?? "",
-      notice: "",
-      danmakuData: DouyinDanmakuArgs(webRid: webRid, roomId: roomId, userId: userUniqueId, cookie: headers["cookie"]),
-      data: roomStatus ? roomData["stream_url"] : {},
-    );
+    final data = await _getRoomDataByApi(webRid);
+    final list = data["data"];
+    if (list is! List || list.isEmpty) {
+      throw Exception("douyin enter API 返回空数据(可能被风控)");
+    }
+    final roomMap = list[0] is Map ? list[0] as Map : throw Exception("douyin enter API 结构异常");
+    final userData = data["user"];
+    String fallbackNick = "", fallbackAvatar = "";
+    if (userData is Map) {
+      fallbackNick = userData["nickname"]?.toString() ?? "";
+      final av = userData["avatar_thumb"];
+      if (av is Map && av["url_list"] is List && (av["url_list"] as List).isNotEmpty) {
+        fallbackAvatar = av["url_list"][0].toString();
+      }
+    }
+    final roomId = roomMap["id_str"]?.toString() ?? "";
+    _roomInfoCache[webRid] = MapEntry(DateTime.now(), roomMap);
+    _webRidRoomIdCache[webRid] = roomId;
+    return _buildLiveRoomFromRoomMap(webRid, roomMap,
+        danmakuRoomId: roomId, fallbackNick: fallbackNick, fallbackAvatar: fallbackAvatar);
   }
 
   /// 通过WebRid访问直播间网页，从网页HTML中获取直播间信息
   /// - [webRid] 直播间RID
   /// - 返回直播间信息
-  Future<LiveRoom> _getRoomDetailByWebRidHtml(String roomId) async {
-    var detail = await _getRoomDataByHtml(roomId);
-    var webRid = roomId;
-
-    var realRoomId = detail["roomStore"]["roomInfo"]["room"]["id_str"].toString();
-    var userUniqueId = detail["userStore"]["odin"]["user_unique_id"].toString();
-    var roomInfo = detail["roomStore"]["roomInfo"]["room"];
-    var owner = roomInfo["owner"];
-    var anchor = detail["roomStore"]["roomInfo"]["anchor"];
-    var roomStatus = (asT<int?>(roomInfo["status"]) ?? 0) == 2;
-
-    // 主要是为了获取cookie,用于弹幕websocket连接
-    var headers = await getRequestHeaders();
-
-    return LiveRoom(
-      roomId: roomId,
-      title: roomInfo["title"].toString(),
-      cover: roomStatus ? roomInfo["cover"]["url_list"][0].toString() : "",
-      nick: roomStatus ? owner["nickname"].toString() : anchor["nickname"].toString(),
-      avatar: roomStatus
-          ? owner["avatar_thumb"]["url_list"][0].toString()
-          : anchor["avatar_thumb"]["url_list"][0].toString(),
-      watching: roomInfo?["room_view_stats"]?["display_value"].toString() ?? '',
-      liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
-      link: "https://live.douyin.com/$webRid",
-      area: '',
-      status: roomStatus,
-      platform: Sites.douyinSite,
-      userId: anchor["sec_uid"].toString(),
-      introduction: roomInfo["title"].toString(),
-      notice: "",
-      danmakuData: DouyinDanmakuArgs(
-        webRid: webRid,
-        roomId: realRoomId,
-        userId: userUniqueId,
-        cookie: headers["cookie"],
-      ),
-      data: roomStatus ? roomInfo["stream_url"] : {},
-    );
+  Future<LiveRoom> _getRoomDetailByWebRidHtml(String webRid) async {
+    final detail = await _getRoomDataByHtml(webRid);
+    final roomStore = detail["roomStore"];
+    final roomInfo = roomStore is Map ? roomStore["roomInfo"] : null;
+    final room = roomInfo is Map ? roomInfo["room"] : null;
+    if (room is! Map) {
+      throw Exception("douyin 房间页缺 room 数据");
+    }
+    final roomMap = room;
+    final realRoomId = roomMap["id_str"]?.toString() ?? "";
+    String userUniqueId = "";
+    try {
+      userUniqueId = detail["userStore"]["odin"]["user_unique_id"].toString();
+    } catch (_) {}
+    final anchor = roomInfo["anchor"];
+    String fallbackNick = "", fallbackAvatar = "";
+    if (anchor is Map) {
+      fallbackNick = anchor["nickname"]?.toString() ?? "";
+      final av = anchor["avatar_thumb"];
+      if (av is Map && av["url_list"] is List && (av["url_list"] as List).isNotEmpty) {
+        fallbackAvatar = av["url_list"][0].toString();
+      }
+    }
+    _roomInfoCache[webRid] = MapEntry(DateTime.now(), roomMap);
+    _webRidRoomIdCache[webRid] = realRoomId;
+    return _buildLiveRoomFromRoomMap(webRid, roomMap,
+        danmakuRoomId: realRoomId,
+        userUniqueId: userUniqueId,
+        fallbackNick: fallbackNick,
+        fallbackAvatar: fallbackAvatar);
   }
 
   /// 读取用户的唯一ID
