@@ -10648,9 +10648,14 @@ function getMSSDKSignature(msStub, userAgent) {
 ''';
 
   static const String defaultUserAgent = DouyinSite.kDefaultUserAgent;
+
+  /// 服务端下发的合法 msToken（由 douyin_site 填充）。非空时优先于随机生成，
+  /// 让 query 参数与浏览器一致（同一会话复用官方 token，风控分最低）
+  static String msTokenOverride = "";
+
   static String getAbogusUrl(String url, String userAgent) {
     JsRuntime flutterJs = JsRuntime(memoryLimit: 4 * 1024 * 1024, maxStackSize: 64 * 1024);
-    final msToken = generateMsToken(107);
+    final msToken = msTokenOverride.isNotEmpty ? msTokenOverride : generateMsToken(107);
     var params = ('$url&msToken=$msToken').split('?')[1];
     var query = params.contains("?") ? params.split("?")[1] : params;
     var jsCode = kABogus;

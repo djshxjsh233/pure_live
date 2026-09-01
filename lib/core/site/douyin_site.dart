@@ -44,6 +44,9 @@ class DouyinSite implements LiveSite {
   /// 最近一次响应头下发的合法 msToken（服务端签发，风控分数低）
   static String _serverMsToken = "";
 
+  /// web_rid → 真实房间 id_str 缓存（浏览器进房必带 room_id_str，贴近此行为可降低风控）
+  static final Map<String, String> _webRidRoomIdCache = {};
+
   /// 动态 cookie 有效时长（ttwid 一般有效一年，这里保守点 30 分钟刷新一次）
   static const Duration _dynamicCookieLifetime = Duration(minutes: 30);
 
@@ -280,6 +283,8 @@ class DouyinSite implements LiveSite {
     var result = await HttpClient.instance.getJson(requestUrl, header: await getRequestHeaders());
     var items = <LiveRoom>[];
     for (var item in result["data"]["data"]) {
+      // 记录真实房间ID，进房时将 room_id_str 带上（贴近浏览器行为，降低风控）
+      _webRidRoomIdCache[item["web_rid"].toString()] = item["room"]?["id_str"]?.toString() ?? "";
       var roomItem = LiveRoom(
         roomId: item["web_rid"],
         title: item["room"]["title"].toString(),
@@ -330,6 +335,8 @@ class DouyinSite implements LiveSite {
       var result = await HttpClient.instance.getJson(requestUrl, header: await getRequestHeaders());
       var items = <LiveRoom>[];
       for (var item in result["data"]["data"]) {
+        // 记录真实房间ID，进房时将 room_id_str 带上（贴近浏览器行为，降低风控）
+        _webRidRoomIdCache[item["web_rid"].toString()] = item["room"]?["id_str"]?.toString() ?? "";
         var roomItem = LiveRoom(
           roomId: item["web_rid"],
           title: item["room"]["title"].toString(),
@@ -596,9 +603,9 @@ class DouyinSite implements LiveSite {
         "app_name": "douyin_web",
         "live_id": '1',
         "device_platform": "web",
-        "enter_from": "web_live",
+        "enter_from": "link_share",
         "web_rid": webRid,
-        "room_id_str": "",
+        "room_id_str": _webRidRoomIdCache[webRid] ?? "",
         "enter_source": "",
         "Room-Enter-User-Login-Ab": '0',
         "is_need_double_stream": 'false',
@@ -619,6 +626,8 @@ class DouyinSite implements LiveSite {
     final msTokenHeader = response.headers.value("x-ms-token");
     if (msTokenHeader != null && msTokenHeader.isNotEmpty) {
       _serverMsToken = msTokenHeader;
+      // query 参数也复用服务端 token（与浏览器同一会话复用行为一致）
+      DouyinSign.msTokenOverride = msTokenHeader;
     }
     final data = response.data;
     if (data is Map<String, dynamic>) {
