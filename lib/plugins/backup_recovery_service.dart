@@ -38,15 +38,16 @@ class BackupRecoveryService {
 
   void recoverSettingsFromFile() async {
     final backup = Get.find<BackupController>();
-    FilePickerResult? result = await FilePicker.pickFiles(
+    // file_picker 12.1+ 移除了 FilePickerResult，统一用 pickFile（12.0-beta 与 12.1 均支持）
+    final result = await FilePicker.pickFile(
       dialogTitle: i18n("select_recover_file"),
       type: FileType.custom,
       allowedExtensions: ['txt'],
     );
 
-    if (result == null || result.files.single.path == null) return;
+    if (result == null || result.path == null) return;
 
-    final file = File(result.files.single.path!);
+    final file = File(result.path!);
     if (backup.recover(file)) {
       ToastUtil.show(i18n("recover_backup_success"));
     } else {
