@@ -37,20 +37,94 @@ class DouyinSite implements LiveSite {
   /// 用户设置的 cookie
   static String cookie = "";
 
+  /// 动态获取的新鲜 cookie（模拟浏览器首次访问，置顶优先级高于内置兜底）
+  static String _dynamicCookie = "";
+  static DateTime? _dynamicCookieTime;
+
+  /// 最近一次响应头下发的合法 msToken（服务端签发，风控分数低）
+  static String _serverMsToken = "";
+
+  /// 动态 cookie 有效时长（ttwid 一般有效一年，这里保守点 30 分钟刷新一次）
+  static const Duration _dynamicCookieLifetime = Duration(minutes: 30);
+
   Map<String, dynamic> headers = {
     "Authority": kDefaultAuthority,
     "Referer": kDefaultReferer,
     "User-Agent": kDefaultUserAgent,
   };
 
+  /// 强制/按需刷新动态 cookie：HEAD live.douyin.com 拿 Set-Cookie（ttwid、__ac_nonce、msToken 等）
+  Future<String> _refreshDynamicCookie({bool force = false}) async {
+    try {
+      final now = DateTime.now();
+      if (!force &&
+          _dynamicCookie.isNotEmpty &&
+          _dynamicCookieTime != null &&
+          now.difference(_dynamicCookieTime!) < _dynamicCookieLifetime) {
+        return _dynamicCookie;
+      }
+      final headResp = await HttpClient.instance.head(
+        "https://live.douyin.com/?from_nav=1",
+        header: {
+          "Authority": kDefaultAuthority,
+          "Referer": kDefaultReferer,
+          "User-Agent": kDefaultUserAgent,
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+      );
+      var dyCookie = "";
+      headResp.headers["set-cookie"]?.forEach((element) {
+        final raw = element.trim();
+        if (raw.isEmpty) return;
+        final cookie = raw.split(";")[0].trim();
+        if (cookie.startsWith("ttwid=") ||
+            cookie.startsWith("__ac_nonce=") ||
+            cookie.startsWith("msToken=")) {
+          dyCookie += "$cookie;";
+        }
+      });
+      if (dyCookie.isNotEmpty) {
+        _dynamicCookie = dyCookie;
+        _dynamicCookieTime = now;
+        if (cookie.isEmpty && SettingsService.to.cookieManager.douyinCookie.v.isEmpty) {
+          cookie = _dynamicCookie;
+        }
+        CoreLog.i("douyin 动态cookie已刷新(${dyCookie.length}字节)");
+      } else {
+        CoreLog.w("douyin 动态cookie刷新无结果，沿用旧值");
+      }
+      return _dynamicCookie;
+    } catch (e) {
+      CoreLog.error("douyin 刷新动态cookie失败: $e");
+      return _dynamicCookie;
+    }
+  }
+
   Future<Map<String, dynamic>> getRequestHeaders() async {
     try {
       if (cookie.isNotEmpty) {
-        headers["cookie"] = cookie;
+        // 用户/缓存的 cookie 可能缺少服务端下发的 msToken，补上能显著降低风控分
+        if (_serverMsToken.isNotEmpty && !cookie.contains("msToken=")) {
+          headers["cookie"] = "$cookie; msToken=$_serverMsToken;";
+        } else {
+          headers["cookie"] = cookie;
+        }
         return headers;
       } else if (SettingsService.to.cookieManager.douyinCookie.v.isNotEmpty) {
         cookie = SettingsService.to.cookieManager.douyinCookie.v;
         headers["cookie"] = cookie;
+        return headers;
+      }
+
+      // 内置 ttwid 是早期写死的旧值，风控识别度极高，优先动态获取一次（带缓存）
+      await _refreshDynamicCookie();
+      if (_dynamicCookie.isNotEmpty) {
+        cookie = _dynamicCookie;
+        if (_serverMsToken.isNotEmpty && !cookie.contains("msToken=")) {
+          headers["cookie"] = "$cookie; msToken=$_serverMsToken;";
+        } else {
+          headers["cookie"] = cookie;
+        }
         return headers;
       }
 
@@ -334,14 +408,34 @@ class DouyinSite implements LiveSite {
   /// 通过WebRid获取直播间信息
   /// - [webRid] 直播间RID
   /// - 返回直播间信息
+  /// - 容错策略：API(abogus签名) → 强刷cookie重试API(防偶发风控) → HTML页面解析兜底
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
+    // 第一级：API（含 abogus 签名）。成功即返回（offline 也是明确状态，无需重试）
     try {
       var result = await _getRoomDetailByWebRidApi(webRid);
       return result;
     } catch (e) {
-      CoreLog.error(e);
+      CoreLog.error("douyin API取房间失败: $e");
     }
-    return await _getRoomDetailByWebRidHtml(webRid);
+    // 第二级：强制刷新 cookie 后重试 API（API异常多为过期cookie/旧msToken导致的风控，换新会话即恢复）
+    try {
+      await _refreshDynamicCookie(force: true);
+      var result = await _getRoomDetailByWebRidApi(webRid);
+      return result;
+    } catch (e) {
+      CoreLog.error("douyin API重试取房间失败: $e");
+    }
+    // 第三级：HTML 页面解析兜底（浏览器同款数据源）
+    try {
+      return await _getRoomDetailByWebRidHtml(webRid);
+    } catch (e) {
+      CoreLog.error("douyin HTML兜底取房间失败: $e");
+    }
+    return LiveRoom(
+      roomId: webRid,
+      platform: Sites.douyinSite,
+      liveStatus: LiveStatus.unknown,
+    );
   }
 
   /// 通过WebRid访问直播间API，从API中获取直播间信息
@@ -446,6 +540,11 @@ class DouyinSite implements LiveSite {
   /// 进入直播间前需要先获取cookie
   /// - [webRid] 直播间RID
   Future<String> _getWebCookie(String webRid) async {
+    // 优先复用全局缓存的动态 cookie（浏览器会话式，长期有效），避免每次都 HEAD 增加风控请求数
+    await _refreshDynamicCookie();
+    if (_dynamicCookie.isNotEmpty) {
+      return _dynamicCookie;
+    }
     var headResp = await HttpClient.instance.head("https://live.douyin.com/$webRid", header: headers);
     var dyCookie = "";
     headResp.headers["set-cookie"]?.forEach((element) {
@@ -514,9 +613,18 @@ class DouyinSite implements LiveSite {
     );
     var requestUrl = DouyinSign.getAbogusUrl(uri.toString(), kDefaultUserAgent);
     var requestHeader = await getRequestHeaders();
-    var result = await HttpClient.instance.getJson(requestUrl, header: requestHeader);
+    final response = await HttpClient.instance.get(requestUrl, header: requestHeader);
 
-    return result["data"];
+    // 提取服务端下发的合法 msToken 并缓存：后续请求携带它，风控分数显著低于随机串
+    final msTokenHeader = response.headers.value("x-ms-token");
+    if (msTokenHeader != null && msTokenHeader.isNotEmpty) {
+      _serverMsToken = msTokenHeader;
+    }
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data["data"];
+    }
+    throw Exception("douyin enter API 响应异常(可能被风控): $data");
   }
 
   /// 通过roomId获取直播间信息
@@ -539,48 +647,110 @@ class DouyinSite implements LiveSite {
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    List<LivePlayQuality> qualities = [];
+    final qualities = <LivePlayQuality>[];
+    final data = detail.data;
+    if (data == null || data.isEmpty) return qualities;
 
-    var qulityList = detail.data["live_core_sdk_data"]["pull_data"]["options"]["qualities"];
-    var streamData = detail.data["live_core_sdk_data"]["pull_data"]["stream_data"].toString();
+    try {
+      // ---------- 新结构：live_core_sdk_data.pull_data ----------
+      final coreSdk = data["live_core_sdk_data"];
+      if (coreSdk is Map) {
+        final pullData = coreSdk["pull_data"];
+        if (pullData is Map) {
+          final qulityList = (pullData["options"] is Map
+                  ? pullData["options"]["qualities"]
+                  : null) as List? ??
+              [];
+          final streamData = pullData["stream_data"]?.toString() ?? '';
 
-    if (!streamData.startsWith('{')) {
-      var flvList = (detail.data["flv_pull_url"] as Map).values.cast<String>().toList();
-      var hlsList = (detail.data["hls_pull_url_map"] as Map).values.cast<String>().toList();
-      for (var quality in qulityList) {
-        int level = quality["level"];
-        List<String> urls = [];
-        var flvIndex = flvList.length - level;
-        if (flvIndex >= 0 && flvIndex < flvList.length) {
-          urls.add(flvList[flvIndex]);
-        }
-        var hlsIndex = hlsList.length - level;
-        if (hlsIndex >= 0 && hlsIndex < hlsList.length) {
-          urls.add(hlsList[hlsIndex]);
-        }
-        var qualityItem = LivePlayQuality(quality: quality["name"], sort: level, data: urls);
-        if (urls.isNotEmpty) {
-          qualities.add(qualityItem);
+          var qualityData = <String, dynamic>{};
+          var parseOk = false;
+          if (streamData.startsWith('{')) {
+            try {
+              final decoded = json.decode(streamData);
+              final dd = decoded is Map ? decoded["data"] : null;
+              if (dd is Map) {
+                qualityData = dd.cast<String, dynamic>();
+                parseOk = true;
+              }
+            } catch (e) {
+              CoreLog.error("douyin stream_data JSON解析失败: $e");
+            }
+          }
+
+          if (parseOk) {
+            for (var quality in qulityList) {
+              List<String> urls = [];
+              final key = quality["sdk_key"];
+              if (key == null) continue;
+              final entry = qualityData[key];
+              if (entry is Map) {
+                final main = entry["main"];
+                if (main is Map) {
+                  final flvUrl = main["flv"]?.toString();
+                  if (flvUrl != null && flvUrl.isNotEmpty) urls.add(flvUrl);
+                  final hlsUrl = main["hls"]?.toString();
+                  if (hlsUrl != null && hlsUrl.isNotEmpty) urls.add(hlsUrl);
+                }
+              }
+              if (urls.isNotEmpty) {
+                qualities.add(LivePlayQuality(
+                  quality: quality["name"]?.toString() ?? '',
+                  sort: (quality["level"] as num?)?.toInt() ?? 0,
+                  data: urls,
+                ));
+              }
+            }
+          } else if (data["flv_pull_url"] is Map) {
+            // ---------- 老结构：flv_pull_url / hls_pull_url_map ----------
+            final flvList = (data["flv_pull_url"] as Map).values.cast<String>().toList();
+            final hlsList = (data["hls_pull_url_map"] as Map).values.cast<String>().toList();
+            for (var quality in qulityList) {
+              int level = (quality["level"] as num?)?.toInt() ?? 0;
+              List<String> urls = [];
+              var flvIndex = flvList.length - level;
+              if (flvIndex >= 0 && flvIndex < flvList.length) {
+                urls.add(flvList[flvIndex]);
+              }
+              var hlsIndex = hlsList.length - level;
+              if (hlsIndex >= 0 && hlsIndex < hlsList.length) {
+                urls.add(hlsList[hlsIndex]);
+              }
+              if (urls.isNotEmpty) {
+                qualities.add(LivePlayQuality(
+                  quality: quality["name"]?.toString() ?? '',
+                  sort: level,
+                  data: urls,
+                ));
+              }
+            }
+          }
         }
       }
-    } else {
-      var qualityData = json.decode(streamData)["data"] as Map;
-      for (var quality in qulityList) {
-        List<String> urls = [];
-        var flvUrl = qualityData[quality["sdk_key"]]?["main"]?["flv"]?.toString();
 
-        if (flvUrl != null && flvUrl.isNotEmpty) {
-          urls.add(flvUrl);
-        }
-        var hlsUrl = qualityData[quality["sdk_key"]]?["main"]?["hls"]?.toString();
-        if (hlsUrl != null && hlsUrl.isNotEmpty) {
-          urls.add(hlsUrl);
-        }
-        var qualityItem = LivePlayQuality(quality: quality["name"], sort: quality["level"], data: urls);
-        if (urls.isNotEmpty) {
-          qualities.add(qualityItem);
-        }
+      // ---------- 最终兜底：无 live_core_sdk_data 时直接读 flv_pull_url 等 ----------
+      if (qualities.isEmpty && data["flv_pull_url"] is Map) {
+        final flvMap = data["flv_pull_url"] as Map;
+        final hlsMap = data["hls_pull_url_map"] as Map? ?? {};
+        final names = {'FULL_HD1': 4, 'HD1': 3, 'SD1': 2, 'SD2': 1};
+        flvMap.forEach((k, v) {
+          final urls = <String>[];
+          final flv = v?.toString();
+          if (flv != null && flv.isNotEmpty) urls.add(flv);
+          final hls = hlsMap[k]?.toString();
+          if (hls != null && hls.isNotEmpty) urls.add(hls);
+          if (urls.isNotEmpty) {
+            final level = names[k?.toString()] ?? 0;
+            qualities.add(LivePlayQuality(
+              quality: k?.toString() ?? '',
+              sort: level,
+              data: urls,
+            ));
+          }
+        });
       }
+    } catch (e) {
+      CoreLog.error("douyin getPlayQualites 解析失败: $e");
     }
 
     qualities.sort((a, b) => b.sort.compareTo(a.sort));

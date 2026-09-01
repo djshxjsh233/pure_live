@@ -32,6 +32,9 @@ class PlayerManager {
   final PreloadPlayerManager preloadManager;
   final AudioStreamLoader audioLoader = AudioStreamLoader();
   final LineFallbackManager lineManager;
+  /// 所有线路/引擎都失败时回调：由上层重新获取流地址（如抖音播放URL失效刷新）
+  Future<void> Function()? onRefreshUrls;
+  int _refreshUrlsCount = 0;
 
   int _sessionId = 0;
   bool _isClosing = false;
@@ -779,6 +782,23 @@ class PlayerManager {
     await replay();
   }
 
+  /// 线路/引擎全部失败后，请求上层重新获取播放地址（自动恢复，带次数限制防死循环）
+  Future<void> _tryRefreshUrls(PlayerException error) async {
+    if (_disposed || _isClosing) return;
+    final isRecoverable = error.type == PlayerErrorType.network ||
+        error.type == PlayerErrorType.source ||
+        error.type == PlayerErrorType.initialization ||
+        error.type == PlayerErrorType.native;
+    if (!isRecoverable || onRefreshUrls == null || _refreshUrlsCount >= 2) return;
+    _refreshUrlsCount++;
+    log("🔄 线路/引擎耗尽，重新获取播放地址(#$_refreshUrlsCount)");
+    try {
+      await onRefreshUrls?.call();
+    } catch (e) {
+      log("refresh urls failed: $e");
+    }
+  }
+
   Future<void> _handleError(PlayerException error, {int? sessionId}) async {
     if (_disposed || _isClosing) return;
     if (_isHandlingError) {
@@ -833,6 +853,12 @@ class PlayerManager {
         await replay();
         return;
       }
+
+      // ★ 所有可自动恢复手段（切线路/降引擎）穷尽：请求上层重新获取流地址
+      // 抖音流地址有时效性（通常数小时），且偶发被风控返回空；刷新后通常即可恢复
+      if (!lineSwitched) {
+        await _tryRefreshUrls(error);
+      }
     } catch (e, s) {
       log("_handleError failed: $e", stackTrace: s);
     } finally {
@@ -847,6 +873,7 @@ class PlayerManager {
         _playingSubject.add(event);
         if (event) {
           hasError.value = false;
+          _refreshUrlsCount = 0;
           _stateSubject.add(PlayerState.playing);
           if (_isSwitchingDueToFallback) {
             _isSwitchingDueToFallback = false;

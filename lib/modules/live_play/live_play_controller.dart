@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/site/huya_site.dart';
 import 'widgets/video_player/video_controller.dart';
 import 'package:pure_live/plugins/emoji_manager.dart';
@@ -54,6 +55,12 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
   final screenMode = VideoMode.normal.obs;
   final refreshKey = 0.obs;
+
+  /// 播放自动恢复标记：防止并发重复刷新
+  bool _refreshingForPlayer = false;
+
+  /// 进入房间解析播放地址失败的重试计数（上限1次）
+  int _qualityRetryCount = 0;
 
   bool hasUseDefaultResolution = false;
 
@@ -330,6 +337,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     currentLineIndex.value = 0;
     qualites.value = [];
     currentQuality.value = 0;
+    _qualityRetryCount = 0;
   }
 
   // =========================================================
@@ -415,6 +423,41 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
     GlobalPlayerState().setCurrentRoom(room.roomId!);
 
+    // ★ 播放全线路失败时自动恢复：重新获取房间信息+流地址再播（抖音URL有过期/风控偶发失败，此兜底可自动拉起）
+    GlobalPlayerService.instance.playerManager.onRefreshUrls = () async {
+      if (_refreshingForPlayer) return;
+      _refreshingForPlayer = true;
+      try {
+        CoreLog.i("🔄 播放失败，自动重新获取 [${currentSite.id}] 流地址");
+        final liveRoom = await currentSite.liveSite.getRoomDetail(
+          roomId: detail.value?.roomId ?? room.roomId,
+          platform: detail.value?.platform ?? room.platform,
+        );
+        if (liveRoom.liveStatus == LiveStatus.live || liveRoom.status == true) {
+          detail.value = liveRoom;
+          final qualities = await currentSite.liveSite.getPlayQualites(detail: liveRoom);
+          if (qualities.isNotEmpty) {
+            final qIdx = currentQuality.value < qualities.length ? currentQuality.value : 0;
+            qualites.value = qualities;
+            currentQuality.value = qIdx;
+            hasUseDefaultResolution = true;
+            final urls = await currentSite.liveSite.getPlayUrls(detail: liveRoom, quality: qualities[qIdx]);
+            if (urls.isNotEmpty) {
+              playUrls.value = urls;
+              setPlayer();
+              CoreLog.i("🔄 流地址已刷新，重新播放: ${urls.length}条");
+            }
+          }
+        } else {
+          CoreLog.w("🔄 自动恢复：房间当前未开播(${liveRoom.liveStatus})");
+        }
+      } catch (e) {
+        CoreLog.error("🔄 自动恢复失败: $e");
+      } finally {
+        _refreshingForPlayer = false;
+      }
+    };
+
     videoController.value = VideoController(
       room: detail.value!,
       playUrs: playUrls.value,
@@ -450,6 +493,18 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   Future<void> getPlayQualites() async {
     try {
       var playQualites = await currentSite.liveSite.getPlayQualites(detail: detail.value!);
+
+      // ★ 解析结果为空时：重新获取房间信息再解析一次（抖音偶发风控返回空数据，刷新即恢复）
+      if (playQualites.isEmpty && _qualityRetryCount < 1 && detail.value?.roomId != null) {
+        _qualityRetryCount++;
+        CoreLog.w("🔄 播放地址解析为空，重取房间信息重试(#$_qualityRetryCount)");
+        final liveRoom = await currentSite.liveSite.getRoomDetail(
+          roomId: detail.value!.roomId!,
+          platform: detail.value!.platform!,
+        );
+        detail.value = liveRoom;
+        playQualites = await currentSite.liveSite.getPlayQualites(detail: liveRoom);
+      }
 
       if (playQualites.isEmpty) {
         ToastUtil.show(i18n('cannot_read_video_info'));

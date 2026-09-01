@@ -10700,7 +10700,7 @@ function getMSSDKSignature(msStub, userAgent) {
   }
 
   static String generateMsToken(int length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     final random = Random.secure();
     return List.generate(length, (_) => characters[random.nextInt(characters.length)]).join('');
   }
