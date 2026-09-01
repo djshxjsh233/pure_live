@@ -26,7 +26,7 @@ class DouyinUtils {
     exParams['device_platform'] = "web";
     exParams['browser_language'] = "zh-CN";
     exParams['browser_platform'] = "Win32";
-    exParams['browser_name'] = "Edge";
+    exParams['browser_name'] = "Chrome";
     exParams['browser_version'] = "125.0.0.0";
     if (!exParams.containsKey('msToken')) {
       exParams['msToken'] = getMSToken();

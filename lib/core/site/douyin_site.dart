@@ -25,7 +25,7 @@ class DouyinSite implements LiveSite {
 
   /// 使用 QQBrowser User-Agent（参考 DouyinLiveRecorder）
   static const String kDefaultUserAgent =
-      "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.97 Safari/537.36 Core/1.116.567.400 QQBrowser/19.7.6764.400";
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
 
   static const String kDefaultReferer = "https://live.douyin.com";
 
@@ -248,11 +248,11 @@ class DouyinSite implements LiveSite {
         "language": "zh-CN",
         "enter_from": "link_share",
         "cookie_enabled": "true",
-        "screen_width": "1980",
-        "screen_height": "1080",
+        "screen_width": "1536",
+        "screen_height": "864",
         "browser_language": "zh-CN",
         "browser_platform": "Win32",
-        "browser_name": "Edge",
+        "browser_name": "Chrome",
         "browser_version": "125.0.0.0",
         "browser_online": "true",
         "count": '15',
@@ -300,11 +300,11 @@ class DouyinSite implements LiveSite {
           "language": "zh-CN",
           "enter_from": "link_share",
           "cookie_enabled": "true",
-          "screen_width": "1980",
-          "screen_height": "1080",
+          "screen_width": "1536",
+          "screen_height": "864",
           "browser_language": "zh-CN",
           "browser_platform": "Win32",
-          "browser_name": "Edge",
+          "browser_name": "Chrome",
           "browser_version": "125.0.0.0",
           "browser_online": "true",
           "count": '20',
@@ -409,6 +409,8 @@ class DouyinSite implements LiveSite {
     }
     // 第二级：强制刷新 cookie 后重试 API（API异常多为过期cookie/旧msToken导致的风控，换新会话即恢复）
     try {
+      // 清除可能已失效的一次性 room_id 缓存（主播重新开播后旧 id 作废）
+      _webRidRoomIdCache.remove(webRid);
       await _refreshDynamicCookie(force: true);
       var result = await _getRoomDetailByWebRidApi(webRid);
       return result;
@@ -555,8 +557,24 @@ class DouyinSite implements LiveSite {
   /// 通过webRid获取直播间Web信息
   /// - [webRid] 直播间RID
   Future<Map> _getRoomDataByHtml(String webRid) async {
+    // 第一遍：直接 GET（无 cookie，浏览器首次访问同款），个别网络 HEAD 被风控时仍能拿到页面
+    try {
+      return _parseRoomState(await HttpClient.instance.getText(
+        "https://live.douyin.com/$webRid",
+        queryParameters: {},
+        header: {
+          "Authority": kDefaultAuthority,
+          "Referer": kDefaultReferer,
+          "Cookie": kDefaultCookie,
+          "User-Agent": kDefaultUserAgent,
+        },
+      ));
+    } catch (e) {
+      CoreLog.w("douyin HTML无cookie解析失败，改用动态cookie重试: $e");
+    }
+    // 第二遍：带动态 cookie 重试
     var dyCookie = await _getWebCookie(webRid);
-    var result = await HttpClient.instance.getText(
+    return _parseRoomState(await HttpClient.instance.getText(
       "https://live.douyin.com/$webRid",
       queryParameters: {},
       header: {
@@ -565,13 +583,34 @@ class DouyinSite implements LiveSite {
         "Cookie": dyCookie,
         "User-Agent": kDefaultUserAgent,
       },
-    );
+    ));
+  }
 
-    var renderData = RegExp(r'\{\\"state\\":\{\\"appStore.*?\]\\n').firstMatch(result)?.group(0) ?? "";
-    var str = renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', "");
-
-    var renderDataJson = json.decode(str);
-    return renderDataJson["state"];
+  /// 解析直播间页面 RENDER state（多种存储形态兼容）
+  Map _parseRoomState(String html) {
+    // 形态1：转义 JSON 的 state（当前 SSR 页面）
+    var renderData = RegExp(r'\{\\"state\\":\{\\"appStore.*?\]\\n').firstMatch(html)?.group(0) ?? "";
+    if (renderData.isNotEmpty) {
+      try {
+        var str = renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', "");
+        return json.decode(str)["state"] as Map;
+      } catch (e) {
+        CoreLog.error("douyin 页面state解析失败: $e");
+      }
+    }
+    // 形态2：RENDER_DATA script（URL编码 JSON）
+    final rdMatch = RegExp(r'<script id="RENDER_DATA" type="application\/json">(.*?)<\/script>', dotAll: true)
+        .firstMatch(html);
+    if (rdMatch != null) {
+      try {
+        final decoded = Uri.decodeComponent(rdMatch.group(1) ?? "");
+        final j = json.decode(decoded);
+        return j["app"] is Map ? j["app"] : j["state"] as Map;
+      } catch (e) {
+        CoreLog.error("douyin RENDER_DATA解析失败: $e");
+      }
+    }
+    throw Exception("douyin 房间页缺少可解析的state数据(可能被风控)");
   }
 
   /// 通过webRid获取直播间Web信息
@@ -593,11 +632,11 @@ class DouyinSite implements LiveSite {
         "Room-Enter-User-Login-Ab": '0',
         "is_need_double_stream": 'false',
         "cookie_enabled": 'true',
-        "screen_width": '1980',
-        "screen_height": '1080',
+        "screen_width": "1536",
+        "screen_height": "864",
         "browser_language": "zh-CN",
         "browser_platform": "Win32",
-        "browser_name": "Edge",
+        "browser_name": "Chrome",
         "browser_version": "125.0.0.0",
       },
     );
@@ -780,11 +819,11 @@ class DouyinSite implements LiveSite {
         "version_code": "170400",
         "version_name": "17.4.0",
         "cookie_enabled": "true",
-        "screen_width": "1980",
-        "screen_height": "1080",
+        "screen_width": "1536",
+        "screen_height": "864",
         "browser_language": "zh-CN",
         "browser_platform": "Win32",
-        "browser_name": "Edge",
+        "browser_name": "Chrome",
         "browser_version": "125.0.0.0",
         "browser_online": "true",
         "engine_name": "Blink",
