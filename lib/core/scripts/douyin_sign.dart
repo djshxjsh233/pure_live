@@ -10653,9 +10653,10 @@ function getMSSDKSignature(msStub, userAgent) {
   /// 让 query 参数与浏览器一致（同一会话复用官方 token，风控分最低）
   static String msTokenOverride = "";
 
-  static String getAbogusUrl(String url, String userAgent) {
+  static String getAbogusUrl(String url, String userAgent, {bool useServerToken = false}) {
     JsRuntime flutterJs = JsRuntime(memoryLimit: 4 * 1024 * 1024, maxStackSize: 64 * 1024);
-    final msToken = msTokenOverride.isNotEmpty ? msTokenOverride : generateMsToken(107);
+    // 服务端 msToken 有时效性且绑定场景：只允许进房(enter)请求复用，列表等请求一律随机生成，避免风控444
+    final msToken = (useServerToken && msTokenOverride.isNotEmpty) ? msTokenOverride : generateMsToken(107);
     var params = ('$url&msToken=$msToken').split('?')[1];
     var query = params.contains("?") ? params.split("?")[1] : params;
     var jsCode = kABogus;

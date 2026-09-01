@@ -89,9 +89,7 @@ class DouyinSite implements LiveSite {
       if (dyCookie.isNotEmpty) {
         _dynamicCookie = dyCookie;
         _dynamicCookieTime = now;
-        if (cookie.isEmpty && SettingsService.to.cookieManager.douyinCookie.v.isEmpty) {
-          cookie = _dynamicCookie;
-        }
+        // 注意：不覆盖全局 cookie，仅作为进房失败重试时的临时会话（避免影响列表请求稳定性）
         CoreLog.i("douyin 动态cookie已刷新(${dyCookie.length}字节)");
       } else {
         CoreLog.w("douyin 动态cookie刷新无结果，沿用旧值");
@@ -104,30 +102,15 @@ class DouyinSite implements LiveSite {
   }
 
   Future<Map<String, dynamic>> getRequestHeaders() async {
+    // 注意：列表/进房请求全部保持原行为（用户cookie → 设置cookie → 内置ttwid），
+    // 实测动态 cookie/msToken 拼接在部分网络下会触发风控444，仅进房失败重试时才强制刷新。
     try {
       if (cookie.isNotEmpty) {
-        // 用户/缓存的 cookie 可能缺少服务端下发的 msToken，补上能显著降低风控分
-        if (_serverMsToken.isNotEmpty && !cookie.contains("msToken=")) {
-          headers["cookie"] = "$cookie; msToken=$_serverMsToken;";
-        } else {
-          headers["cookie"] = cookie;
-        }
+        headers["cookie"] = cookie;
         return headers;
       } else if (SettingsService.to.cookieManager.douyinCookie.v.isNotEmpty) {
         cookie = SettingsService.to.cookieManager.douyinCookie.v;
         headers["cookie"] = cookie;
-        return headers;
-      }
-
-      // 内置 ttwid 是早期写死的旧值，风控识别度极高，优先动态获取一次（带缓存）
-      await _refreshDynamicCookie();
-      if (_dynamicCookie.isNotEmpty) {
-        cookie = _dynamicCookie;
-        if (_serverMsToken.isNotEmpty && !cookie.contains("msToken=")) {
-          headers["cookie"] = "$cookie; msToken=$_serverMsToken;";
-        } else {
-          headers["cookie"] = cookie;
-        }
         return headers;
       }
 
@@ -618,11 +601,15 @@ class DouyinSite implements LiveSite {
         "browser_version": "125.0.0.0",
       },
     );
-    var requestUrl = DouyinSign.getAbogusUrl(uri.toString(), kDefaultUserAgent);
+    var requestUrl = DouyinSign.getAbogusUrl(uri.toString(), kDefaultUserAgent, useServerToken: true);
     var requestHeader = await getRequestHeaders();
+    // 进房失败重试场景：已强刷出新鲜会话 cookie（ttwid），替换内置默认 cookie 以降低风控
+    if (_dynamicCookie.isNotEmpty && requestHeader["cookie"] == kDefaultCookie) {
+      requestHeader["cookie"] = _dynamicCookie;
+    }
     final response = await HttpClient.instance.get(requestUrl, header: requestHeader);
 
-    // 提取服务端下发的合法 msToken 并缓存：后续请求携带它，风控分数显著低于随机串
+    // 提取服务端下发的合法 msToken 并缓存：仅进房流程后续请求复用（刚下发仍在有效期内）
     final msTokenHeader = response.headers.value("x-ms-token");
     if (msTokenHeader != null && msTokenHeader.isNotEmpty) {
       _serverMsToken = msTokenHeader;
