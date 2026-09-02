@@ -179,6 +179,23 @@ class DouyinSite implements LiveSite {
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
+    // 首页分类树偶发返回残缺/失败：重试3次（每次重新拉取首页HTML）
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await _fetchCategoriesOnce();
+      } catch (e) {
+        if (attempt >= 3) {
+          CoreLog.error("douyin 分类树获取失败(3次): $e");
+          return [];
+        }
+        CoreLog.w("douyin 分类树第${attempt}次失败，重试: $e");
+        await Future.delayed(Duration(milliseconds: 500 * attempt));
+      }
+    }
+    return [];
+  }
+
+  Future<List<LiveCategory>> _fetchCategoriesOnce() async {
     List<LiveCategory> categories = [];
     var result = await HttpClient.instance.getText(
       "https://live.douyin.com/",
@@ -187,8 +204,14 @@ class DouyinSite implements LiveSite {
     );
 
     String extracted = extractCategoryDataJson(result);
+    if (extracted.isEmpty) {
+      throw Exception("首页无 categoryData(可能被风控)");
+    }
     var renderDataJson = json.decode(extracted);
     var data = renderDataJson["categoryData"];
+    if (data is! List || data.isEmpty) {
+      throw Exception("categoryData 为空");
+    }
 
     // 递归解析：把每个 partition 及其嵌套的 sub_partition 转成 LiveArea
     LiveArea parseArea(dynamic node) {
