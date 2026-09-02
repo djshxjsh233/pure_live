@@ -240,7 +240,25 @@ class DouyinSite implements LiveSite {
     var ids = category.areaId?.split(',');
     var partitionId = ids?[0];
     var partitionType = ids?[1];
+    // 分区接口偶发被风控：失败自动重试（每次重新生成abogus/msToken，间隔递增）
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        final items = await _fetchCategoryRoomsOnce(partitionId, partitionType, page, pageSize);
+        return items;
+      } catch (e) {
+        if (attempt >= 3) {
+          CoreLog.error("douyin 分区房间获取失败(3次): $e");
+          return [];
+        }
+        CoreLog.w("douyin 分区房间第${attempt}次失败，重试: $e");
+        await Future.delayed(Duration(milliseconds: 500 * attempt));
+      }
+    }
+    return [];
+  }
 
+  Future<List<LiveRoom>> _fetchCategoryRoomsOnce(
+      String? partitionId, String? partitionType, int page, int pageSize) async {
     String serverUrl = "https://live.douyin.com/webcast/web/partition/detail/room/v2/";
     var uri = Uri.parse(serverUrl).replace(
       scheme: "https",
@@ -260,8 +278,8 @@ class DouyinSite implements LiveSite {
         "browser_name": "Chrome",
         "browser_version": "125.0.0.0",
         "browser_online": "true",
-        "count": '15',
-        "offset": ((page - 1) * 15).toString(),
+        "count": '$pageSize',
+        "offset": ((page - 1) * pageSize).toString(),
         "partition": partitionId,
         "partition_type": partitionType,
         "req_from": '2',
