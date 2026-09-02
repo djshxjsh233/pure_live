@@ -122,9 +122,6 @@ class AppPages {
 
     GetPage(name: RoutePath.kWebDavPage, page: () => WebDavPage(), bindings: [WebDavBinding()]),
 
-        );
-      },
-    ),
     GetPage(name: RoutePath.kRecordPage, page: () => const RecorderPage(), bindings: [RecorderBinding()]),
     GetPage(
       name: RoutePath.kRecordSettings,
