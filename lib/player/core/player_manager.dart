@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 import 'player_pool.dart';
-import 'player_ui.dart';
+import '../player_ui.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
 import '../models/player_engine.dart';
