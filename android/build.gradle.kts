@@ -40,12 +40,13 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
+// AGP 9 兼容补丁：第三方插件(如 floating) 未声明 compileSdk, AGP9 强校验——统一补全
 subprojects {
     afterEvaluate {
          if (project.name != "app") {
             extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.apply {
                 defaultConfig.minSdk = 23 
-                
+                compileSdkVersion(37) // AGP9 补全第三方插件缺失的 compileSdk
                 if (namespace.isNullOrBlank()) {
                     namespace = project.group.toString()
                 }
