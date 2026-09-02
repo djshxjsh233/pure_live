@@ -87,7 +87,6 @@ class RoutePath {
 
   static const kKuaishouCookie = "/kuaishou_cookie";
 
-  static const kVersionPage = "/version_page";
 
   static const kRecordPage = "/record_mannager";
 

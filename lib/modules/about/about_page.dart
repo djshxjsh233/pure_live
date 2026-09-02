@@ -1,4 +1,3 @@
-import 'widgets/version_dialog.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:markdown_widget/config/configs.dart';
@@ -81,22 +80,6 @@ class _AboutPageState extends State<AboutPage> {
           const SizedBox(height: 8),
           context.buildModernCard([
             context.buildTile(
-              icon: Remix.download_cloud_2_line,
-              title: i18n("online_update"),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'v${VersionUtil.version}',
-                  style: AppTextStyles.t11.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
-                ),
-              ),
-              onTap: () => Get.toNamed(RoutePath.kVersionPage),
-            ),
-            context.buildTile(
               icon: Remix.history_line,
               title: i18n("history"),
               subtitle: i18n("history_desc"),
@@ -108,15 +91,6 @@ class _AboutPageState extends State<AboutPage> {
           context.buildGroupTitle(i18n("project")),
           const SizedBox(height: 8),
           context.buildModernCard([
-            context.buildTile(
-              icon: Remix.code_s_slash_line,
-              title: i18n("project_page"),
-              subtitle: VersionUtil.projectUrl,
-              isLong: true,
-              onTap: () {
-                launchUrl(Uri.parse(VersionUtil.projectUrl), mode: LaunchMode.externalApplication);
-              },
-            ),
             buildTile(
               icon: Remix.error_warning_line,
               title: i18n("project_alert"),
@@ -198,13 +172,6 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  void showCheckUpdateDialog(BuildContext context) async {
-    showDialog(
-      context: Get.context!,
-      builder: (context) => VersionUtil.hasNewVersion() ? NewVersionDialog() : NoNewVersionDialog(),
-    );
-  }
-
   void openLicensePage() {
     showLicensePage(
       context: Get.context!,
@@ -243,7 +210,6 @@ class _AboutPageState extends State<AboutPage> {
                     },
                     child: Text(i18n("open_source_free"), style: AppTextStyles.t20),
                   ),
-                  MarkdownBlock(data: VersionUtil.latestUpdateLog, config: config),
                   const SizedBox(height: 10),
                 ],
               ),

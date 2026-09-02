@@ -9,7 +9,6 @@ class AppSettingsController extends GetxController {
 
   final RxBool enableScreenKeepOn = hiveBool('enableScreenKeepOn', true);
 
-  final RxBool enableAutoCheckUpdate = hiveBool('enableAutoCheckUpdate', true);
   final RxBool enableFullScreenDefault = hiveBool('enableFullScreenDefault', false);
 
   late final RxList<String> savedMenuIds = hiveStringList('savedMenuIds', HomeMenu.values.map((e) => e.id).toList());
@@ -34,7 +33,6 @@ class AppSettingsController extends GetxController {
       'enableBackgroundPlay': enableBackgroundPlay.v,
       'enableRotateScreen': enableRotateScreen.v,
       'enableScreenKeepOn': enableScreenKeepOn.v,
-      'enableAutoCheckUpdate': enableAutoCheckUpdate.v,
       'enableFullScreenDefault': enableFullScreenDefault.v,
       'savedMenuIds': savedMenuIds.v,
     };
@@ -46,7 +44,6 @@ class AppSettingsController extends GetxController {
     enableBackgroundPlay.v = json['enableBackgroundPlay'] ?? false;
     enableRotateScreen.v = json['enableRotateScreen'] ?? false;
     enableScreenKeepOn.v = json['enableScreenKeepOn'] ?? true;
-    enableAutoCheckUpdate.v = json['enableAutoCheckUpdate'] ?? true;
     enableFullScreenDefault.v = json['enableFullScreenDefault'] ?? false;
     savedMenuIds.v = List<String>.from(json['savedMenuIds'] ?? HomeMenu.values.map((e) => e.id).toList());
   }
@@ -59,7 +56,6 @@ class AppSettingsController extends GetxController {
       'enableBackgroundPlay': app['enableBackgroundPlay'] ?? false,
       'enableRotateScreen': app['enableRotateScreen'] ?? false,
       'enableScreenKeepOn': app['enableScreenKeepOn'] ?? true,
-      'enableAutoCheckUpdate': app['enableAutoCheckUpdate'] ?? true,
       'enableFullScreenDefault': app['enableFullScreenDefault'] ?? false,
       'savedMenuIds': List<String>.from(app['savedMenuIds'] ?? []),
     };

@@ -13,6 +13,7 @@ import 'package:pure_live/common/global/platform/desktop_manager.dart';
 
 void main(List<String> args) async {
   await AppInitializer().initialize(args);
+  await VersionUtil.initPackageInfo();
 
   runApp(
     EasyLocalization(

@@ -6,7 +6,6 @@ import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/auth/sign_in_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/backup/backup_page.dart';
-import 'package:pure_live/modules/version/version_page.dart';
 import 'package:pure_live/modules/web_dav/web_dav_page.dart';
 import 'package:pure_live/modules/toolbox/toolbox_page.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
@@ -126,8 +125,6 @@ class AppPages {
         );
       },
     ),
-    // VersionPage
-    GetPage(name: RoutePath.kVersionPage, page: () => const VersionPage(), bindings: [VersionBinding()]),
     GetPage(name: RoutePath.kRecordPage, page: () => const RecorderPage(), bindings: [RecorderBinding()]),
     GetPage(
       name: RoutePath.kRecordSettings,
