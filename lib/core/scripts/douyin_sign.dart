@@ -10652,11 +10652,32 @@ function getMSSDKSignature(msStub, userAgent) {
   /// 服务端下发的合法 msToken（由 douyin_site 填充）。非空时优先于随机生成，
   /// 让 query 参数与浏览器一致（同一会话复用官方 token，风控分最低）
   static String msTokenOverride = "";
+  static DateTime? msTokenOverrideAt;
+
+  /// 服务端 msToken 有效期：超过后自动回退随机新鲜 token
+  /// （否则播放时间一长 token 过期，退出再进 enter 请求会被风控拦截）
+  static const Duration msTokenOverrideLifetime = Duration(minutes: 5);
+
+  /// 写入服务端下发的 msToken 并记录时间
+  static void setMsTokenOverride(String token) {
+    if (token.trim().isEmpty) return;
+    msTokenOverride = token;
+    msTokenOverrideAt = DateTime.now();
+  }
+
+  /// 清除覆写（进房失败时调用，让后续请求回到随机新鲜 token）
+  static void clearMsTokenOverride() {
+    msTokenOverride = "";
+    msTokenOverrideAt = null;
+  }
 
   static String getAbogusUrl(String url, String userAgent, {bool useServerToken = false}) {
     JsRuntime flutterJs = JsRuntime(memoryLimit: 4 * 1024 * 1024, maxStackSize: 64 * 1024);
-    // 服务端 msToken 有时效性且绑定场景：只允许进房(enter)请求复用，列表等请求一律随机生成，避免风控444
-    final msToken = (useServerToken && msTokenOverride.isNotEmpty) ? msTokenOverride : generateMsToken(107);
+    // 服务端 msToken 有时效性且绑定场景：只允许进房(enter)请求复用；过期则回退随机，列表请求一律随机
+    final tokenValid = msTokenOverride.isNotEmpty &&
+        (msTokenOverrideAt == null ||
+            DateTime.now().difference(msTokenOverrideAt!) < msTokenOverrideLifetime);
+    final msToken = (useServerToken && tokenValid) ? msTokenOverride : generateMsToken(107);
     var params = ('$url&msToken=$msToken').split('?')[1];
     var query = params.contains("?") ? params.split("?")[1] : params;
     var jsCode = kABogus;

@@ -467,6 +467,8 @@ class DouyinSite implements LiveSite {
       }
       return room;
     } catch (e) {
+      // 进房失败多为过期 msToken/风控：清除服务端 token 覆写，后续请求回到随机新鲜 token
+      DouyinSign.clearMsTokenOverride();
       CoreLog.error("douyin enter API获取房间失败: $e");
     }
     // 第三级：HTML 页面解析兜底（浏览器主数据源，SSR 内嵌完整房间+流地址）
@@ -730,12 +732,11 @@ class DouyinSite implements LiveSite {
     }
     final response = await HttpClient.instance.get(requestUrl, header: requestHeader);
 
-    // 提取服务端下发的合法 msToken 并缓存：仅进房流程后续请求复用（刚下发仍在有效期内）
+    // 提取服务端下发的合法 msToken 并缓存：仅进房流程后续请求复用（带5分钟有效期，过期自动失效）
     final msTokenHeader = response.headers.value("x-ms-token");
     if (msTokenHeader != null && msTokenHeader.isNotEmpty) {
       _serverMsToken = msTokenHeader;
-      // query 参数也复用服务端 token（与浏览器同一会话复用行为一致）
-      DouyinSign.msTokenOverride = msTokenHeader;
+      DouyinSign.setMsTokenOverride(msTokenHeader);
     }
     final data = response.data;
     if (data is Map<String, dynamic>) {
