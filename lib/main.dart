@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:developer';
 import 'dart:async';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
@@ -25,7 +24,7 @@ void main(List<String> args) async {
       defaultEngine: PlatformUtils.isDesktop ? PlayerEngine.mediaKit : engine,
     );
   } catch (e) {
-    developer.log('播放器预热失败: $e');
+    print('播放器预热失败: $e');
   }
 
   runApp(
