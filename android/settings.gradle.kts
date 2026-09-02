@@ -23,6 +23,8 @@ plugins {
     // START: FlutterFire Configuration
     id("com.google.gms.google-services") version("4.3.15") apply false
     // END: FlutterFire Configuration
+    // AGP 9 内建 Kotlin 版本默认为2.2.10, Flutter要求>=2.2.20, 显式指定供内建使用
+    id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
 include(":app")
