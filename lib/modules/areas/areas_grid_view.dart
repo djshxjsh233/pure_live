@@ -273,8 +273,8 @@ class _DouyinCategoryPage extends StatelessWidget {
     return Obx(() {
       return Column(
         children: [
-          // 一级分区 chips（含"全部"）—— 仅当顶级分类有子分区
-          if (controller.subAreas.isNotEmpty)
+          // 一级分区 chips（含"全部"）—— 仅当顶级分类有可切换的子分区（多于自身）
+          if (controller.subAreas.length > 1)
             _buildChips(context, controller.subAreas, controller.selectedArea, (a) => controller.selectSub(a), firstIsAll: true),
           // 二级分区 chips（如游戏→竞技→王者）—— 仅当一级分区还有下级
           // 注意：二级 children 第一位就是真实游戏（如王者荣耀），不带"全部"
@@ -364,7 +364,7 @@ class _DouyinCategoryPage extends StatelessWidget {
                 mainAxisSpacing: SettingsService.to.theme.mainAxisSpacing.v,
               ),
               itemCount: rooms.length,
-              itemBuilder: (context, index) => RoomCard(room: rooms[index]),
+              itemBuilder: (context, index) => RoomCard(room: rooms[index], dense: true),
             );
           },
         ),

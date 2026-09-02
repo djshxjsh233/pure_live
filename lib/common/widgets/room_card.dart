@@ -678,7 +678,7 @@ class RoomCard extends StatelessWidget {
                 room.title ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: (dense ? AppTextStyles.t13 : AppTextStyles.t15).copyWith(
+                style: (dense ? AppTextStyles.t12 : AppTextStyles.t13).copyWith(
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : Colors.black87,
                 ),
@@ -687,7 +687,7 @@ class RoomCard extends StatelessWidget {
                 room.nick ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: (dense ? AppTextStyles.t12 : AppTextStyles.t13).copyWith(
+                style: (dense ? AppTextStyles.t11 : AppTextStyles.t12).copyWith(
                   fontWeight: FontWeight.w500,
                   color: isDark ? Colors.grey[400] : Colors.grey[700],
                 ),
