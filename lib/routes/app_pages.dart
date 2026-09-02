@@ -18,7 +18,6 @@ import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/search/web_search_page.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
-import 'package:pure_live/modules/version/version_binding.dart';
 import 'package:pure_live/modules/web_dav/web_dav_binding.dart';
 import 'package:pure_live/modules/toolbox/boolbox_binding.dart';
 import 'package:pure_live/modules/tags/tag_management_page.dart';
