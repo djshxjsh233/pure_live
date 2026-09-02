@@ -460,24 +460,19 @@ class DouyinSite implements LiveSite {
       return _buildLiveRoomFromRoomMap(webRid, cached.value);
     }
     // 第二级：enter API（轻量JSON实测300ms/500KB vs HTML 700ms/1MB，成功率100%，优先）
+    // 注意：_getRoomDetailByWebRidApi 内部已把完整 roomMap 写入 _roomInfoCache 缓存，
+    // 此处不再重复写入（错误的 stream_url map 覆盖会污染缓存导致误判未开播）
     try {
-      final room = await _getRoomDetailByWebRidApi(webRid);
-      if (room.liveStatus != LiveStatus.unknown && room.data is Map && (room.data as Map).isNotEmpty) {
-        _roomInfoCache[webRid] = MapEntry(DateTime.now(), room.data as Map);
-      }
-      return room;
+      return await _getRoomDetailByWebRidApi(webRid);
     } catch (e) {
       // 进房失败多为过期 msToken/风控：清除服务端 token 覆写，后续请求回到随机新鲜 token
       DouyinSign.clearMsTokenOverride();
       CoreLog.error("douyin enter API获取房间失败: $e");
     }
     // 第三级：HTML 页面解析兜底（浏览器主数据源，SSR 内嵌完整房间+流地址）
+    // （内部同样已缓存完整 roomMap）
     try {
-      final room = await _getRoomDetailByWebRidHtml(webRid);
-      if (room.liveStatus != LiveStatus.unknown && room.data is Map && (room.data as Map).isNotEmpty) {
-        _roomInfoCache[webRid] = MapEntry(DateTime.now(), room.data as Map);
-      }
-      return room;
+      return await _getRoomDetailByWebRidHtml(webRid);
     } catch (e) {
       CoreLog.error("douyin HTML获取房间失败: $e");
     }
@@ -495,6 +490,10 @@ class DouyinSite implements LiveSite {
       String? userUniqueId,
       String? fallbackNick,
       String? fallbackAvatar}) {
+    // 防呆：误传非房间数据（如 stream_url 播放地址 map 的脏缓存）时，无法判定状态，返回 unknown
+    if (!room.containsKey("status") && !room.containsKey("stream_url")) {
+      return LiveRoom(roomId: webRid, platform: Sites.douyinSite, liveStatus: LiveStatus.unknown);
+    }
     final status = (room["status"] as num?)?.toInt() ?? 0;
     final streamUrl = room["stream_url"];
     final hasStream = streamUrl is Map && streamUrl.isNotEmpty;
