@@ -849,7 +849,9 @@ class DouyinSite implements LiveSite {
       if (qualities.isEmpty && data["flv_pull_url"] is Map) {
         final flvMap = data["flv_pull_url"] as Map;
         final hlsMap = data["hls_pull_url_map"] as Map? ?? {};
-        final names = {'FULL_HD1': 4, 'HD1': 3, 'SD1': 2, 'SD2': 1};
+        // 抖音官方清晰度中文名对照（uhd=蓝光, hd=超清, sd=高清, ld=标清）
+        const nameMap = {'FULL_HD1': '蓝光', 'HD1': '超清', 'SD1': '高清', 'SD2': '标清'};
+        const levelMap = {'FULL_HD1': 4, 'HD1': 3, 'SD1': 2, 'SD2': 1};
         flvMap.forEach((k, v) {
           final urls = <String>[];
           final flv = v?.toString();
@@ -857,9 +859,10 @@ class DouyinSite implements LiveSite {
           final hls = hlsMap[k]?.toString();
           if (hls != null && hls.isNotEmpty) urls.add(hls);
           if (urls.isNotEmpty) {
-            final level = names[k?.toString()] ?? 0;
+            final key = k?.toString() ?? '';
+            final level = levelMap[key] ?? 0;
             qualities.add(LivePlayQuality(
-              quality: k?.toString() ?? '',
+              quality: nameMap[key] ?? key,
               sort: level,
               data: urls,
             ));
