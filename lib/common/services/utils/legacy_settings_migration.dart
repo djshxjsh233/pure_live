@@ -85,7 +85,6 @@ class LegacySettingsMigration {
         "audioOutputDriver": HivePrefUtil.getString("audioOutputDriver"),
         "videoHardwareDecoder": HivePrefUtil.getString("videoHardwareDecoder"),
         "floatPlay": HivePrefUtil.getBool("floatPlay"),
-        "audioOnly": HivePrefUtil.getBool("audioOnly"),
         "preferResolution": HivePrefUtil.getString("preferResolution"),
         "preferResolutionCellular": HivePrefUtil.getString("preferResolutionCellular"),
         "preferPlatform": HivePrefUtil.getString("preferPlatform"),

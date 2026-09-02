@@ -67,7 +67,6 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   bool get _hasRoom => detail.value != null;
 
   bool isMenuOpen = false;
-  final isCurrentRoomAudioOnly = false.obs;
 
   String? _currentDanmakuRoomId;
   LivePlayQuality get _qualitySafe {
@@ -105,7 +104,6 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   void _initState() {
     detail.value = room;
     currentSite = Sites.of(site);
-    isCurrentRoomAudioOnly.value = SettingsService.to.player.audioOnly.v;
     if (SettingsService.to.danmaku.enableDanmakuDisplay.v) {
       liveDanmaku = currentSite.liveSite.getDanmaku();
     }
@@ -157,10 +155,6 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   }
 
   bool _needReconnectDanmaku(LiveRoom room) {
-    log(_currentDanmakuRoomId.toString());
-
-    log((_currentDanmakuRoomId != room.roomId).toString());
-    log(room.roomId.toString());
     if (_currentDanmakuRoomId.toString() != room.roomId.toString()) {
       return true;
     }
@@ -299,12 +293,10 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     success.value = false;
     isLiving.value = true;
 
-    await videoController.value?.destory();
+    await videoController.value?.destroy();
     videoController.value = null;
 
     hasUseDefaultResolution = false;
-
-    isCurrentRoomAudioOnly.value = SettingsService.to.player.audioOnly.v;
 
     detail.value = newRoom;
     currentSite = Sites.of(newRoom.platform!);
@@ -421,8 +413,6 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
       headers = {"user-agent": ua, "origin": "https://www.huya.com"};
     }
 
-    GlobalPlayerState().setCurrentRoom(room.roomId!);
-
     // ★ 播放全线路失败时自动恢复：重新获取房间信息+流地址再播（抖音URL有过期/风控偶发失败，此兜底可自动拉起）
     GlobalPlayerService.instance.playerManager.onRefreshUrls = () async {
       if (_refreshingForPlayer) return;
@@ -463,15 +453,13 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
     videoController.value = VideoController(
       room: detail.value!,
-      playUrs: playUrls.value,
+      playUrls: playUrls.value,
       datasource: _playUrlSafe,
       allowScreenKeepOn: SettingsService.to.app.enableScreenKeepOn.v,
       headers: headers,
       qualiteName: _qualitySafe.quality,
       currentLineIndex: currentLineIndex.value,
       currentQuality: currentQuality.value,
-      isAudioOnly: isCurrentRoomAudioOnly.value,
-      onAudioOnlyChanged: changeCurrentRoomAudioOnly,
     );
 
     success.value = true;
@@ -482,7 +470,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   // =========================================================
   void setResolution(ReloadDataType reloadDataType, int qualityIndex, int lineIndex) {
     GlobalPlayerService.instance.playerManager.close();
-    videoController.value?.destory();
+    videoController.value?.destroy();
 
     currentQuality.value = qualityIndex;
     currentLineIndex.value = lineIndex;
@@ -571,14 +559,6 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
     playUrls.value = playUrl;
     setPlayer();
-  }
-
-  Future<void> changeCurrentRoomAudioOnly(bool value) async {
-    if (isCurrentRoomAudioOnly.value == value) {
-      return;
-    }
-    isCurrentRoomAudioOnly.value = value;
-    await onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
   // =========================================================

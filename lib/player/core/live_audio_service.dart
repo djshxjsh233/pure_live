@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:pure_live/common/index.dart';
 import 'package:audio_service/audio_service.dart';
@@ -7,17 +8,16 @@ import 'package:pure_live/player/interface/unified_player_interface.dart';
 class LiveAudioService {
   static LiveAudioHandler? _handler;
   static bool _isInitializing = false;
+  static Completer<LiveAudioHandler?>? _initCompleter;
 
   static Future<LiveAudioHandler?> _ensureInitialized() async {
     if (_handler != null) return _handler;
-    if (_isInitializing) {
-      while (_handler == null) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-      return _handler;
-    }
+    final existing = _initCompleter;
+    if (existing != null) return existing.future;
 
     _isInitializing = true;
+    final completer = Completer<LiveAudioHandler?>();
+    _initCompleter = completer;
     try {
       _handler = await AudioService.init(
         builder: () => LiveAudioHandler(),
@@ -30,8 +30,13 @@ class LiveAudioService {
           notificationColor: Colors.blue,
         ),
       );
+      if (!completer.isCompleted) completer.complete(_handler);
+    } catch (e) {
+      if (!completer.isCompleted) completer.complete(null);
+      rethrow;
     } finally {
       _isInitializing = false;
+      _initCompleter = null;
     }
     return _handler;
   }

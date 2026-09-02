@@ -63,11 +63,7 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
           if (livePlayController.videoController.value != null) {
             livePlayController.videoController.value?.clearListener();
           }
-          if (livePlayController.isCurrentRoomAudioOnly.value) {
-            manager.hardDispose();
-          } else {
-            manager.close();
-          }
+          manager.close();
         }
         if (PlatformUtils.isMobile) {
           WindowService().doExitFullScreen();

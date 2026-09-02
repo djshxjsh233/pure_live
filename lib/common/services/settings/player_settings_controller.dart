@@ -17,7 +17,6 @@ class PlayerSettingsController extends GetxController {
   final RxString videoHardwareDecoder = hiveString('videoHardwareDecoder', 'auto');
 
   final RxBool floatPlay = hiveBool('floatPlay', false);
-  final RxBool audioOnly = hiveBool('audioOnly', false);
   final RxBool useHardStopOnExit = hiveBool('useHardStopOnExit', false);
 
   List<BoxFit> get videoFitArray => AppConsts().videoFitType.map((e) => e['attr'] as BoxFit).toList();
@@ -59,7 +58,6 @@ class PlayerSettingsController extends GetxController {
       'audioOutputDriver': audioOutputDriver.v,
       'videoHardwareDecoder': videoHardwareDecoder.v,
       'floatPlay': floatPlay.v,
-      'audioOnly': audioOnly.v,
       'useHardStopOnExit': useHardStopOnExit.v,
     };
   }
@@ -76,7 +74,6 @@ class PlayerSettingsController extends GetxController {
     audioOutputDriver.v = json['audioOutputDriver'] ?? 'auto';
     videoHardwareDecoder.v = json['videoHardwareDecoder'] ?? 'auto';
     floatPlay.v = json['floatPlay'] ?? false;
-    audioOnly.v = json['audioOnly'] ?? false;
     useHardStopOnExit.v = json['useHardStopOnExit'] ?? false;
   }
 
@@ -94,7 +91,6 @@ class PlayerSettingsController extends GetxController {
       'audioOutputDriver': player['audioOutputDriver'] ?? 'auto',
       'videoHardwareDecoder': player['videoHardwareDecoder'] ?? 'auto',
       'floatPlay': player['floatPlay'] ?? false,
-      'audioOnly': player['audioOnly'] ?? false,
       'useHardStopOnExit': player['useHardStopOnExit'] ?? false,
     };
   }

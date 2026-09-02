@@ -228,7 +228,6 @@ class TopActionBar extends StatelessWidget {
                 ),
               ),
 
-              AudioOnlyButton(controller: controller),
               if (GlobalPlayerState.to.fullscreenUI) ...[
                 IconButton(
                   icon: const Icon(Icons.swap_horiz_outlined),
@@ -1179,28 +1178,6 @@ class ExpandButton extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class AudioOnlyButton extends StatelessWidget {
-  const AudioOnlyButton({super.key, required this.controller});
-
-  final VideoController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        controller.enableController();
-        controller.toggleAudioOnly();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        alignment: Alignment.center,
-        height: 25,
-        child: Icon(controller.isAudioOnly ? Remix.headphone_line : Remix.tv_2_line, color: Colors.white, size: 20),
       ),
     );
   }

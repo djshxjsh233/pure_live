@@ -18,12 +18,10 @@ import 'package:pure_live/modules/live_play/player_state.dart';
 import 'package:pure_live/player/models/player_error_type.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
-typedef AudioOnlyCallback = void Function(bool value);
-
 class VideoController with ChangeNotifier {
   final LiveRoom room;
   String datasource;
-  List<String> playUrs;
+  List<String> playUrls;
   final bool allowScreenKeepOn;
   final bool allowFullScreen;
   final Map<String, String> headers;
@@ -44,10 +42,6 @@ class VideoController with ChangeNotifier {
 
   final int currentQuality;
 
-  final bool isAudioOnly;
-
-  final AudioOnlyCallback? onAudioOnlyChanged;
-
   bool get supportWindowFull => Platform.isWindows || Platform.isLinux;
 
   late final VolumeController _volumeController;
@@ -65,15 +59,14 @@ class VideoController with ChangeNotifier {
   final showLocked = false.obs;
   final danmuKey = GlobalKey();
   final isMenuOpen = false.obs;
-  GlobalKey playerKey = GlobalKey();
 
   Timer? _debounceTimer;
   Timer? _hideVolumeTimer;
-  var showVolume = false.obs;
+  final showVolume = false.obs;
 
   void updateVolumn(double volume) {
     _hideVolumeTimer?.cancel();
-    showVolume = true.obs;
+    showVolume.value = true;
     _hideVolumeTimer = Timer(const Duration(seconds: 1), () {
       showVolume.value = false;
     });
@@ -106,15 +99,13 @@ class VideoController with ChangeNotifier {
     required this.room,
     required this.datasource,
     required this.headers,
-    required this.playUrs,
+    required this.playUrls,
     this.allowScreenKeepOn = false,
     this.allowFullScreen = true,
     BoxFit fitMode = BoxFit.contain,
     required this.qualiteName,
     required this.currentLineIndex,
     required this.currentQuality,
-    required this.isAudioOnly,
-    this.onAudioOnlyChanged,
   }) {
     danmakuController = BarrageController();
 
@@ -136,16 +127,6 @@ class VideoController with ChangeNotifier {
     initVideoController();
     initDanmaku();
     initBattery();
-  }
-
-  void toggleAudioOnly() async {
-    _errorSub?.cancel();
-    _errorSub = null;
-    _pipSub?.cancel();
-    _pipSub = null;
-    GlobalPlayerService.instance.playerManager.hardDispose();
-    await destory();
-    onAudioOnlyChanged?.call(!isAudioOnly);
   }
 
   // Battery level control
@@ -218,7 +199,7 @@ class VideoController with ChangeNotifier {
         _volumeController.setVolume(targetVolume);
       }
     }
-    playerManager.play(datasource, playUrs, headers, room: room, audioOnly: isAudioOnly);
+    playerManager.play(datasource, playUrls, headers, room: room);
     initPlayerListener();
     // 处理默认全屏
 
@@ -326,7 +307,7 @@ class VideoController with ChangeNotifier {
 
 
   @override
-  void dispose() async {
+  void dispose() {
     _errorSub?.cancel();
     _errorSub = null;
     _pipSub?.cancel();
@@ -334,7 +315,7 @@ class VideoController with ChangeNotifier {
     showControllerTimer?.cancel();
     _debounceTimer?.cancel();
     _hideVolumeTimer?.cancel();
-    await destory();
+    unawaited(destroy());
     super.dispose();
   }
 
@@ -344,7 +325,7 @@ class VideoController with ChangeNotifier {
     _pipSub?.cancel();
     _pipSub = null;
     GlobalPlayerService.instance.playerManager.close();
-    await destory();
+    await destroy();
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
@@ -362,11 +343,11 @@ class VideoController with ChangeNotifier {
     _pipSub = null;
 
     GlobalPlayerService.instance.playerManager.close();
-    await destory();
+    await destroy();
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: currentLineIndex);
   }
 
-  Future<void> destory() async {
+  Future<void> destroy() async {
     if (Platform.isAndroid || Platform.isIOS) {
       if (allowScreenKeepOn) WakelockPlus.disable();
       unawaited(_subscription.cancel());

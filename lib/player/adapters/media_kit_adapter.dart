@@ -10,7 +10,7 @@ import 'package:media_kit/media_kit.dart' hide PlayerState;
 import 'package:pure_live/common/global/platform_utils.dart';
 
 class MediaKitAdapter implements UnifiedPlayer {
-  late final Player _player;
+  late Player _player;
 
   late final VideoController _controller;
 
@@ -21,8 +21,6 @@ class MediaKitAdapter implements UnifiedPlayer {
   bool _listenerBound = false;
 
   String? _currentUrl;
-
-  bool _isAudioOnly = false;
 
   // =========================
   // subjects
@@ -48,26 +46,14 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   final List<StreamSubscription> _subscriptions = [];
 
-  StreamSubscription? _playingSub;
-
-  StreamSubscription? _bufferingSub;
-
-  StreamSubscription? _widthSub;
-
-  StreamSubscription? _heightSub;
-
-  StreamSubscription? _completeSub;
-
-  StreamSubscription? _errorSub;
-
   // =========================
   // init
   // =========================
 
   @override
-  Future<void> init({bool audioOnly = false}) async {
+  Future<void> init() async {
     if (_initialized) return;
-    _isAudioOnly = audioOnly;
+
     _disposed = false;
 
     _listenerBound = false;
@@ -117,17 +103,7 @@ class MediaKitAdapter implements UnifiedPlayer {
       // =========================
       // controller
       // =========================
-      //  根据是否为纯音频，选择不同的控制器配置
-      _controller = audioOnly
-          ? VideoController(
-              _player,
-              configuration: const VideoControllerConfiguration(
-                vo: 'null',
-                hwdec: 'no',
-                enableHardwareAcceleration: false,
-              ),
-            )
-          : SettingsService.to.player.playerCompatMode.v
+      _controller = SettingsService.to.player.playerCompatMode.v
           ? VideoController(
               _player,
               configuration: const VideoControllerConfiguration(vo: 'mediacodec_embed', hwdec: 'mediacodec'),
@@ -150,11 +126,7 @@ class MediaKitAdapter implements UnifiedPlayer {
               ),
             );
 
-      // 2. 下发底层 MPV 内核配置（必须紧跟在 Controller 创建之后）
-      if (audioOnly) {
-        await applyAudioOnlySettings();
-      }
-
+      // 下发底层 MPV 内核配置
       await _bindListeners();
 
       _initialized = true;
@@ -184,14 +156,12 @@ class MediaKitAdapter implements UnifiedPlayer {
     List<String> playUrls,
     Map<String, String> headers, {
     LiveRoom? room,
-    bool audioOnly = false,
   }) async {
     if (_disposed) return;
 
     if (_currentUrl == url && isPlayingNow) {
       return;
     }
-    _isAudioOnly = audioOnly;
     _currentUrl = url;
 
     try {
@@ -250,100 +220,106 @@ class MediaKitAdapter implements UnifiedPlayer {
     // playing
     // =========================
 
-    _playingSub = _player.stream.playing.listen(
-      (playing) {
-        if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.playing.listen(
+        (playing) {
+          if (_disposed) return;
 
-        _playingSubject.add(playing);
+          _playingSubject.add(playing);
 
-        if (!_loadingSubject.value) {
-          _stateSubject.add(playing ? PlayerState.playing : PlayerState.paused);
-        }
-      },
-      onError: (e, s) {
-        _emitError(e, s, PlayerErrorType.native);
-      },
+          if (!_loadingSubject.value) {
+            _stateSubject.add(playing ? PlayerState.playing : PlayerState.paused);
+          }
+        },
+        onError: (e, s) {
+          _emitError(e, s, PlayerErrorType.native);
+        },
+      ),
     );
 
     // =========================
     // buffering
     // =========================
 
-    _bufferingSub = _player.stream.buffering.listen(
-      (loading) {
-        if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.buffering.listen(
+        (loading) {
+          if (_disposed) return;
 
-        _loadingSubject.add(loading);
+          _loadingSubject.add(loading);
 
-        if (loading) {
-          _stateSubject.add(PlayerState.buffering);
-        } else {
-          _stateSubject.add(_playingSubject.value ? PlayerState.playing : PlayerState.paused);
-        }
-      },
-      onError: (e, s) {
-        _emitError(e, s, PlayerErrorType.native);
-      },
+          if (loading) {
+            _stateSubject.add(PlayerState.buffering);
+          } else {
+            _stateSubject.add(_playingSubject.value ? PlayerState.playing : PlayerState.paused);
+          }
+        },
+        onError: (e, s) {
+          _emitError(e, s, PlayerErrorType.native);
+        },
+      ),
     );
 
     // =========================
     // width
     // =========================
 
-    _widthSub = _player.stream.width.listen((val) {
-      if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.width.listen((val) {
+        if (_disposed) return;
 
-      _widthSubject.add(val);
-    });
+        _widthSubject.add(val);
+      }),
+    );
 
     // =========================
     // height
     // =========================
 
-    _heightSub = _player.stream.height.listen((val) {
-      if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.height.listen((val) {
+        if (_disposed) return;
 
-      _heightSubject.add(val);
-    });
+        _heightSubject.add(val);
+      }),
+    );
 
     // =========================
     // completed
     // =========================
 
-    _completeSub = _player.stream.completed.listen(
-      (completed) {
-        if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.completed.listen(
+        (completed) {
+          if (_disposed) return;
 
-        if (!completed) return;
+          if (!completed) return;
 
-        _completeSubject.add(true);
+          _completeSubject.add(true);
 
-        _stateSubject.add(PlayerState.completed);
-      },
-      onError: (e, s) {
-        _emitError(e, s, PlayerErrorType.native);
-      },
+          _stateSubject.add(PlayerState.completed);
+        },
+        onError: (e, s) {
+          _emitError(e, s, PlayerErrorType.native);
+        },
+      ),
     );
 
     // =========================
     // error
     // =========================
 
-    _errorSub = _player.stream.error.distinct().listen((error) {
-      if (_disposed) return;
+    _subscriptions.add(
+      _player.stream.error.distinct().listen((error) {
+        if (_disposed) return;
 
-      final type = _mapErrorType(error.toString());
+        final type = _mapErrorType(error.toString());
 
-      _safeAddError(PlayerException(message: error.toString(), type: type));
+        _safeAddError(PlayerException(message: error.toString(), type: type));
 
-      _stateSubject.add(PlayerState.error);
-    });
-
-    // =========================
-    // collect
-    // =========================
-
-    _subscriptions.addAll([_playingSub!, _bufferingSub!, _widthSub!, _heightSub!, _completeSub!, _errorSub!]);
+        _stateSubject.add(PlayerState.error);
+      }),
+    );
   }
 
   // =========================
@@ -356,13 +332,6 @@ class MediaKitAdapter implements UnifiedPlayer {
     }
 
     _subscriptions.clear();
-
-    _playingSub = null;
-    _bufferingSub = null;
-    _widthSub = null;
-    _heightSub = null;
-    _completeSub = null;
-    _errorSub = null;
   }
 
   // =========================
@@ -417,9 +386,6 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   @override
   Widget getVideoWidget() {
-    if (_isAudioOnly) {
-      return const SizedBox.shrink();
-    }
     return RepaintBoundary(
       child: Video(
         controller: _controller,
@@ -465,19 +431,6 @@ class MediaKitAdapter implements UnifiedPlayer {
     final vol = (volume * 100).clamp(0.0, 100.0);
 
     await _player.setVolume(vol);
-  }
-
-  // =========================
-  // applyAudioOnlySettings
-  // =========================
-
-  Future<void> applyAudioOnlySettings() async {
-    final native = _player.platform as dynamic;
-    await native.setProperty('vid', 'no');
-    await native.setProperty('video', 'no');
-    await native.setProperty('vo', 'null');
-    await native.setProperty('hwdec', 'no');
-    await native.setProperty('audio-display', 'no');
   }
 
   // =========================
