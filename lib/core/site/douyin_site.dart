@@ -456,8 +456,10 @@ class DouyinSite implements LiveSite {
     // ⚡ 进房=实时获取（用户要求，浏览器式"打开网页"，不读状态缓存）
     // ① 先确保会话 cookie 新鲜：2023年写死的内置 ttwid 风控识别度高，浏览器每次访问都带新 ttwid
     await _refreshDynamicCookie(force: true);
-    // ② 双通道 × 2 轮自动重试（HTML失败换enter，两轮间再刷cookie+随机token，覆盖偶发风控）
-    for (var round = 1; round <= 2; round++) {
+    // ② 双通道 × 3 轮自动重试，退避间隔递增（400ms→1.5s→3s）
+    //    抖音单房间风控是"短暂时间窗"(几十秒)：两轮撞同一窗口=全失败；拉开间隔等窗口过去+换随机token即可恢复
+    const delays = [Duration(milliseconds: 400), Duration(milliseconds: 1500), Duration(milliseconds: 3000)];
+    for (var round = 1; round <= 3; round++) {
       try {
         return await _getRoomDetailByWebRidHtml(webRid);
       } catch (e) {
@@ -469,12 +471,12 @@ class DouyinSite implements LiveSite {
         DouyinSign.clearMsTokenOverride();
         CoreLog.error("douyin enter API获取房间失败(r$round): $e");
       }
-      if (round == 1) {
-        await Future.delayed(const Duration(milliseconds: 400));
+      if (round < 3) {
+        await Future.delayed(delays[round - 1]);
         await _refreshDynamicCookie(force: true);
       }
     }
-    // 双通道两轮全失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
+    // 双通道三轮全失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
     return LiveRoom(
       roomId: webRid,
       platform: Sites.douyinSite,
@@ -639,7 +641,7 @@ class DouyinSite implements LiveSite {
   /// 通过webRid获取直播间Web信息
   /// - [webRid] 直播间RID
   Future<Map> _getRoomDataByHtml(String webRid) async {
-    // 浏览器式取网页：优先用新鲜动态 cookie（HEAD 刚刷的 ttwid），内置 2023 年死 ttwid 仅作兜底
+    // 浏览器式取网页：依次尝试 新鲜动态cookie → 内置cookie → 无cookie裸请求（浏览器首访同款）
     await _refreshDynamicCookie();
     var baseCookie = _dynamicCookie.isNotEmpty ? _dynamicCookie : kDefaultCookie;
     var cookieWithToken = baseCookie;
@@ -647,7 +649,7 @@ class DouyinSite implements LiveSite {
     if (!cookieWithToken.contains("msToken=")) {
       cookieWithToken = "$cookieWithToken; msToken=$randomMs;";
     }
-    // 第一遍：新鲜动态 cookie（浏览器同款会话）
+    // 变体1：新鲜动态 cookie + msToken（浏览器会话同款）
     try {
       return _parseRoomState(await HttpClient.instance.getText(
         "https://live.douyin.com/$webRid",
@@ -660,16 +662,30 @@ class DouyinSite implements LiveSite {
         },
       ));
     } catch (e) {
-      CoreLog.w("douyin HTML(新cookie)解析失败，改用内置cookie重试: $e");
+      CoreLog.w("douyin HTML变体1(新cookie)解析失败: $e");
     }
-    // 第二遍：内置 cookie 兜底
+    // 变体2：内置 cookie
+    try {
+      return _parseRoomState(await HttpClient.instance.getText(
+        "https://live.douyin.com/$webRid",
+        queryParameters: {},
+        header: {
+          "Authority": kDefaultAuthority,
+          "Referer": kDefaultReferer,
+          "Cookie": kDefaultCookie,
+          "User-Agent": kDefaultUserAgent,
+        },
+      ));
+    } catch (e) {
+      CoreLog.w("douyin HTML变体2(内置cookie)解析失败: $e");
+    }
+    // 变体3：无 cookie 裸请求（浏览器首次访问无会话同款）
     return _parseRoomState(await HttpClient.instance.getText(
       "https://live.douyin.com/$webRid",
       queryParameters: {},
       header: {
         "Authority": kDefaultAuthority,
         "Referer": kDefaultReferer,
-        "Cookie": kDefaultCookie,
         "User-Agent": kDefaultUserAgent,
       },
     ));
