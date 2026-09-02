@@ -5,7 +5,7 @@ plugins {
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
-    id("kotlin-android")
+    // 移除 kotlin-android: AGP 9.0+ 内建 Kotlin(builtInKotlin=true), 显式声明会冲突
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
