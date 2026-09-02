@@ -2,26 +2,22 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 import 'player_pool.dart';
+import 'player_ui.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
 import '../models/player_engine.dart';
 import 'engine_fallback_manager.dart';
 import 'package:floating/floating.dart';
 import '../models/player_exception.dart';
-import 'package:remixicon/remixicon.dart';
 import '../models/player_error_type.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'package:pure_live/common/index.dart';
 import '../interface/unified_player_interface.dart';
-import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/player/utils/fullscreen.dart';
-import 'package:flutter_floating/flutter_floating.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/common/global/platform_utils.dart';
-import 'package:pure_live/player/utils/pip_window_widget.dart';
 import 'package:pure_live/modules/live_play/player_state.dart';
 import 'package:pure_live/player/core/live_audio_service.dart';
-import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
 class PlayerManager {
   final PlayerPool playerPool;
@@ -77,8 +73,6 @@ class PlayerManager {
   bool _disposed = false;
   bool _isSwitchingDueToFallback = false;
   bool _isHandlingError = false;
-  static const String _floatTag = "global_video_player";
-  Timer? _hideTimer;
   late Floating floating;
   LiveRoom? currentFloatRoom;
 
@@ -290,269 +284,14 @@ class PlayerManager {
     }
   }
 
-  void showAppFloating() {
-    floatingManager.disposeFloating(_floatTag);
-    _hideTimer?.cancel();
-    double maxSide = Platform.isWindows ? 350 : 220;
-    double ratio = currentVideoRatio;
-    double floatWidth;
-    double floatHeight;
-    if (ratio >= 1) {
-      floatWidth = maxSide;
-      floatHeight = maxSide / ratio;
-    } else {
-      floatHeight = maxSide * 1.2;
-      floatWidth = floatHeight * ratio;
-      if (floatWidth < 120) {
-        floatWidth = 120;
-        floatHeight = floatWidth / ratio;
-      }
-    }
+  void showAppFloating() => PlayerUi.showAppFloating(this);
 
-    void resetHideTimer() {
-      if (Platform.isAndroid || Platform.isIOS) {
-        _hideTimer?.cancel();
-        _hideTimer = Timer(const Duration(seconds: 3), () {
-          isHovered.value = false;
-        });
-      }
-    }
+  void closeAppFloating() => PlayerUi.closeAppFloating(this);
 
-    floatingManager.createFloating(
-      _floatTag,
-      FloatingOverlay(
-        MouseRegion(
-          onEnter: (_) {
-            if (Platform.isWindows || Platform.isMacOS) isHovered.value = true;
-          },
-          onExit: (_) {
-            if (Platform.isWindows || Platform.isMacOS) isHovered.value = false;
-          },
-          child: Container(
-            width: floatWidth,
-            height: floatHeight,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.black),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: getVideoWidget(videoFitIndex.value, fitList: SettingsService.to.player.videoFitArray),
-                ),
-                Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      closeAppFloating();
-                      if (currentFloatRoom != null) {
-                        AppNavigator.toLiveRoomDetail(liveRoom: currentFloatRoom!);
-                      }
-                    },
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-                Center(
-                  child: AnimatedOpacity(
-                    opacity: isHovered.value ? 1 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: IgnorePointer(
-                      ignoring: !isHovered.value,
-                      child: StreamBuilder<bool>(
-                        stream: onPlaying,
-                        initialData: isPlayingNow,
-                        builder: (context, snapshot) {
-                          var isPlay = snapshot.data ?? true;
-                          return IconButton(
-                            iconSize: 42,
-                            style: IconButton.styleFrom(backgroundColor: Colors.black45),
-                            icon: Icon(
-                              isPlay ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {
-                              togglePlayPause();
-                              resetHideTimer();
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: Obx(
-                    () => AnimatedOpacity(
-                      opacity: isHovered.value ? 1 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: IgnorePointer(
-                        ignoring: !isHovered.value,
-                        child: IconButton(
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(4),
-                          style: IconButton.styleFrom(backgroundColor: Colors.black45),
-                          icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                          onPressed: () async {
-                            await stop();
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        right: 50,
-        top: 100,
-        slideType: FloatingEdgeType.onRightAndTop,
-        params: FloatingParams(isSnapToEdge: false, snapToEdgeSpace: 10, dragOpacity: 0.8),
-      ),
-    );
-    floatingManager.getFloating(_floatTag).open(Get.context!);
-    isFloating.value = true;
-    if (Platform.isAndroid || Platform.isIOS) {
-      isHovered.value = true;
-      resetHideTimer();
-    }
-  }
+  Widget buildPiPOverlay() => PlayerUi.buildPiPOverlay(this);
 
-  void closeAppFloating() {
-    if (!isFloating.value) return;
-    floatingManager.disposeFloating(_floatTag);
-    isFloating.value = false;
-  }
-
-  Widget buildPiPOverlay() {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: MouseRegion(
-        onEnter: (_) => isHovered.value = true,
-        onExit: (_) => isHovered.value = false,
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(color: Colors.black),
-          child: Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanStart: (_) => windowManager.startDragging(),
-                onDoubleTap: () async {
-                  await exitPip();
-                },
-                child: getVideoWidget(videoFitIndex.value, fitList: SettingsService.to.player.videoFitArray),
-              ),
-              Center(
-                child: Obx(
-                  () => AnimatedOpacity(
-                    opacity: isHovered.value ? 1 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: StreamBuilder<bool>(
-                      stream: onPlaying,
-                      initialData: isPlayingNow,
-                      builder: (context, snapshot) {
-                        var isPlay = snapshot.data ?? true;
-                        return IconButton(
-                          iconSize: 42,
-                          style: IconButton.styleFrom(backgroundColor: Colors.black45),
-                          icon: Icon(
-                            isPlay ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            togglePlayPause();
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Obx(
-                  () => AnimatedOpacity(
-                    opacity: isHovered.value ? 1 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () async {
-                        await exitPip();
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-
-  Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) {
-    return PureLivePipWidget(
-      child: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(0),
-        child: StreamBuilder<bool>(
-          stream: onPlaying,
-          initialData: isPlayingNow,
-          builder: (context, snapshot) {
-            if (_currentPlayer == null) {
-              return _buildPlaceholder();
-            }
-            final boxFit = fitList[fitIndex];
-            final content = KeyedSubtree(
-              key: videoKey.value,
-              child: Container(
-                color: Colors.black,
-                width: double.infinity,
-                height: double.infinity,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                        child: Container(
-                          color: Colors.black,
-                          child: FittedBox(
-                            fit: boxFit,
-                            clipBehavior: Clip.hardEdge,
-                            child: StreamBuilder<List<int?>>(
-                              stream: CombineLatestStream.list([width, height]),
-                              builder: (context, snapshot) {
-                                final vW = snapshot.data?[0]?.toDouble() ?? 1920.0;
-                                final vH = snapshot.data?[1]?.toDouble() ?? 1080.0;
-                                return SizedBox(width: vW, height: vH, child: _currentPlayer!.getVideoWidget());
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (controls != null) Positioned.fill(child: controls),
-                  ],
-                ),
-              ),
-            );
-            if (!Platform.isAndroid) {
-              return content;
-            }
-            return PiPSwitcher(floating: floating, childWhenEnabled: content, childWhenDisabled: content);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.black,
-      child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", iconColor: Colors.white),
-    );
-  }
+  Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) =>
+      PlayerUi.buildVideo(this, fitIndex, controls: controls, fitList: fitList);
 
   Future<void> close() async {
     _sessionId++;
@@ -753,7 +492,6 @@ class PlayerManager {
     _disposed = true;
     _sessionId++;
     _isClosing = true;
-    _hideTimer?.cancel();
     closeAppFloating();
     _pipSubscription?.cancel();
     await _clearSubscriptions();
