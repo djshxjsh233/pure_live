@@ -275,8 +275,9 @@ class _DouyinCategoryPage extends StatelessWidget {
         children: [
           // 一级分区 chips（含"全部"）—— 仅当顶级分类有子分区
           if (controller.subAreas.isNotEmpty)
-            _buildChips(context, controller.subAreas, controller.selectedArea, (a) => controller.selectSub(a)),
+            _buildChips(context, controller.subAreas, controller.selectedArea, (a) => controller.selectSub(a), firstIsAll: true),
           // 二级分区 chips（如游戏→竞技→王者）—— 仅当一级分区还有下级
+          // 注意：二级 children 第一位就是真实游戏（如王者荣耀），不带"全部"
           if (controller.tertAreas.isNotEmpty)
             _buildChips(context, controller.tertAreas, controller.selectedArea, (a) => controller.selectTert(a)),
           const SizedBox(height: 4),
@@ -286,7 +287,8 @@ class _DouyinCategoryPage extends StatelessWidget {
     });
   }
 
-  Widget _buildChips(BuildContext context, List<LiveArea> areas, LiveArea? selected, ValueChanged<LiveArea> onTap) {
+  Widget _buildChips(BuildContext context, List<LiveArea> areas, LiveArea? selected, ValueChanged<LiveArea> onTap,
+      {bool firstIsAll = false}) {
     if (areas.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       height: 40,
@@ -297,7 +299,8 @@ class _DouyinCategoryPage extends StatelessWidget {
           children: areas.asMap().entries.map((e) {
             final idx = e.key;
             final area = e.value;
-            final isAll = idx == 0;
+            // 仅一级 chips 首位展示"全部"（=顶级分区自身）；二级 chips 首位就是真实游戏
+            final isAll = firstIsAll && idx == 0;
             final isSelected = area.areaId == (selected?.areaId ?? '');
             return Padding(
               padding: const EdgeInsets.only(right: 6),
