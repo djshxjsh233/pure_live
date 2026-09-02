@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'player_pool.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
-import 'preload_player_manager.dart';
 import '../models/player_engine.dart';
 import 'engine_fallback_manager.dart';
 import 'package:floating/floating.dart';
@@ -29,7 +28,6 @@ import 'package:pure_live/modules/live_play/live_play_controller.dart';
 class PlayerManager {
   final PlayerPool playerPool;
   final EngineFallbackManager fallbackManager;
-  final PreloadPlayerManager preloadManager;
   final AudioStreamLoader audioLoader = AudioStreamLoader();
   final LineFallbackManager lineManager;
   /// 所有线路/引擎都失败时回调：由上层重新获取流地址（如抖音播放URL失效刷新）
@@ -42,7 +40,6 @@ class PlayerManager {
   PlayerManager({
     required this.playerPool,
     required this.fallbackManager,
-    required this.preloadManager,
     required this.lineManager,
   }) {
     isInPip.listen((value) {
@@ -283,22 +280,6 @@ class PlayerManager {
     } catch (e, s) {
       log("destroy player error: e", stackTrace: s);
     }
-  }
-
-  Future<void> preload(String url, List<String> playUrls, Map<String, String> headers) async {
-    if (_disposed || _isClosing) return;
-    final standby = await playerPool.getPlayer(_runtimeEngine!);
-    await preloadManager.preload(standby, url, playUrls, headers);
-  }
-
-  Future<void> seamlessSwitch() async {
-    if (_disposed || _isClosing) return;
-    await preloadManager.switchToStandby();
-    final player = preloadManager.current;
-    if (player == null) return;
-    await _clearSubscriptions();
-    _currentPlayer = player;
-    await _bindPlayerStreams(player);
   }
 
   Future<void> togglePlayPause() async {

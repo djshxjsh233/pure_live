@@ -409,7 +409,6 @@ class DouyinSite implements LiveSite {
 
     // 读取用户唯一ID，用于弹幕连接
     // 似乎这个参数不是必须的，先随机生成一个
-    //var userUniqueId = await _getUserUniqueId(webRid);
     var userUniqueId = generateRandomNumber(12).toString();
 
     var room = roomData["data"]["room"];
@@ -599,18 +598,6 @@ class DouyinSite implements LiveSite {
         userUniqueId: userUniqueId,
         fallbackNick: fallbackNick,
         fallbackAvatar: fallbackAvatar);
-  }
-
-  /// 读取用户的唯一ID
-  /// - [webRid] 直播间RID
-  // ignore: unused_element
-  Future<String> _getUserUniqueId(String webRid) async {
-    try {
-      var webInfo = await _getRoomDataByHtml(webRid);
-      return webInfo["userStore"]["odin"]["user_unique_id"].toString();
-    } catch (e) {
-      return generateRandomNumber(12).toString();
-    }
   }
 
   /// 进入直播间前需要先获取cookie

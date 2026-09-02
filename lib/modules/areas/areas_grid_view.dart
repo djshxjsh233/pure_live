@@ -11,7 +11,6 @@ class AreaGridView extends StatefulWidget {
   const AreaGridView(this.tag, {super.key});
   AreasListController get controller => Get.find<AreasListController>(tag: tag);
 
-  bool get isFlatten => tag == Sites.douyinSite && tag == 'never_flatten';
   bool get isDouyin => tag == Sites.douyinSite;
 
   @override
@@ -27,15 +26,12 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    if (!widget.isFlatten) {
-      _listWorker = ever(widget.controller.categories, (_) => _createTabController());
-      _createTabController();
-      widget.controller.tabIndex.addListener(_handleExternalIndexChange);
-    }
+    _listWorker = ever(widget.controller.categories, (_) => _createTabController());
+    _createTabController();
+    widget.controller.tabIndex.addListener(_handleExternalIndexChange);
   }
 
   void _createTabController() {
-    if (widget.isFlatten) return;
     final list = widget.controller.categories;
     if (list.isEmpty) return;
 
@@ -84,40 +80,17 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
 
   @override
   void dispose() {
-    if (!widget.isFlatten) {
-      widget.controller.tabIndex.removeListener(_handleExternalIndexChange);
-      _listWorker?.dispose();
-      if (_tabController != null) {
-        _tabController!.removeListener(_handleInternalTabChange);
-        _tabController!.dispose();
-      }
+    widget.controller.tabIndex.removeListener(_handleExternalIndexChange);
+    _listWorker?.dispose();
+    if (_tabController != null) {
+      _tabController!.removeListener(_handleInternalTabChange);
+      _tabController!.dispose();
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isFlatten) {
-      return BasePageView<AreasListController, LiveArea>(
-        controller: widget.controller,
-        enableRefresh: true,
-        enableLoadMore: true,
-        customMobileBottomPadding: 85,
-        customDesktopBottomPadding: 135,
-        showScrollToTopBtn: SettingsService.to.page.showScrollToTopBtn.v,
-        showPageSizeSelector: SettingsService.to.page.showPageSizeSelector.v,
-        pageSizeOptions: SettingsService.to.page.pageSizeOptions,
-        emptyBuilder: (context) => EmptyView(
-          icon: Remix.apps_2_line,
-          title: i18n("empty_areas_title"),
-          subtitle: i18n("empty_areas_subtitle"),
-        ),
-        contentBuilder: (context, displayList, scrollController) {
-          return buildFlattenAreasView(displayList, scrollController);
-        },
-      );
-    }
-
     // ==================== 抖音：浏览器式分类（chips + 直播间瀑布流） ====================
     if (widget.isDouyin) {
       return Obx(() {

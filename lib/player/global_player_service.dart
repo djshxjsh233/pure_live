@@ -5,7 +5,6 @@ import 'models/player_engine.dart';
 import 'adapters/media_kit_adapter.dart';
 import 'core/line_fallback_manager.dart';
 import 'package:media_kit/media_kit.dart';
-import 'core/preload_player_manager.dart';
 import 'core/engine_fallback_manager.dart';
 import 'package:pure_live/common/global/platform_utils.dart';
 
@@ -42,7 +41,6 @@ class GlobalPlayerService {
         defaultEngine: PlayerEngine.mediaKit,
         supportedEngines: [PlayerEngine.mediaKit],
       ),
-      preloadManager: PreloadPlayerManager(),
       lineManager: LineFallbackManager(),
     );
 

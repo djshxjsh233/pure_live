@@ -12,10 +12,6 @@ class AreasListController extends ServerAllPageController<LiveArea> {
   final categories = <AppLiveCategory>[].obs;
   final Map<String, List<LiveArea>> _serverRawBackup = {};
 
-  List<LiveArea> _flattenRawAllData = [];
-
-  bool get isFlatten => site.id == Sites.douyinSite && site.id == 'never_flatten';
-
   // ==================== 抖音浏览器式分类（直播间 + 多级chips） ====================
   /// 当前顶级分类下的一级分区 chips（含"全部"= 顶级自身）
   final subAreas = <LiveArea>[].obs;
@@ -46,21 +42,15 @@ class AreasListController extends ServerAllPageController<LiveArea> {
 
     _serverRawBackup.clear();
 
-    if (isFlatten) {
-      _flattenRawAllData = channels.expand((e) => e.children).toList();
-      categories.assignAll(channels);
-      return _flattenRawAllData;
-    } else {
-      for (var cat in channels) {
-        _serverRawBackup[cat.id] = List.from(cat.children);
-      }
-      categories.assignAll(channels);
-      // 抖音：初始化顶级分类与默认选中（"全部"=顶级自身），并加载首个顶级分类的直播间
-      if (isDouyin) {
-        _resetDouyinTop(tabIndex.value, notifyRooms: true);
-      }
-      return _getCurrentTabAllChildren();
+    for (var cat in channels) {
+      _serverRawBackup[cat.id] = List.from(cat.children);
     }
+    categories.assignAll(channels);
+    // 抖音：初始化顶级分类与默认选中（"全部"=顶级自身），并加载首个顶级分类的直播间
+    if (isDouyin) {
+      _resetDouyinTop(tabIndex.value, notifyRooms: true);
+    }
+    return _getCurrentTabAllChildren();
   }
 
   // ==================== 抖音分类逻辑 ====================
@@ -159,9 +149,6 @@ class AreasListController extends ServerAllPageController<LiveArea> {
   // ==================== 原有逻辑（非抖音平台） ====================
 
   List<LiveArea> _getCurrentTabAllChildren() {
-    if (isFlatten) {
-      return _flattenRawAllData;
-    }
     int activeIndex = tabIndex.value;
     if (activeIndex >= categories.length || categories.isEmpty) {
       return [];
@@ -172,45 +159,6 @@ class AreasListController extends ServerAllPageController<LiveArea> {
 
   @override
   void processLocalPaging() {
-    if (isFlatten) {
-      final allItems = _flattenRawAllData;
-      totalCount.value = allItems.length;
-
-      if (allItems.isEmpty) {
-        list.clear();
-        canLoadMore.value = false;
-        pageEmpty.value = true;
-        finishRefreshControllers(IndicatorResult.noMore);
-        return;
-      }
-
-      if (Get.width > 680) {
-        int startIndex = (currentPage - 1) * pageSize.value;
-        if (startIndex >= allItems.length) {
-          currentPage = 1;
-          startIndex = 0;
-        }
-
-        int endIndex = startIndex + pageSize.value;
-        if (endIndex > allItems.length) endIndex = allItems.length;
-
-        final newData = allItems.sublist(startIndex, endIndex);
-        list.assignAll(newData);
-        canLoadMore.value = endIndex < allItems.length;
-        pageEmpty.value = list.isEmpty;
-        finishRefreshControllers(canLoadMore.value ? IndicatorResult.success : IndicatorResult.noMore);
-        if (currentPage == 1) {
-          scrollToTopImmediate();
-        }
-      } else {
-        list.assignAll(allItems);
-        canLoadMore.value = false;
-        pageEmpty.value = list.isEmpty;
-        finishRefreshControllers(IndicatorResult.noMore);
-      }
-      return;
-    }
-
     int activeIndex = tabIndex.value;
     if (categories.isEmpty || activeIndex >= categories.length) {
       list.clear();
