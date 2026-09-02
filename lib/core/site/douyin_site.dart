@@ -48,9 +48,8 @@ class DouyinSite implements LiveSite {
   static final Map<String, String> _webRidRoomIdCache = {};
 
   /// web_rid → 完整房间数据缓存（含 stream_url）。来源：列表接口/HTML页面/enter API
-  /// 进房时优先取缓存=零网络请求秒开，与浏览器从列表点进直接播放同理
+  /// 仅作元数据/流地址复用（房间号映射供弹幕与room_id_str），进房状态一律实时获取不读缓存
   static final Map<String, MapEntry<DateTime, Map>> _roomInfoCache = {};
-  static const Duration _roomCacheLifetime = Duration(minutes: 2);
 
   /// 动态 cookie 有效时长（ttwid 一般有效一年，这里保守点 30 分钟刷新一次）
   static const Duration _dynamicCookieLifetime = Duration(minutes: 30);
@@ -454,29 +453,22 @@ class DouyinSite implements LiveSite {
   /// - 返回直播间信息
   /// - 容错策略：API(abogus签名) → 强刷cookie重试API(防偶发风控) → HTML页面解析兜底
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
-    // 第一级：新鲜缓存（2分钟内，列表/关注刷新刚拿到的数据，秒开）
-    final cached = _roomInfoCache[webRid];
-    if (cached != null && DateTime.now().difference(cached.key) < _roomCacheLifetime) {
-      return _buildLiveRoomFromRoomMap(webRid, cached.value);
-    }
-    // 第二级：HTML 页面解析（浏览器式"打开网页"，SSR 内嵌最新房间+流地址）
+    // ⚡ 实时获取直播间状态（用户要求：进房=浏览器式"打开网页"，不采用状态缓存，保证最新）
+    // 缓存只用于复用元数据（web_rid→room_id 映射供弹幕/room_id_str），不缓存直播状态与流地址
+    // ① HTML 页面（浏览器主通道，SSR 内嵌最新房间+流地址；移动网络下与浏览器同样可达）
     try {
       return await _getRoomDetailByWebRidHtml(webRid);
     } catch (e) {
       CoreLog.error("douyin HTML获取房间失败: $e");
     }
-    // 第三级：enter API（web端流地址接口，风控较严，作补充）
+    // ② enter API（web端流地址接口，风控较严，作补充）
     try {
       return await _getRoomDetailByWebRidApi(webRid);
     } catch (e) {
       DouyinSign.clearMsTokenOverride();
       CoreLog.error("douyin enter API获取房间失败: $e");
     }
-    // 第四级：过期缓存兜底——即使状态可能略旧，也要让用户能播（主播仍在线时流地址有效）
-    if (cached != null) {
-      CoreLog.w("douyin 进房接口全失败，使用列表缓存兜底播放");
-      return _buildLiveRoomFromRoomMap(webRid, cached.value);
-    }
+    // 双通道都失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
     return LiveRoom(
       roomId: webRid,
       platform: Sites.douyinSite,
