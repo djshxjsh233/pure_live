@@ -14,19 +14,6 @@ import 'package:pure_live/common/global/platform/desktop_manager.dart';
 void main(List<String> args) async {
   await AppInitializer().initialize(args);
 
-  // 播放器预热：进入首页前完成内核初始化(media_kit加载libmpv需1~3秒)
-  // 否则首点直播间时才初始化 → 播放页灰色覆盖等待3-4秒
-  try {
-    final String savedKey = SettingsService.to.player.videoPlayerKey.v;
-    final String validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
-    final PlayerEngine engine = PlayerConsts.engines[validKey]!;
-    await GlobalPlayerService.instance.initialize(
-      defaultEngine: PlatformUtils.isDesktop ? PlayerEngine.mediaKit : engine,
-    );
-  } catch (e) {
-    print('播放器预热失败: $e');
-  }
-
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('zh')],
@@ -36,6 +23,26 @@ void main(List<String> args) async {
       child: MyApp(),
     ),
   );
+
+  // 播放器预热：runApp 后首帧再异步初始化(原生插件此时已注册, runApp前调用会MissingPlugin)
+  // 首页渲染期间完成 media_kit Player 创建(1~3秒), 用户点直播间时播放器已就绪→秒播不灰屏
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _prewarmPlayer();
+  });
+}
+
+Future<void> _prewarmPlayer() async {
+  try {
+    final String savedKey = SettingsService.to.player.videoPlayerKey.v;
+    final String validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+    final PlayerEngine engine = PlayerConsts.engines[validKey]!;
+    await GlobalPlayerService.instance.initialize(
+      defaultEngine: PlatformUtils.isDesktop ? PlayerEngine.mediaKit : engine,
+    );
+    print('播放器预热完成: ${engine.name}');
+  } catch (e) {
+    print('播放器预热失败: $e');
+  }
 }
 
 class MyApp extends StatefulWidget {
