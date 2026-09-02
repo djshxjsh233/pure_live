@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'package:flutter/widgets.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/event_bus.dart';
 import 'package:pure_live/modules/tags/live_tag.dart';
@@ -294,8 +295,10 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
 
   Future<void> _fullRefreshFilterRooms() async {
     loadding.value = true;
+    // 立即渲染当前（缓存）列表，避免整页干等——主播状态随后逐批更新
+    applyLocalFilter();
     List<LiveRoom> roomsToRefresh = getFilteredRoomsIgnoringLiveStatus();
-    await _refreshRoomDetails(roomsToRefresh);
+    await _refreshRoomDetails(roomsToRefresh, onBatchDone: () => applyLocalFilter());
     applyLocalFilter();
     loadding.value = false;
     EventBus.instance.emit('refresh_favorite_finish', true);
@@ -303,14 +306,15 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
 
   Future<void> _fullRefreshRooms() async {
     loadding.value = true;
+    applyLocalFilter();
     List<LiveRoom> roomsToRefresh = getAllRooms();
-    await _refreshRoomDetails(roomsToRefresh);
+    await _refreshRoomDetails(roomsToRefresh, onBatchDone: () => applyLocalFilter());
     applyLocalFilter();
     loadding.value = false;
     EventBus.instance.emit('refresh_favorite_finish', true);
   }
 
-  Future<void> _refreshRoomDetails(List<LiveRoom> rooms) async {
+  Future<void> _refreshRoomDetails(List<LiveRoom> rooms, {VoidCallback? onBatchDone}) async {
   final valid = rooms.where((r) => r.platform?.isNotEmpty ?? false).toList();
   if (valid.isEmpty) return;
 
@@ -354,6 +358,11 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
         list[idx] = updated;
         SettingsService.to.fav.favoriteRooms.v = list;
       }
+    }
+
+    // ✅ 每批完成后立即增量刷新UI，主播状态陆续展示，不用等全部刷新完
+    if (onBatchDone != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onBatchDone());
     }
   }
 
