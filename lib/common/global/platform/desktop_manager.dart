@@ -264,15 +264,14 @@ class CustomTitleBar extends StatelessWidget {
       final bgColor = isFullscreen || isDark ? Colors.black : theme.scaffoldBackgroundColor;
       final iconColor = isFullscreen || isDark ? Colors.white.withValues(alpha: 0.75) : Colors.black;
       final currentRoute = RouteObserverController.to.currentRoute.value;
-      final currentRouteIskSplash = currentRoute == RoutePath.kSplash;
       final currentSize = SettingsService.to.window.windowSize.value;
       final showSizeText = SettingsService.to.window.isTracking.value;
 
       return Container(
         height: 32,
         decoration: BoxDecoration(
-          gradient: currentRouteIskSplash ? bgGradient : null,
-          color: currentRouteIskSplash ? null : bgColor,
+          gradient: null,
+          color: bgColor,
         ),
         child: Row(
           children: [

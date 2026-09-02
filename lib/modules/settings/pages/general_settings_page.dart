@@ -17,12 +17,6 @@ class GeneralSettingsPage extends GetView<SettingsService> {
           context.buildGroupTitle(i18n("general")),
           context.buildModernCard([
             context.buildSwitchTile(
-              title: i18n('splash_animation'),
-              subtitle: i18n("splash_animation_subtitle"),
-              value: SettingsService.to.app.showSplashPage,
-              icon: Remix.rocket_2_line,
-            ),
-            context.buildSwitchTile(
               title: i18n('enable_auto_check_update'),
               subtitle: "",
               value: SettingsService.to.app.enableAutoCheckUpdate,

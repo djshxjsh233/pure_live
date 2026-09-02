@@ -92,7 +92,6 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
         return Obx(() {
           final themeColor = HexColor(SettingsService.to.theme.themeColorSwitch.v);
-          final showSplashPage = SettingsService.to.app.showSplashPage.v;
           final currentFactor = SettingsService.to.font.textScaleFactor.v;
 
           ThemeData lightTheme;
@@ -136,7 +135,7 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
             ),
             supportedLocales: context.supportedLocales,
             localizationsDelegates: context.localizationDelegates,
-            initialRoute: showSplashPage ? RoutePath.kSplash : RoutePath.kInitial,
+            initialRoute: RoutePath.kInitial,
             defaultTransition: Transition.native,
             routingCallback: (routing) {
               if (routing != null) {

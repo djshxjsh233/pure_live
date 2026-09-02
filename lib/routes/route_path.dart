@@ -1,7 +1,6 @@
 /// 路由路径
 class RoutePath {
   /// 首页
-  static const kSplash = "/splash";
 
   /// 首页
   static const kInitial = "/home";

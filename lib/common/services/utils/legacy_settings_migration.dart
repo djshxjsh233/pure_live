@@ -52,7 +52,6 @@ class LegacySettingsMigration {
         "enableScreenKeepOn": HivePrefUtil.getBool("enableScreenKeepOn"),
         "enableAutoCheckUpdate": HivePrefUtil.getBool("enableAutoCheckUpdate"),
         "enableFullScreenDefault": HivePrefUtil.getBool("enableFullScreenDefault"),
-        "showSplashPage": HivePrefUtil.getBool("showSplashPage"),
         "textScaleFactor": HivePrefUtil.getDouble("textScaleFactor"),
         "crossAxisSpacing": HivePrefUtil.getDouble("crossAxisSpacing"),
         "mainAxisSpacing": HivePrefUtil.getDouble("mainAxisSpacing"),
