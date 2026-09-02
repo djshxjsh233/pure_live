@@ -73,6 +73,8 @@ class PlayerManager {
   bool _disposed = false;
   bool _isSwitchingDueToFallback = false;
   bool _isHandlingError = false;
+  /// 硬解已失败并降级软解（codec错误链路：换解码方式而非重取流）
+  bool _hardwareDecodeFailed = false;
   late Floating floating;
   LiveRoom? currentFloatRoom;
 
@@ -382,6 +384,17 @@ class PlayerManager {
         }
       }
 
+      // ★ 硬解失败 → 降级软解重放（codec 错误重取流无意义，先换解码方式）
+      if (error.type == PlayerErrorType.codec && !_hardwareDecodeFailed && _currentPlayer != null) {
+        _hardwareDecodeFailed = true;
+        log("🎨 硬解失败，降级软解后重放");
+        await _currentPlayer!.setHardwareDecode(false);
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (!_isSessionValid(mySessionId)) return;
+        await play(_currentUrl!, _currentPlayUrls, _currentHeaders, room: currentFloatRoom);
+        return;
+      }
+
       log(error.type.toString());
       if (!lineSwitched && fallbackManager.shouldFallback(error)) {
         final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
@@ -424,6 +437,7 @@ class PlayerManager {
         if (event) {
           hasError.value = false;
           _refreshUrlsCount = 0;
+          _hardwareDecodeFailed = false;
           _stateSubject.add(PlayerState.playing);
           if (_isSwitchingDueToFallback) {
             _isSwitchingDueToFallback = false;

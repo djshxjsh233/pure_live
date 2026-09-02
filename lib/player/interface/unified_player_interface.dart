@@ -31,6 +31,9 @@ abstract class UnifiedPlayer {
 
   Future<void> setVolume(double volume);
 
+  /// 切换硬件解码（硬解失败时降级软解）
+  Future<void> setHardwareDecode(bool enabled);
+
   /// 获取渲染组件
   /// [fitIndex] 对应 BoxFit 的索引
   /// [controls] 覆盖在视频上的 UI 控制层

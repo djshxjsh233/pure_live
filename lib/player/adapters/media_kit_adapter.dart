@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:rxdart/rxdart.dart';
 import '../models/player_state.dart';
 import '../models/player_exception.dart';
@@ -19,6 +20,8 @@ class MediaKitAdapter implements UnifiedPlayer {
   bool _disposed = false;
 
   bool _listenerBound = false;
+
+  bool _softwareDecode = false;
 
   String? _currentUrl;
 
@@ -84,6 +87,9 @@ class MediaKitAdapter implements UnifiedPlayer {
         await native.setProperty('cache-pause', 'yes');
         await native.setProperty('demuxer-readahead-secs', '30');
         await native.setProperty('network-timeout', '30');
+
+        // ★ 硬解失败自动回退软件解码（mpv 内部兜底，防黑屏/花屏）
+        await native.setProperty('hwdec-software-fallback', '1');
 
         if (SettingsService.to.player.customPlayerOutput.v) {
           await native.setProperty('ao', SettingsService.to.player.audioOutputDriver.v);
@@ -431,6 +437,24 @@ class MediaKitAdapter implements UnifiedPlayer {
     final vol = (volume * 100).clamp(0.0, 100.0);
 
     await _player.setVolume(vol);
+  }
+
+  /// 切换硬件解码：硬解失败时降级软解重放
+  @override
+  Future<void> setHardwareDecode(bool enabled) async {
+    if (_disposed) return;
+    final native = _player.platform as dynamic;
+    if (enabled) {
+      // 恢复：按用户硬解开关决定（enableCodec 关 = 本来就该软解）
+      await native.setProperty(
+        'hwdec',
+        SettingsService.to.player.enableCodec.v ? 'auto' : 'no',
+      );
+    } else {
+      await native.setProperty('hwdec', 'no');
+    }
+    _softwareDecode = !enabled;
+    log('setHardwareDecode: ${enabled ? "恢复硬解" : "降级软解"}');
   }
 
   // =========================
