@@ -322,7 +322,7 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
 
   final int batch = refreshConfigController.maxConcurrentRefresh.value > 0
       ? refreshConfigController.maxConcurrentRefresh.value
-      : 10;
+      : 5;
 
   for (int i = 0; i < valid.length; i += batch) {
     final end = i + batch > valid.length ? valid.length : i + batch;
@@ -358,6 +358,11 @@ class FavoriteController extends LocalReactivePageController<LiveRoom> with GetT
         list[idx] = updated;
         SettingsService.to.fav.favoriteRooms.v = list;
       }
+    }
+
+    // 批间小延迟：避免连续快速请求触发抖音风控(尤其enter接口)
+    if (i + batch < valid.length) {
+      await Future.delayed(const Duration(milliseconds: 300));
     }
 
     // ✅ 每批完成后立即增量刷新UI，主播状态陆续展示，不用等全部刷新完
