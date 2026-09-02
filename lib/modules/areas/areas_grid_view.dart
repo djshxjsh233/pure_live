@@ -290,10 +290,10 @@ class _DouyinCategoryPage extends StatelessWidget {
         children: [
           // 一级分区 chips（含"全部"）—— 仅当顶级分类有子分区
           if (controller.subAreas.isNotEmpty)
-            _buildChips(controller.subAreas, controller.selectedArea, (a) => controller.selectSub(a)),
+            _buildChips(context, controller.subAreas, controller.selectedArea, (a) => controller.selectSub(a)),
           // 二级分区 chips（如游戏→竞技→王者）—— 仅当一级分区还有下级
           if (controller.tertAreas.isNotEmpty)
-            _buildChips(controller.tertAreas, controller.selectedArea, (a) => controller.selectTert(a)),
+            _buildChips(context, controller.tertAreas, controller.selectedArea, (a) => controller.selectTert(a)),
           const SizedBox(height: 4),
           Expanded(child: _buildRooms(context)),
         ],
@@ -301,7 +301,7 @@ class _DouyinCategoryPage extends StatelessWidget {
     });
   }
 
-  Widget _buildChips(List<LiveArea> areas, LiveArea? selected, ValueChanged<LiveArea> onTap) {
+  Widget _buildChips(BuildContext context, List<LiveArea> areas, LiveArea? selected, ValueChanged<LiveArea> onTap) {
     if (areas.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       height: 40,

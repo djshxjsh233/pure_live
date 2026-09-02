@@ -120,7 +120,7 @@ class AreasListController extends ServerAllPageController<LiveArea> {
     final page = _roomPage;
     try {
       final list = await site.liveSite.getCategoryRooms(
-        category: area,
+        area,
         page: page,
         pageSize: 30,
       );
