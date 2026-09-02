@@ -51,7 +51,7 @@ android {
         applicationId = "com.mystyle.purelive"
         minSdk = flutter.minSdkVersion 
         multiDexEnabled = true 
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 37 // 面向 Android 17
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
