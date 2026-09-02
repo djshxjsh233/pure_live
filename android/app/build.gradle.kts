@@ -32,7 +32,7 @@ val keystoreProperties = Properties().apply { // 同样添加了导入
 
 android {
     namespace = "com.mystyle.purelive"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37 // Android 17 (依赖file_picker/intent_plus等已要求compileSdk37)
     ndkVersion = flutter.ndkVersion
     lint {
         disable.add("NullSafeMutableLiveData")
