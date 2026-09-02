@@ -453,22 +453,28 @@ class DouyinSite implements LiveSite {
   /// - 返回直播间信息
   /// - 容错策略：API(abogus签名) → 强刷cookie重试API(防偶发风控) → HTML页面解析兜底
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
-    // ⚡ 实时获取直播间状态（用户要求：进房=浏览器式"打开网页"，不采用状态缓存，保证最新）
-    // 缓存只用于复用元数据（web_rid→room_id 映射供弹幕/room_id_str），不缓存直播状态与流地址
-    // ① HTML 页面（浏览器主通道，SSR 内嵌最新房间+流地址；移动网络下与浏览器同样可达）
-    try {
-      return await _getRoomDetailByWebRidHtml(webRid);
-    } catch (e) {
-      CoreLog.error("douyin HTML获取房间失败: $e");
+    // ⚡ 进房=实时获取（用户要求，浏览器式"打开网页"，不读状态缓存）
+    // ① 先确保会话 cookie 新鲜：2023年写死的内置 ttwid 风控识别度高，浏览器每次访问都带新 ttwid
+    await _refreshDynamicCookie(force: true);
+    // ② 双通道 × 2 轮自动重试（HTML失败换enter，两轮间再刷cookie+随机token，覆盖偶发风控）
+    for (var round = 1; round <= 2; round++) {
+      try {
+        return await _getRoomDetailByWebRidHtml(webRid);
+      } catch (e) {
+        CoreLog.error("douyin HTML获取房间失败(r$round): $e");
+      }
+      try {
+        return await _getRoomDetailByWebRidApi(webRid);
+      } catch (e) {
+        DouyinSign.clearMsTokenOverride();
+        CoreLog.error("douyin enter API获取房间失败(r$round): $e");
+      }
+      if (round == 1) {
+        await Future.delayed(const Duration(milliseconds: 400));
+        await _refreshDynamicCookie(force: true);
+      }
     }
-    // ② enter API（web端流地址接口，风控较严，作补充）
-    try {
-      return await _getRoomDetailByWebRidApi(webRid);
-    } catch (e) {
-      DouyinSign.clearMsTokenOverride();
-      CoreLog.error("douyin enter API获取房间失败: $e");
-    }
-    // 双通道都失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
+    // 双通道两轮全失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
     return LiveRoom(
       roomId: webRid,
       platform: Sites.douyinSite,
@@ -633,13 +639,15 @@ class DouyinSite implements LiveSite {
   /// 通过webRid获取直播间Web信息
   /// - [webRid] 直播间RID
   Future<Map> _getRoomDataByHtml(String webRid) async {
-    // 浏览器式取网页：cookie 带内置 ttwid + 随机 msToken（贴近真实浏览器会话，页面更易通过风控）
-    var cookieWithToken = kDefaultCookie;
+    // 浏览器式取网页：优先用新鲜动态 cookie（HEAD 刚刷的 ttwid），内置 2023 年死 ttwid 仅作兜底
+    await _refreshDynamicCookie();
+    var baseCookie = _dynamicCookie.isNotEmpty ? _dynamicCookie : kDefaultCookie;
+    var cookieWithToken = baseCookie;
     final randomMs = _serverMsToken.isEmpty ? DouyinSign.generateMsToken(120) : _serverMsToken;
     if (!cookieWithToken.contains("msToken=")) {
       cookieWithToken = "$cookieWithToken; msToken=$randomMs;";
     }
-    // 第一遍：直接 GET（浏览器首次访问同款）
+    // 第一遍：新鲜动态 cookie（浏览器同款会话）
     try {
       return _parseRoomState(await HttpClient.instance.getText(
         "https://live.douyin.com/$webRid",
@@ -652,17 +660,16 @@ class DouyinSite implements LiveSite {
         },
       ));
     } catch (e) {
-      CoreLog.w("douyin HTML直连解析失败，改用动态cookie重试: $e");
+      CoreLog.w("douyin HTML(新cookie)解析失败，改用内置cookie重试: $e");
     }
-    // 第二遍：带动态 cookie 重试
-    var dyCookie = await _getWebCookie(webRid);
+    // 第二遍：内置 cookie 兜底
     return _parseRoomState(await HttpClient.instance.getText(
       "https://live.douyin.com/$webRid",
       queryParameters: {},
       header: {
         "Authority": kDefaultAuthority,
         "Referer": kDefaultReferer,
-        "Cookie": dyCookie,
+        "Cookie": kDefaultCookie,
         "User-Agent": kDefaultUserAgent,
       },
     ));
