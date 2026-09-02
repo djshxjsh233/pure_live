@@ -24,6 +24,7 @@ void main(List<String> args) async {
       child: MyApp(),
     ),
   );
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
