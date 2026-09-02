@@ -8,6 +8,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/player/core/player_manager.dart';
+import 'package:pure_live/player/utils/pip_window_widget.dart';
 
 /// 播放器 UI 层：悬浮窗 / PiP / 视频渲染组件
 /// 由 PlayerManager 薄委托调用，与播放内核解耦。
