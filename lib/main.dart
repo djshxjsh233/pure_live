@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer';
 import 'dart:async';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
@@ -13,6 +14,19 @@ import 'package:pure_live/common/global/platform/desktop_manager.dart';
 
 void main(List<String> args) async {
   await AppInitializer().initialize(args);
+
+  // 播放器预热：进入首页前完成内核初始化(media_kit加载libmpv需1~3秒)
+  // 否则首点直播间时才初始化 → 播放页灰色覆盖等待3-4秒
+  try {
+    final String savedKey = SettingsService.to.player.videoPlayerKey.v;
+    final String validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+    final PlayerEngine engine = PlayerConsts.engines[validKey]!;
+    await GlobalPlayerService.instance.initialize(
+      defaultEngine: PlatformUtils.isDesktop ? PlayerEngine.mediaKit : engine,
+    );
+  } catch (e) {
+    developer.log('播放器预热失败: $e');
+  }
 
   runApp(
     EasyLocalization(
@@ -39,7 +53,7 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
     if (PlatformUtils.isDesktop) {
       DesktopManager.initializeListeners(this);
     }
-    initGlopalPlayer();
+    // 播放器已在 main() runApp 前预热完成
   }
 
   Future<void> initGlopalPlayer() async {
