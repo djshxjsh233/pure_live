@@ -122,7 +122,7 @@ class AreasListController extends ServerAllPageController<LiveArea> {
       final list = await site.liveSite.getCategoryRooms(
         area,
         page: page,
-        pageSize: 30,
+        pageSize: 30, // 按需请求，实际返回由服务器决定（实测每页上限20）
       );
       if (seq != _loadSeq) return; // 过期请求丢弃
       if (refresh) {
@@ -130,7 +130,8 @@ class AreasListController extends ServerAllPageController<LiveArea> {
       } else {
         rooms.addAll(list);
       }
-      roomsMore = list.length >= 30;
+      // 服务器实测每页最多返回20个；返回满额说明后面还有更多，可继续上滑翻页
+      roomsMore = list.length >= 20;
       if (roomsMore) _roomPage++;
     } catch (e) {
       if (seq != _loadSeq) return;

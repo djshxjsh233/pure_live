@@ -21,7 +21,6 @@ class AreaGridView extends StatefulWidget {
 class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMixin {
   TabController? _tabController;
   Worker? _listWorker;
-  final ScrollController _roomScroll = ScrollController();
 
   AreasListController get controller => widget.controller;
 
@@ -32,16 +31,6 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
       _listWorker = ever(widget.controller.categories, (_) => _createTabController());
       _createTabController();
       widget.controller.tabIndex.addListener(_handleExternalIndexChange);
-    }
-    if (widget.isDouyin) {
-      _roomScroll.addListener(_handleRoomScroll);
-    }
-  }
-
-  void _handleRoomScroll() {
-    if (!_roomScroll.hasClients) return;
-    if (_roomScroll.position.extentAfter < 300) {
-      controller.loadMoreRooms();
     }
   }
 
@@ -103,8 +92,6 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
         _tabController!.dispose();
       }
     }
-    _roomScroll.removeListener(_handleRoomScroll);
-    _roomScroll.dispose();
     super.dispose();
   }
 
@@ -168,7 +155,6 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
                 children: categoriesList.asMap().entries.map((entry) {
                   return _DouyinCategoryPage(
                     controller: widget.controller,
-                    scrollController: _roomScroll,
                   );
                 }).toList(),
               ),
@@ -280,8 +266,7 @@ class _AreaGridViewState extends State<AreaGridView> with TickerProviderStateMix
 /// 抖音单个顶级分类页：chips + 直播间瀑布流
 class _DouyinCategoryPage extends StatelessWidget {
   final AreasListController controller;
-  final ScrollController scrollController;
-  const _DouyinCategoryPage({required this.controller, required this.scrollController});
+  const _DouyinCategoryPage({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -368,7 +353,6 @@ class _DouyinCategoryPage extends StatelessWidget {
             final crossAxisCount = width > 1280 ? 8 : (width > 960 ? 6 : (width > 640 ? 4 : 2));
             return WaterfallFlow.builder(
               padding: const EdgeInsets.fromLTRB(6, 6, 6, 80),
-              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
               gridDelegate: SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
                 lastChildLayoutTypeBuilder: (index) => LastChildLayoutType.none,
