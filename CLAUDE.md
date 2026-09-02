@@ -75,7 +75,7 @@ The application uses **GetX** for state management, routing, and dependency inje
 - Bindings are used for lazy loading of controllers
 
 ### Platform Support
-- **Android/TV**: Multiple video players (ExoPlayer, IjkPlayer, MpvPlayer)
+- **Android/TV**: MPV Player via media_kit (single kernel)
 - **Windows**: Media Kit for video playback, Windows-specific utilities
 - **Mobile**: Touch-optimized UI with gestures and mobile-specific features
 - **Cross-platform**: SharedPreferences for settings, file system access

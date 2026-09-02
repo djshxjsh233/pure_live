@@ -818,21 +818,22 @@ class PlayerManager {
       if (!lineSwitched && fallbackManager.shouldFallback(error)) {
         final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
         if (nextEngine == _runtimeEngine) {
-          log("skip fallback: nextEngine(${nextEngine.name}) == currentEngine(${_runtimeEngine?.name})");
+          // 单引擎(mediaKit)无降级目标：不 return，继续走下方自动恢复(重取流地址)
+          log("skip fallback: 单引擎无降级目标，尝试自动恢复(重取流地址)");
+        } else {
+          log(
+            "fallback engine: "
+            "${_runtimeEngine?.name} -> ${nextEngine.name}",
+          );
+          _isSwitchingDueToFallback = true;
+          await Future.delayed(const Duration(milliseconds: 1200));
+          if (!_isSessionValid(mySessionId)) return;
+          await switchEngine(nextEngine, isManual: false);
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (!_isSessionValid(mySessionId)) return;
+          await replay();
           return;
         }
-        log(
-          "fallback engine: "
-          "${_runtimeEngine?.name} -> ${nextEngine.name}",
-        );
-        _isSwitchingDueToFallback = true;
-        await Future.delayed(const Duration(milliseconds: 1200));
-        if (!_isSessionValid(mySessionId)) return;
-        await switchEngine(nextEngine, isManual: false);
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (!_isSessionValid(mySessionId)) return;
-        await replay();
-        return;
       }
 
       // ★ 所有可自动恢复手段（切线路/降引擎）穷尽：请求上层重新获取流地址

@@ -16,8 +16,4 @@
 -dontwarn com.google.android.play.core.tasks.OnFailureListener
 -dontwarn com.google.android.play.core.tasks.OnSuccessListener
 -dontwarn com.google.android.play.core.tasks.Task
--keep class tv.danmaku.ijk.media.player.** {*; }
--dontwarn tv.danmaku.ijk.media.**
--keep interface tv.danmaku.ijk.media.player.** { *; }
--keep class androidx.media3.exoplayer.video.** { *; }
 -dontwarn android.view.Choreographer$VsyncCallback
