@@ -100,7 +100,11 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     _initBackInterceptor();
     _initDebounce();
     _initTimer();
-    await _preloadEmoji();
+    // ★ emoji 预加载不阻塞播放器启动（本地资源+图片解码可能耗时/异常挂起,
+    // 之前 await 导致灰屏卡死: 弹幕表情是锦上添花, 播放必须先行)
+    unawaited(_preloadEmoji().catchError((Object e) {
+      CoreLog.error('emoji preload failed: $e');
+    }));
     _initPlayer();
   }
 

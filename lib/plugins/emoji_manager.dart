@@ -13,6 +13,8 @@ class EmojiManager {
 
   Future<void> preload(String platform) async {
     if (_loadedPlatform == platform) return;
+    final sw = Stopwatch()..start();
+    print('EmojiManager: preload 开始 platform=$platform');
     EmojiAtlas.instance.clear();
     _tempCache.clear();
     _loadedPlatform = null;
@@ -22,6 +24,7 @@ class EmojiManager {
       final str = await rootBundle.loadString('assets/emo/json/$platform.json');
       list = UnifiedEmojiModel.parseToUnifiedList(str, platform);
     } catch (_) {
+      print('EmojiManager: preload 无资源/失败 platform=$platform');
       return;
     }
 
@@ -74,6 +77,7 @@ class EmojiManager {
     }
     _tempCache.clear();
     _loadedPlatform = platform;
+    print('EmojiManager: preload 完成 ${sw.elapsedMilliseconds}ms platform=$platform');
   }
 
   void release() {
