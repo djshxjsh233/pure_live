@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pure_live/plugins/file_utils.dart';
+import 'package:pure_live/common/services/gist_backup_service.dart';
+import 'package:pure_live/common/services/settings/backup_controller.dart';
 import 'package:pure_live/modules/backup/scan_page.dart';
-import 'package:pure_live/modules/auth/auth_controller.dart';
 import 'package:pure_live/common/global/app_path_manager.dart';
 import 'package:pure_live/plugins/backup_recovery_service.dart';
 import 'package:pure_live/common/services/settings/log_controller.dart';
@@ -45,87 +47,48 @@ class _BackupPageState extends State<BackupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(i18n("backup_recover"))),
-      body: Obx(() {
-        final auth = Get.find<AuthController>();
-        return ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          children: [
-            context.buildGroupTitle(i18n("cloud_backup")),
-            context.buildModernCard([
+      body: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
+          context.buildGroupTitle(i18n("cloud_backup")),
+          context.buildModernCard([
+            // ★ Gist 云备份（私有 Gist，替代原 Firebase 云备份）
+            context.buildTile(
+              icon: Remix.github_line,
+              title: i18n("gist_backup"),
+              subtitle: GistBackupService.token == null || GistBackupService.token!.isEmpty
+                  ? i18n("gist_setup")
+                  : '${i18n("gist_ready")} · ${_maskToken(GistBackupService.token!)}',
+              trailing: Icon(Remix.arrow_right_s_line, color: Theme.of(context).colorScheme.outline),
+              onTap: _showGistConfigDialog,
+            ),
+            context.buildTile(
+              icon: Remix.cloud_upload_line,
+              title: i18n("upload_backup"),
+              subtitle: i18n("upload_backup_subtitle"),
+              onTap: _uploadToGist,
+            ),
+            context.buildTile(
+              icon: Remix.cloud_download_line,
+              title: i18n("restore_from_gist"),
+              subtitle: i18n("restore_from_gist_subtitle"),
+              onTap: _restoreFromGist,
+            ),
+            context.buildTile(
+              icon: Remix.web_line,
+              title: i18n("webdav"),
+              subtitle: i18n("backup_to_webdav"),
+              onTap: () => Get.toNamed(RoutePath.kWebDavPage),
+            ),
+            if (Platform.isAndroid || Platform.isIOS)
               context.buildTile(
-                iconWidget: auth.isConnecting
-                    ? RotationTransition(
-                        turns: const AlwaysStoppedAnimation(0.5),
-                        child: Icon(Remix.refresh_line, color: Theme.of(context).colorScheme.primary, size: 22),
-                      )
-                    : Icon(
-                        Remix.account_circle_line,
-                        color: auth.isInitSuccess ? null : Theme.of(context).colorScheme.error,
-                        size: 22,
-                      ),
-                isLong: !auth.isInitSuccess,
-                subtitleColor: auth.isInitSuccess ? null : Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
-                title: auth.isConnecting
-                    ? i18n('firebase_connecting_title')
-                    : (auth.isInitSuccess
-                          ? (auth.isLogin ? i18n('firebase_mine') : i18n('firebase_sign_in'))
-                          : i18n('firebase_init_failed')),
-                subtitle: auth.isConnecting
-                    ? i18n('firebase_connecting_desc')
-                    : (auth.isInitSuccess
-                          ? (auth.isLogin ? i18n('firebase_logged_in_desc') : i18n('firebase_login_desc'))
-                          : i18n('firebase_init_failed_desc')),
-                trailing: auth.isConnecting
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                        ),
-                      )
-                    : null,
-                onTap: () {
-                  if (!auth.isInitSuccess) {
-                    if (auth.isConnecting) {
-                      Get.snackbar(
-                        i18n('firebase_init_failed'),
-                        i18n('firebase_connecting_desc'),
-                        snackPosition: SnackPosition.bottom,
-                      );
-                      return;
-                    }
-                    Get.snackbar(
-                      i18n('firebase_init_failed'),
-                      i18n('firebase_init_failed_desc'),
-                      snackPosition: SnackPosition.bottom,
-                    );
-                    auth.startAsyncInit();
-                    return;
-                  }
-                  if (auth.isLogin) {
-                    Get.toNamed(RoutePath.kMine);
-                  } else {
-                    Get.toNamed(RoutePath.kSignIn);
-                  }
-                },
+                icon: Remix.qr_code_line,
+                title: i18n("sync_tv_data"),
+                subtitle: i18n("sync_tv_data_subtitle"),
+                onTap: () => Get.to(() => const ScanCodePage()),
               ),
-
-              context.buildTile(
-                icon: Remix.cloud_line,
-                title: i18n("webdav"),
-                subtitle: i18n("backup_to_webdav"),
-                onTap: () => Get.toNamed(RoutePath.kWebDavPage),
-              ),
-              if (Platform.isAndroid || Platform.isIOS)
-                context.buildTile(
-                  icon: Remix.qr_code_line,
-                  title: i18n("sync_tv_data"),
-                  subtitle: i18n("sync_tv_data_subtitle"),
-                  onTap: () => Get.to(() => const ScanCodePage()),
-                ),
-            ]),
+          ]),
             const SizedBox(height: 20),
             context.buildGroupTitle(i18n("local_backup")),
             context.buildModernCard([
@@ -202,8 +165,127 @@ class _BackupPageState extends State<BackupPage> {
             ]),
             const SizedBox(height: 32),
           ],
-        );
-      }),
+        ),
     );
+  }
+
+  // ==================== Gist 云备份 ====================
+
+  String _maskToken(String token) {
+    if (token.length <= 6) return '****';
+    return '${token.substring(0, 3)}...${token.substring(token.length - 3)}';
+  }
+
+  Future<void> _showGistConfigDialog() async {
+    final controller = TextEditingController(text: GistBackupService.token ?? '');
+    final hasToken = (GistBackupService.token?.isNotEmpty ?? false);
+    await showDialog<void>(
+      context: Get.context!,
+      builder: (context) => AlertDialog(
+        title: Text(i18n("gist_backup")),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: i18n("gist_token_hint"),
+                hintText: 'github_pat_...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(i18n("gist_token_desc"), style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+        actions: [
+          if (hasToken)
+            TextButton(
+              onPressed: () async {
+                GistBackupService.clearToken();
+                ToastUtil.show(i18n("gist_token_cleared"));
+                Navigator.of(context).pop();
+              },
+              child: Text(i18n("clear"), style: const TextStyle(color: Colors.red)),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(i18n("cancel")),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final value = controller.text.trim();
+              if (value.isEmpty) {
+                ToastUtil.show(i18n("gist_token_hint"));
+                return;
+              }
+              // 校验令牌
+              try {
+                final ok = await GistBackupService.verifyToken(value);
+                if (!ok) {
+                  ToastUtil.show(i18n("gist_invalid_token"));
+                  return;
+                }
+              } catch (_) {
+                ToastUtil.show(i18n("gist_invalid_token"));
+                return;
+              }
+              GistBackupService.setToken(value);
+              Navigator.of(context).pop();
+              ToastUtil.show(i18n("gist_ready"));
+            },
+            child: Text(i18n("save")),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _uploadToGist() async {
+    final token = GistBackupService.token;
+    if (token == null || token.isEmpty) {
+      ToastUtil.show(i18n("gist_setup"));
+      return;
+    }
+    try {
+      final backup = Get.find<BackupController>();
+      final content = jsonEncode(backup.exportAllSettings());
+      final id = await GistBackupService.upload(token, content);
+      ToastUtil.show('${i18n("upload_backup")} ✅ gist:$id');
+    } on GistException catch (e) {
+      ToastUtil.show('${i18n("gist_error")}: ${e.message}');
+    } catch (e) {
+      ToastUtil.show('${i18n("gist_error")}: $e');
+    }
+  }
+
+  Future<void> _restoreFromGist() async {
+    final token = GistBackupService.token;
+    if (token == null || token.isEmpty) {
+      ToastUtil.show(i18n("gist_setup"));
+      return;
+    }
+    final confirm = await showDialog<bool>(
+      context: Get.context!,
+      builder: (context) => AlertDialog(
+        title: Text(i18n("restore_from_gist")),
+        content: Text(i18n("restore_confirm")),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(i18n("cancel"))),
+          ElevatedButton(onPressed: () => Navigator.of(context).pop(true), child: Text(i18n("confirm"))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      final content = await GistBackupService.read(token);
+      final data = jsonDecode(content) as Map<String, dynamic>;
+      Get.find<BackupController>().importAllSettings(data);
+      ToastUtil.show(i18n("gist_restored"));
+    } on GistException catch (e) {
+      ToastUtil.show('${i18n("gist_error")}: ${e.message}');
+    } catch (e) {
+      ToastUtil.show('${i18n("gist_error")}: $e');
+    }
   }
 }

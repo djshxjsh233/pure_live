@@ -1,9 +1,7 @@
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_page.dart';
-import 'package:pure_live/modules/auth/mine_page.dart';
 import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
-import 'package:pure_live/modules/auth/sign_in_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/backup/backup_page.dart';
 import 'package:pure_live/modules/web_dav/web_dav_page.dart';
@@ -12,7 +10,6 @@ import 'package:pure_live/modules/account/account_bing.dart';
 import 'package:pure_live/modules/account/account_page.dart';
 import 'package:pure_live/modules/popular/popular_page.dart';
 import 'package:pure_live/modules/history/history_page.dart';
-import 'package:pure_live/modules/auth/user_manage_page.dart';
 import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/search/web_search_page.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
@@ -55,9 +52,6 @@ class AppPages {
 
   static final routes = [
     GetPage(name: RoutePath.kInitial, page: HomePage.new, participatesInRootNavigator: true, preventDuplicates: true),
-    GetPage(name: RoutePath.kSignIn, page: SignInPage.new),
-    GetPage(name: RoutePath.kMine, page: MinePage.new),
-    GetPage(name: RoutePath.kUserManage, page: () => UserManager()),
     GetPage(name: RoutePath.kFavorite, page: FavoritePage.new),
     GetPage(name: RoutePath.kPopular, page: PopularPage.new),
     GetPage(name: RoutePath.kAreas, page: AreasPage.new),

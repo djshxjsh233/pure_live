@@ -20,7 +20,7 @@ class AreasPage extends GetView<AreasController> {
           return Scaffold(
             appBar: AppBar(
               centerTitle: true,
-              leading: (showAction || menuCount <= 1) ? const MenuButton() : null,
+              leading: null,
               actions: showAction ? [CommonAppBarActions()] : null,
               title: TabBar(
                 controller: controller.tabController,

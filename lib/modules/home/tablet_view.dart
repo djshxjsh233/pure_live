@@ -87,7 +87,6 @@ class HomeTabletView extends StatelessWidget {
                     leading: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Padding(padding: EdgeInsets.all(12), child: MenuButton()),
                         Padding(
                           padding: const EdgeInsets.only(top: 0, bottom: 12, left: 12, right: 12),
                           child: IconButton(
