@@ -64,19 +64,19 @@ class _BackupPageState extends State<BackupPage> {
               onTap: _showGistConfigDialog,
             ),
             context.buildTile(
-              icon: Remix.cloud_upload_line,
+              icon: Remix.file_upload_line,
               title: i18n("upload_backup"),
               subtitle: i18n("upload_backup_subtitle"),
               onTap: _uploadToGist,
             ),
             context.buildTile(
-              icon: Remix.cloud_download_line,
+              icon: Remix.file_download_line,
               title: i18n("restore_from_gist"),
               subtitle: i18n("restore_from_gist_subtitle"),
               onTap: _restoreFromGist,
             ),
             context.buildTile(
-              icon: Remix.web_line,
+              icon: Remix.cloud_line,
               title: i18n("webdav"),
               subtitle: i18n("backup_to_webdav"),
               onTap: () => Get.toNamed(RoutePath.kWebDavPage),
