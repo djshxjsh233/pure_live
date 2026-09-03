@@ -84,7 +84,7 @@ class VideoPlayerAdapter implements UnifiedPlayer {
     try {
       final controller = VideoPlayerController.networkUrl(
         Uri.parse(url),
-        httpHeaders: headers.isEmpty ? null : headers,
+        httpHeaders: headers.isEmpty ? const <String, String>{} : headers,
       );
       _controller = controller;
       controller.addListener(_onControllerEvent);
