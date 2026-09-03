@@ -37,7 +37,7 @@ class InitialServices {
     //  - FFmpegKit 原生库保持后台预热(录播前置, 不占启动路径)
     //  - 服务实例延迟到首次 Get.find 时才创建(fenix),
     //    主流程(播放/直播间构造)不依赖它们的注册时序
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 8), () {
       try {
         FFmpegKitExtended.initialize();
         Get.lazyPut(() => CacheService(), fenix: true);
