@@ -59,6 +59,10 @@ android {
             keyPassword = keystoreProperties["keyPassword"].toString()
             storeFile = file(keystoreProperties["storeFile"].toString())
             storePassword = keystoreProperties["storePassword"].toString()
+            // v1(JAR)/v2/v3 全签名：老设备/国产系统直接安装需 v1, 密钥轮换兼容需 v3
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 
