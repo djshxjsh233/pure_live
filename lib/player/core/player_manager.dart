@@ -183,7 +183,7 @@ class PlayerManager {
 
       LiveAudioService.setPlayer(player);
       LiveAudioService.start(room!.roomId!, room.nick ?? "", room.title ?? "", room.avatar);
-      videoKey.value = ValueKey("video_{DateTime.now().millisecondsSinceEpoch}");
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
       _stateSubject.add(PlayerState.ready);
     } on PlayerException catch (e) {
       if (!_isHandlingError && _isSessionValid(mySessionId)) {
@@ -227,7 +227,7 @@ class PlayerManager {
       if (oldPlayer != null && oldEngine != null) {
         await _safeDestroyPlayer(oldPlayer, oldEngine);
       }
-      videoKey.value = ValueKey("video_{DateTime.now().millisecondsSinceEpoch}");
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
     } catch (e, s) {
       final exception = PlayerException(
         message: 'Switch engine failed',

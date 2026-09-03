@@ -185,12 +185,9 @@ class MediaKitAdapter implements UnifiedPlayer {
 
       _stateSubject.add(PlayerState.ready);
 
-      if (PlatformUtils.isMobile) {
-        await setVolume(1.0);
-      } else {
-        final targetVolume = room?.getSavedVolume() ?? 1.0;
-        await setVolume(targetVolume);
-      }
+      // 尊重房间保存音量/全局静音（手机与桌面统一）
+      final targetVolume = room?.getSavedVolume() ?? 1.0;
+      await setVolume(targetVolume);
     } catch (e, s) {
       final exception = PlayerException(
         message: 'Media open failed',
@@ -356,6 +353,9 @@ class MediaKitAdapter implements UnifiedPlayer {
     if (_disposed) return;
 
     if (_errorSubject.isClosed) return;
+
+    // 出错后让同 URL 重播走完整重开流程（断流恢复/手动重试才有意义）
+    _currentUrl = null;
 
     _errorSubject.add(exception);
   }

@@ -193,11 +193,7 @@ class VideoController with ChangeNotifier {
       _volumeController = VolumeController.instance;
       _volumeController.showSystemUI = false;
       registerVolumeListener();
-      final currentVolume = await _volumeController.getVolume();
-      if (currentVolume > 0.001) {
-        final targetVolume = room.getSavedVolume();
-        _volumeController.setVolume(targetVolume);
-      }
+      // 音量恢复统一由 MediaKitAdapter.setDataSource 处理（房间音量/全局静音）
     }
     playerManager.play(datasource, playUrls, headers, room: room);
     initPlayerListener();
@@ -315,6 +311,7 @@ class VideoController with ChangeNotifier {
     showControllerTimer?.cancel();
     _debounceTimer?.cancel();
     _hideVolumeTimer?.cancel();
+    _volumeSaveTimer?.cancel();
     unawaited(destroy());
     super.dispose();
   }
@@ -353,6 +350,16 @@ class VideoController with ChangeNotifier {
       unawaited(_subscription.cancel());
       _volumeController.removeListener();
     }
+  }
+
+  /// 音量保存防抖：拖动音量条高频回调只落盘最后一次（避免频繁写 Hive）
+  Timer? _volumeSaveTimer;
+
+  void _debouncedSaveVolume(double volume) {
+    _volumeSaveTimer?.cancel();
+    _volumeSaveTimer = Timer(const Duration(milliseconds: 400), () {
+      room.saveCurrentVolume(volume);
+    });
   }
 
   void setVideoFit(int index) {
@@ -414,7 +421,7 @@ class VideoController with ChangeNotifier {
   // 注册音量变化监听器
   void registerVolumeListener() {
     _subscription = _volumeController.addListener((volume) {
-      room.saveCurrentVolume(volume);
+      _debouncedSaveVolume(volume);
     }, fetchInitialVolume: true);
   }
 
@@ -439,7 +446,7 @@ class VideoController with ChangeNotifier {
     } else {
       await _volumeController.setVolume(value);
     }
-    room.saveCurrentVolume(value);
+    _debouncedSaveVolume(value);
   }
 
   void setBrightness(double value) async {
