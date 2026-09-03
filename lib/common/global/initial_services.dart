@@ -33,14 +33,18 @@ class InitialServices {
   }
 
   static void _initHeavyServicesInBackground() {
+    // ★ 辅助服务(录播/流解析/登录)全部改成"注册+按需实例化"：
+    //  - FFmpegKit 原生库保持后台预热(录播前置, 不占启动路径)
+    //  - 服务实例延迟到首次 Get.find 时才创建(fenix),
+    //    主流程(播放/直播间构造)不依赖它们的注册时序
     Future.delayed(const Duration(seconds: 3), () {
       try {
         FFmpegKitExtended.initialize();
-        Get.put(CacheService(), permanent: true);
-        Get.put(RecordSettingsController(), permanent: true);
-        Get.put(RecorderController(), permanent: true);
+        Get.lazyPut(() => CacheService(), fenix: true);
+        Get.lazyPut(() => RecordSettingsController(), fenix: true);
+        Get.lazyPut(() => RecorderController(), fenix: true);
         Get.lazyPut(() => StreamResolverService(), fenix: true);
-        Get.put(AuthController(), permanent: true);
+        Get.lazyPut(() => AuthController(), fenix: true);
       } catch (_) {}
     });
   }
