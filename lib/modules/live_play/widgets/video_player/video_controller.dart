@@ -14,6 +14,7 @@ import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/common/global/platform_utils.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:pure_live/player/models/player_exception.dart';
+import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/live_play/player_state.dart';
 import 'package:pure_live/player/models/player_error_type.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
@@ -54,6 +55,9 @@ class VideoController with ChangeNotifier {
 
   StreamSubscription<PlayerException>? _errorSub;
   StreamSubscription<bool>? _pipSub;
+  StreamSubscription<bool>? _playingSub;
+  /// 内核提示只出一次（每次进房的新 VideoController 实例都会重置）
+  bool _kernelToastShown = false;
   Timer? showControllerTimer;
   final showController = true.obs;
   final showLocked = false.obs;
@@ -153,6 +157,15 @@ class VideoController with ChangeNotifier {
     _errorSub = manager.onError.listen((error) {
       log('error: ${error.toString()}', name: 'initPlayerListener');
       _handlePlayerError(error);
+    });
+    // ★ 播放成功时提示当前内核（进直播间第一条播放事件，一次即可）
+    _playingSub?.cancel();
+    _playingSub = manager.onPlaying.listen((playing) {
+      if (!playing || _kernelToastShown) return;
+      _kernelToastShown = true;
+      final engine = manager.currentEngine;
+      final engineName = engine == PlayerEngine.videoPlayer ? i18n('player_system') : i18n('player_mpv');
+      ToastUtil.show('[$engineName]');
     });
   }
 
@@ -310,6 +323,8 @@ class VideoController with ChangeNotifier {
     _errorSub = null;
     _pipSub?.cancel();
     _pipSub = null;
+    _playingSub?.cancel();
+    _playingSub = null;
     showControllerTimer?.cancel();
     _debounceTimer?.cancel();
     _hideVolumeTimer?.cancel();
@@ -323,6 +338,8 @@ class VideoController with ChangeNotifier {
     _errorSub = null;
     _pipSub?.cancel();
     _pipSub = null;
+    _playingSub?.cancel();
+    _playingSub = null;
     GlobalPlayerService.instance.playerManager.close();
     await destroy();
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
@@ -333,6 +350,8 @@ class VideoController with ChangeNotifier {
     _errorSub = null;
     _pipSub?.cancel();
     _pipSub = null;
+    _playingSub?.cancel();
+    _playingSub = null;
   }
 
   void changeLine() async {
@@ -340,6 +359,8 @@ class VideoController with ChangeNotifier {
     _errorSub = null;
     _pipSub?.cancel();
     _pipSub = null;
+    _playingSub?.cancel();
+    _playingSub = null;
 
     GlobalPlayerService.instance.playerManager.close();
     await destroy();
