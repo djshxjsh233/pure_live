@@ -4,6 +4,7 @@ class BarrageController {
   // 用栈管理多个(可能并存)的弹幕引擎。栈顶 = 最新 attach 且未 detach 的 engine，
   // 即当前正在渲染的引擎。弹幕只投递给栈顶，避免投给已销毁或非渲染的 engine。
   final List<dynamic> _engineStack = [];
+  // ignore: unused_field (vendored, 保留 setter 对外接口)
   void Function(dynamic)? _onAddDanmaku;
   void Function(dynamic)? _onUpdateOption;
   void Function()? _onPause;
