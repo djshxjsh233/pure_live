@@ -100,11 +100,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     _initBackInterceptor();
     _initDebounce();
     _initTimer();
-    // ★ emoji 预加载不阻塞播放器启动（本地资源+图片解码可能耗时/异常挂起,
-    // 之前 await 导致灰屏卡死: 弹幕表情是锦上添花, 播放必须先行)
-    unawaited(_preloadEmoji().catchError((Object e) {
-      CoreLog.error('emoji preload failed: $e');
-    }));
+    // 弹幕表情等"弹幕连接成功"后再后台加载（initDanmau.onReady），进房不加载
     _initPlayer();
   }
 
@@ -315,8 +311,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
       liveDanmaku = currentSite.liveSite.getDanmaku();
     }
 
-    await EmojiManager.instance.preload(newRoom.platform!);
-
+    // 表情加载已移到弹幕连接成功回调(onReady)，换房不再阻塞
     onInitPlayerState(
       reloadDataType: newRoom.platform == Sites.bilibiliSite ? ReloadDataType.changeLine : ReloadDataType.refreash,
     );
@@ -375,6 +370,10 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
 
     liveDanmaku.onReady = () {
       messages.add(_systemMsg(i18n('danmaku_connected')));
+      // ★ 弹幕连接成功后再加载表情（首次解码耗时且占CPU，不该与进房/播放抢资源）
+      unawaited(_preloadEmoji().catchError((Object e) {
+        CoreLog.error('emoji preload failed: $e');
+      }));
     };
   }
 
