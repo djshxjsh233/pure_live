@@ -4,7 +4,7 @@ import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class VolumeSettingsController extends GetxController {
-  final RxDouble defaultMobileVolume = hiveDouble('defaultMobileVolume', 0.5);
+  final RxDouble defaultMobileVolume = hiveDouble('defaultMobileVolume', 1.0);
   final RxDouble defaultDesktopVolume = hiveDouble('defaultDesktopVolume', 1.0);
   final RxBool globalVolumeMute = hiveBool('globalVolumeMute', false);
   final RxString _roomVolumesRaw = hiveString('roomVolumes', '{}');
