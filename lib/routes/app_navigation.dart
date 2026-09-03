@@ -22,11 +22,11 @@ class AppNavigator {
 
   /// 跳转至直播间
   static Future<void> toLiveRoomDetail({required LiveRoom liveRoom}) async {
-    Get.toNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {"site": liveRoom.platform!});
+    Get.toNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {"site": liveRoom.platform ?? ""});
   }
 
   static Future<void> offAndToRoomDetail({required LiveRoom liveRoom}) async {
-    Get.offAndToNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {"site": liveRoom.platform!});
+    Get.offAndToNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {"site": liveRoom.platform ?? ""});
   }
 
   /// 跳转至哔哩哔哩登录

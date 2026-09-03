@@ -219,7 +219,13 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     bool isReCalculate = true,
   }) async {
     final roomId = detail.value?.roomId;
-    if (roomId == null) return LiveRoom();
+    if (roomId == null) {
+      // 缓存直播间对象可能缺 roomId(如关注列表离线主播未同步)——给明确提示，不静默空屏
+      success.value = false;
+      ToastUtil.show(i18n('get_room_info_failed_retry'));
+      CoreLog.error('onInitPlayerState: roomId 为空 platform=${detail.value?.platform} nick=${detail.value?.nick}');
+      return LiveRoom();
+    }
     _enterT0 = DateTime.now().millisecondsSinceEpoch;
     print('LivePlay: 进房流程开始 Δ0ms');
     var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: roomId, platform: detail.value!.platform!);
