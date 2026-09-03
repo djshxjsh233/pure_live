@@ -71,39 +71,40 @@ class MediaKitAdapter implements UnifiedPlayer {
       if (_player.platform is NativePlayer) {
         final native = _player.platform as dynamic;
 
-        await native.setProperty('force-seekable', 'yes');
-
-        await native.setProperty('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto');
-
-        await native.setProperty('demuxer-lavf-probsize', '2097152');
-
-        await native.setProperty('demuxer-lavf-analyzeduration', '10');
-
-        // ★ 直播流畅 / 网络优化 (仅网络流生效, 提高缓存抗抖动)
-        await native.setProperty('stream-live-override', 'yes');
-        await native.setProperty('cache', 'yes');
-        await native.setProperty('cache-secs', '30');
-        await native.setProperty('cache-pause-initial', 'yes');
-        await native.setProperty('cache-pause', 'yes');
-        await native.setProperty('demuxer-readahead-secs', '30');
-        await native.setProperty('network-timeout', '30');
-
-        // ★ 硬解失败自动回退软件解码（mpv 内部兜底，防黑屏/花屏）
-        await native.setProperty('hwdec-software-fallback', '1');
+        // ★ 并行下发 MPV 属性（原串行 await 15 次 native 往返 ≈ 1~2s，并行化后毫秒级）
+        // 属性互相独立，mpv 命令队列线程安全
+        final props = <Future<void>>[
+          native.setProperty('force-seekable', 'yes'),
+          native.setProperty('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto'),
+          native.setProperty('demuxer-lavf-probsize', '2097152'),
+          native.setProperty('demuxer-lavf-analyzeduration', '10'),
+          // ★ 直播流畅 / 网络优化 (仅网络流生效, 提高缓存抗抖动)
+          native.setProperty('stream-live-override', 'yes'),
+          native.setProperty('cache', 'yes'),
+          native.setProperty('cache-secs', '30'),
+          native.setProperty('cache-pause-initial', 'yes'),
+          native.setProperty('cache-pause', 'yes'),
+          native.setProperty('demuxer-readahead-secs', '30'),
+          native.setProperty('network-timeout', '30'),
+          // ★ 硬解失败自动回退软件解码（mpv 内部兜底，防黑屏/花屏）
+          native.setProperty('hwdec-software-fallback', '1'),
+        ];
 
         if (SettingsService.to.player.customPlayerOutput.v) {
-          await native.setProperty('ao', SettingsService.to.player.audioOutputDriver.v);
+          props.add(native.setProperty('ao', SettingsService.to.player.audioOutputDriver.v));
         }
 
         if (SettingsService.to.proxy.enableProxy.v && SettingsService.to.proxy.proxyHost.v.isNotEmpty) {
           final proxyUrl = "http://${SettingsService.to.proxy.proxyHost.v}:${SettingsService.to.proxy.proxyPort.v}";
 
-          await native.setProperty('http-proxy', proxyUrl);
+          props.add(native.setProperty('http-proxy', proxyUrl));
         }
 
         if (PlatformUtils.isMacOS) {
-          await native.setProperty('hwdec', 'no');
+          props.add(native.setProperty('hwdec', 'no'));
         }
+
+        await Future.wait(props);
       }
 
       // =========================
