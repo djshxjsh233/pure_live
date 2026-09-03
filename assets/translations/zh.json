@@ -906,7 +906,9 @@
 
     "gist_error": "Gist 备份失败",
     "gist_restored": "已从 Gist 恢复",
-    "restore_confirm": "确定用云端备份覆盖本地数据？",
+
+    "gist_no_backup": "云端暂无备份",
+    "gist_latest": "最新备份",    "restore_confirm": "确定用云端备份覆盖本地数据？",
     "restore_from_gist_subtitle": "拉取云端备份并覆盖本地",
     "restore_from_gist": "从 Gist 恢复",
     "upload_backup_subtitle": "将全部设置上传到私有 Gist",

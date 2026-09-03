@@ -906,7 +906,9 @@
 
     "gist_error": "Gist backup failed",
     "gist_restored": "Restored from Gist",
-    "restore_confirm": "Overwrite local data with cloud backup?",
+
+    "gist_no_backup": "No backup on cloud",
+    "gist_latest": "Latest",    "restore_confirm": "Overwrite local data with cloud backup?",
     "restore_from_gist_subtitle": "Pull cloud backup and overwrite local",
     "restore_from_gist": "Restore from Gist",
     "upload_backup_subtitle": "Upload all settings to private Gist",

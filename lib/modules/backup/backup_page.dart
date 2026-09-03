@@ -269,20 +269,61 @@ class _BackupPageState extends State<BackupPage> {
       ToastUtil.show(i18n("gist_setup"));
       return;
     }
-    final confirm = await showDialog<bool>(
-      context: Get.context!,
-      builder: (context) => AlertDialog(
-        title: Text(i18n("restore_from_gist")),
-        content: Text(i18n("restore_confirm")),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(i18n("cancel"))),
-          ElevatedButton(onPressed: () => Navigator.of(context).pop(true), child: Text(i18n("confirm"))),
-        ],
-      ),
-    );
-    if (confirm != true) return;
     try {
-      final content = await GistBackupService.read(token);
+      // 1. 拉取备份列表（最新置顶 + 历史快照）
+      final entries = await GistBackupService.listBackups(token);
+      if (entries.isEmpty) {
+        ToastUtil.show(i18n("gist_no_backup"));
+        return;
+      }
+      // 2. 选择要恢复的备份
+      final selected = await showDialog<GistBackupEntry>(
+        context: Get.context!,
+        builder: (context) => SimpleDialog(
+          title: Text(i18n("restore_from_gist")),
+          children: [
+            for (final e in entries)
+              SimpleDialogOption(
+                onPressed: () => Navigator.of(context).pop(e),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(e.isLatest ? Remix.star_fill : Remix.time_line,
+                          size: 18, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          e.isLatest ? '${i18n("gist_latest")} · ${(e.size / 1024).toStringAsFixed(1)}KB' : '${e.dateLabel} · ${(e.size / 1024).toStringAsFixed(1)}KB',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 4),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(i18n("cancel"))),
+          ],
+        ),
+      );
+      if (selected == null) return;
+
+      // 3. 确认恢复该份
+      final confirm = await showDialog<bool>(
+        context: Get.context!,
+        builder: (context) => AlertDialog(
+          title: Text(i18n("restore_from_gist")),
+          content: Text('${i18n("restore_confirm")}\n\n${selected.isLatest ? i18n("gist_latest") : selected.dateLabel}'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(i18n("cancel"))),
+            ElevatedButton(onPressed: () => Navigator.of(context).pop(true), child: Text(i18n("confirm"))),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+
+      final content = await GistBackupService.read(token, file: selected.name);
       final data = jsonDecode(content) as Map<String, dynamic>;
       Get.find<BackupController>().importAllSettings(data);
       if (mounted) setState(() {});
