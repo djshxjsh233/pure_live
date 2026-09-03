@@ -3,6 +3,7 @@ import 'core/player_pool.dart';
 import 'core/player_manager.dart';
 import 'models/player_engine.dart';
 import 'adapters/media_kit_adapter.dart';
+import 'adapters/video_player_adapter.dart';
 import 'core/line_fallback_manager.dart';
 import 'package:media_kit/media_kit.dart';
 import 'core/engine_fallback_manager.dart';
@@ -37,6 +38,8 @@ class GlobalPlayerService {
           switch (engine) {
             case PlayerEngine.mediaKit:
               return MediaKitAdapter();
+            case PlayerEngine.videoPlayer:
+              return VideoPlayerAdapter();
           }
         },
       );
@@ -44,7 +47,7 @@ class GlobalPlayerService {
         playerPool: playerPool,
         fallbackManager: EngineFallbackManager(
           defaultEngine: PlayerEngine.mediaKit,
-          supportedEngines: [PlayerEngine.mediaKit],
+          supportedEngines: [PlayerEngine.mediaKit, PlayerEngine.videoPlayer],
         ),
         lineManager: LineFallbackManager(),
       );

@@ -816,6 +816,7 @@
     "hardware_decoder": "硬件解码器(--hwdec)",
     "share": "分享",
     "player_mpv": "Mpv播放器",
+    "player_system": "系统内核(Media3)",
     "player_ijk": "IJK播放器",
     "change_danmaku_font_family": "更换弹幕字体",
     "window_size": "开机窗口尺寸",

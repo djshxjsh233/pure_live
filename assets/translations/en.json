@@ -816,6 +816,7 @@
     "hardware_decoder": "Hardware Decoder (--hwdec)",
     "share": "Share",
     "player_mpv": "MPV Player",
+    "player_system": "System (Media3)",
     "player_ijk": "IJK Player",
     "change_danmaku_font_family": "Change Danmaku Font",
     "window_size": "Startup Window Size",
