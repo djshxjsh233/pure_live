@@ -33,7 +33,7 @@ class RecorderPage extends GetView<RecorderController> {
           appBar: AppBar(
             title: Text(i18n("recorder_title")),
             centerTitle: true,
-            leading: null,
+            leading: (showAction || menuCount <= 1) ? const MenuButton() : null,
 
             actions: [
               IconButton(

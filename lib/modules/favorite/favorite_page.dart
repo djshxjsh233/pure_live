@@ -19,7 +19,7 @@ class FavoritePage extends GetView<FavoriteController> {
           return Scaffold(
             appBar: AppBar(
               centerTitle: true,
-              leading: null,
+              leading: (showAction || menuCount <= 1) ? const MenuButton() : null,
               actions: showAction ? [CommonAppBarActions()] : null,
               title: TabBar(
                 controller: controller.tabController,

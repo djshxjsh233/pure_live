@@ -108,6 +108,13 @@ class HomeTabletView extends StatelessWidget {
                             icon: const Icon(Remix.download_2_line),
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 0, bottom: 12, left: 12, right: 12),
+                          child: IconButton(
+                            onPressed: () => Get.toNamed(RoutePath.kSettings),
+                            icon: const Icon(Icons.menu_rounded),
+                          ),
+                        ),
                       ],
                     ),
                     destinations: destinations,
