@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
@@ -11,28 +12,54 @@ import 'package:pure_live/common/global/platform_utils.dart';
 import 'package:pure_live/routes/route_observer_controller.dart';
 import 'package:pure_live/common/global/platform/desktop_manager.dart';
 
+/// 全局错误打印（release 也可见）：build/构造/异步异常完整输出，
+/// 不依赖业务埋点覆盖（本次 RecorderController 构造崩就发生在埋点之前）
+void setupGlobalErrorLogging() {
+  FlutterError.onError = (details) {
+    print('===== FLUTTER ERROR =====');
+    print('exception: ${details.exception}');
+    print('context: ${details.context}');
+    if (details.stack != null) print('stack:\n${details.stack}');
+    FlutterError.presentError(details); // 保持默认错误呈现行为
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    print('===== PLATFORM ERROR =====');
+    print('exception: $error');
+    print('stack:\n$stack');
+    return false; // 保持默认处理
+  };
+}
+
 void main(List<String> args) async {
-  await AppInitializer().initialize(args);
-  await VersionUtil.initPackageInfo();
+  WidgetsFlutterBinding.ensureInitialized();
+  setupGlobalErrorLogging();
+  await runZonedGuarded(() async {
+    await AppInitializer().initialize(args);
+    await VersionUtil.initPackageInfo();
 
-  // ★ 提前预热播放器内核（fire-and-forget，不阻塞启动）
-  // 主页首帧渲染需几百ms，预热在此期间并行完成；用户点直播间时播放器大概率已就绪，
-  // 解决"启动头几秒点击灰屏"（@用户反馈：所有平台都有，属播放器初始化慢）
-  final savedKey = SettingsService.to.player.videoPlayerKey.v;
-  final validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
-  final targetEngine = PlayerConsts.engines[validKey]!;
-  final defaultEngine = PlatformUtils.isDesktop ? PlayerEngine.mediaKit : targetEngine;
-  unawaited(GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine));
+    // ★ 提前预热播放器内核（fire-and-forget，不阻塞启动）
+    // 主页首帧渲染需几百ms，预热在此期间并行完成；用户点直播间时播放器大概率已就绪，
+    // 解决"启动头几秒点击灰屏"（@用户反馈：所有平台都有，属播放器初始化慢）
+    final savedKey = SettingsService.to.player.videoPlayerKey.v;
+    final validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+    final targetEngine = PlayerConsts.engines[validKey]!;
+    final defaultEngine = PlatformUtils.isDesktop ? PlayerEngine.mediaKit : targetEngine;
+    unawaited(GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine));
 
-  runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('zh')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('zh'),
-      assetLoader: const RootBundleAssetLoader(),
-      child: MyApp(),
-    ),
-  );
+    runApp(
+      EasyLocalization(
+        supportedLocales: const [Locale('en'), Locale('zh')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('zh'),
+        assetLoader: const RootBundleAssetLoader(),
+        child: MyApp(),
+      ),
+    );
+  }, (Object e, StackTrace s) {
+    print('===== ZONED ERROR =====');
+    print('exception: $e');
+    print('stack:\n$s');
+  });
 }
 
 class MyApp extends StatefulWidget {
