@@ -45,7 +45,8 @@ class GistBackupService {
 
   /// 上传：写 latest + 新增时间戳快照，保留最近 keepLatestCount 份
   static Future<String> upload(String token, String content) async {
-    final id = await _resolveGist(token, createIfMissing: true);
+    final id = (await _resolveGist(token, createIfMissing: true)) ??
+      (throw const GistException('创建 Gist 失败：无法确定编号'));
 
     final now = DateTime.now();
     String two(int v) => v.toString().padLeft(2, '0');
