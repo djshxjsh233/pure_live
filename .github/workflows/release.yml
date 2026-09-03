@@ -33,10 +33,10 @@ jobs:
           ref: ${{ matrix.branch }}
 
       - name: 设置JAVA环境
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: "17"
+          java-version: "21"
           cache: 'gradle'
 
       - name: 设置Flutter环境
