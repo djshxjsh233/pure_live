@@ -269,7 +269,6 @@ flutter:
     - assets/webdav/
     - assets/keystore/
     - assets/version.json
-    - assets/releases.json
     - assets/emo/images/huya/
     - assets/emo/images/douyu/
     - assets/emo/images/douyin/

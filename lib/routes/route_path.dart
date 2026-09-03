@@ -39,7 +39,6 @@ class RoutePath {
   static const kAbout = "/about";
 
   /// 版本历史记录
-  static const kVersionHistory = "/version_history";
 
   /// 历史记录
   static const kHistory = "/history";

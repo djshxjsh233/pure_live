@@ -79,12 +79,6 @@ class _AboutPageState extends State<AboutPage> {
           context.buildGroupTitle(i18n("about")),
           const SizedBox(height: 8),
           context.buildModernCard([
-            context.buildTile(
-              icon: Remix.history_line,
-              title: i18n("history"),
-              subtitle: i18n("history_desc"),
-              onTap: () => Get.toNamed(RoutePath.kVersionHistory),
-            ),
             context.buildTile(icon: Remix.shield_user_line, title: i18n("license"), onTap: openLicensePage),
           ]),
           const SizedBox(height: 24),

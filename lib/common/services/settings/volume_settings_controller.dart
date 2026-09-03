@@ -7,6 +7,8 @@ class VolumeSettingsController extends GetxController {
   final RxDouble defaultMobileVolume = hiveDouble('defaultMobileVolume', 1.0);
   final RxDouble defaultDesktopVolume = hiveDouble('defaultDesktopVolume', 1.0);
   final RxBool globalVolumeMute = hiveBool('globalVolumeMute', false);
+  /// 音量增益(%): 100=原声 / 120 / 130(超100会削波放大, 手机喇叭小声时用)
+  final RxInt volumeGain = hiveInt('volumeGain', 100);
   final RxString _roomVolumesRaw = hiveString('roomVolumes', '{}');
   final RxMap<String, double> rxRoomVolumes = <String, double>{}.obs;
   Map<String, double> get roomVolumes => rxRoomVolumes;

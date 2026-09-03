@@ -444,7 +444,9 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   @override
   Future<void> setVolume(double volume) async {
-    final vol = (volume * 100).clamp(0.0, 100.0);
+    // 音量增益(%)：100 原声（无失真）/ 120 / 130（软件放大, 手机喇叭小声时开启会削波）
+    final gain = SettingsService.to.vol.volumeGain.v.clamp(100, 130);
+    final vol = (volume * gain).clamp(0.0, 130.0);
 
     await _player.setVolume(vol);
   }

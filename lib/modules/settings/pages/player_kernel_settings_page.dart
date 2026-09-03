@@ -60,6 +60,21 @@ class PlayerKernelSettingsPage extends GetView<SettingsService> {
               subtitle: i18n("gpu_decode"),
               value: SettingsService.to.player.enableCodec,
             ),
+            Obx(() {
+              return context.buildTile(
+                icon: Remix.volume_up_line,
+                title: i18n('volume_gain'),
+                subtitle: i18n('volume_gain_subtitle'),
+                onTap: showVolumeGainDialog,
+                trailing: Text(
+                  '${SettingsService.to.vol.volumeGain.v}%',
+                  style: AppTextStyles.t13.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }),
             context.buildSwitchTile(
               icon: Remix.shut_down_line,
               title: i18n('force_destroy_player'),
@@ -198,6 +213,33 @@ class PlayerKernelSettingsPage extends GetView<SettingsService> {
   }
 
   // 播放器选择弹窗
+  void showVolumeGainDialog() {
+    const options = [100, 120, 130];
+    showDialog(
+      context: Get.context!,
+      builder: (context) {
+        return SimpleDialog(
+          title: Text(i18n('volume_gain')),
+          children: [
+            for (final gain in options)
+              RadioListTile<int>(
+                value: gain,
+                groupValue: SettingsService.to.vol.volumeGain.v,
+                title: Text('$gain%${gain == 100 ? "（${i18n('volume_gain_default_desc')}）" : ""}'),
+                onChanged: (value) {
+                  if (value != null) {
+                    SettingsService.to.vol.volumeGain.v = value;
+                    // 增益已接入 setVolume 全路径：下一次进房/滑动音量条即生效
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   void showVideoSetDialog() {
     List<String> playerList = PlatformUtils.isMobile
         ? PlayerConsts.names.values.toList()
