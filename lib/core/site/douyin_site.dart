@@ -450,32 +450,31 @@ class DouyinSite implements LiveSite {
   /// 通过WebRid获取直播间信息
   /// - [webRid] 直播间RID
   /// - 返回直播间信息
-  /// - 容错策略：API(abogus签名) → 强刷cookie重试API(防偶发风控) → HTML页面解析兜底
+  /// - 网页单通道：无cookie裸请求(浏览器首访同款) → 内置cookie → 动态cookie，3轮退避；enter API(abogus签名)仅最后兜底
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
     // ⚡ 进房=实时获取（用户要求，浏览器式"打开网页"，不读状态缓存）
-    // ① 先确保会话 cookie 新鲜：2023年写死的内置 ttwid 风控识别度高，浏览器每次访问都带新 ttwid
-    await _refreshDynamicCookie(force: true);
-    // ② 双通道 × 3 轮自动重试，退避间隔递增（400ms→1.5s→3s）
-    //    抖音单房间风控是"短暂时间窗"(几十秒)：两轮撞同一窗口=全失败；拉开间隔等窗口过去+换随机token即可恢复
+    // ① 网页取流零签名零会话依赖：跟浏览器一样"打开"直播间页面解析流地址，与网页100%同步
+    // ② 3轮自动重试，退避间隔递增（400ms→1.5s→3s）：抖音单房间风控是"短暂时间窗"(几十秒)，
+    //    拉开间隔等窗口过去即可恢复；每轮内部自动升级变体(裸请求→内置cookie→动态cookie)
     const delays = [Duration(milliseconds: 400), Duration(milliseconds: 1500), Duration(milliseconds: 3000)];
     for (var round = 1; round <= 3; round++) {
       try {
         return await _getRoomDetailByWebRidHtml(webRid);
       } catch (e) {
-        CoreLog.error("douyin HTML获取房间失败(r$round): $e");
-      }
-      try {
-        return await _getRoomDetailByWebRidApi(webRid);
-      } catch (e) {
-        DouyinSign.clearMsTokenOverride();
-        CoreLog.error("douyin enter API获取房间失败(r$round): $e");
+        CoreLog.error("douyin 网页取流失败(r$round): $e");
       }
       if (round < 3) {
         await Future.delayed(delays[round - 1]);
-        await _refreshDynamicCookie(force: true);
       }
     }
-    // 双通道三轮全失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
+    // 网页三变体×3轮全失败 → 最后用 enter API(abogus签名) 兜底一次（死马当活马医，保住"能进就进"）
+    try {
+      return await _getRoomDetailByWebRidApi(webRid);
+    } catch (e) {
+      DouyinSign.clearMsTokenOverride();
+      CoreLog.error("douyin enter API兜底失败: $e");
+    }
+    // 全部失败：主播未开播/获取失败（状态保持未知，绝不展示过期状态）
     return LiveRoom(
       roomId: webRid,
       platform: Sites.douyinSite,
@@ -604,15 +603,8 @@ class DouyinSite implements LiveSite {
   /// 通过webRid获取直播间Web信息
   /// - [webRid] 直播间RID
   Future<Map> _getRoomDataByHtml(String webRid) async {
-    // 浏览器式取网页：依次尝试 新鲜动态cookie → 内置cookie → 无cookie裸请求（浏览器首访同款）
-    await _refreshDynamicCookie();
-    var baseCookie = _dynamicCookie.isNotEmpty ? _dynamicCookie : kDefaultCookie;
-    var cookieWithToken = baseCookie;
-    final randomMs = _serverMsToken.isEmpty ? DouyinSign.generateMsToken(120) : _serverMsToken;
-    if (!cookieWithToken.contains("msToken=")) {
-      cookieWithToken = "$cookieWithToken; msToken=$randomMs;";
-    }
-    // 变体1：新鲜动态 cookie + msToken（浏览器会话同款）
+    // 浏览器式取网页：无cookie裸请求(浏览器首访同款, 最快最稳零状态) → 内置cookie → 动态cookie(最后手段, 此时才强刷)
+    // 变体1：无 cookie 裸请求（浏览器首次访问无会话同款，无任何会过期的会话/风控状态依赖）
     try {
       return _parseRoomState(await HttpClient.instance.getText(
         "https://live.douyin.com/$webRid",
@@ -620,14 +612,13 @@ class DouyinSite implements LiveSite {
         header: {
           "Authority": kDefaultAuthority,
           "Referer": kDefaultReferer,
-          "Cookie": cookieWithToken,
           "User-Agent": kDefaultUserAgent,
         },
       ));
     } catch (e) {
-      CoreLog.w("douyin HTML变体1(新cookie)解析失败: $e");
+      CoreLog.w("douyin HTML变体1(裸请求)解析失败: $e");
     }
-    // 变体2：内置 cookie
+    // 变体2：内置 cookie（老会话）
     try {
       return _parseRoomState(await HttpClient.instance.getText(
         "https://live.douyin.com/$webRid",
@@ -642,13 +633,21 @@ class DouyinSite implements LiveSite {
     } catch (e) {
       CoreLog.w("douyin HTML变体2(内置cookie)解析失败: $e");
     }
-    // 变体3：无 cookie 裸请求（浏览器首次访问无会话同款）
+    // 变体3：强刷动态 cookie + msToken（浏览器会话同款，最后手段——只有前两变体都失败才付出 HEAD 刷新成本）
+    await _refreshDynamicCookie(force: true);
+    final baseCookie = _dynamicCookie.isNotEmpty ? _dynamicCookie : kDefaultCookie;
+    var cookieWithToken = baseCookie;
+    final randomMs = _serverMsToken.isEmpty ? DouyinSign.generateMsToken(120) : _serverMsToken;
+    if (!cookieWithToken.contains("msToken=")) {
+      cookieWithToken = "$cookieWithToken; msToken=$randomMs;";
+    }
     return _parseRoomState(await HttpClient.instance.getText(
       "https://live.douyin.com/$webRid",
       queryParameters: {},
       header: {
         "Authority": kDefaultAuthority,
         "Referer": kDefaultReferer,
+        "Cookie": cookieWithToken,
         "User-Agent": kDefaultUserAgent,
       },
     ));
