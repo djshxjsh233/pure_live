@@ -203,8 +203,9 @@ class _BackupPageState extends State<BackupPage> {
             TextButton(
               onPressed: () async {
                 GistBackupService.clearToken();
-                ToastUtil.show(i18n("gist_token_cleared"));
                 Navigator.of(context).pop();
+                if (mounted) setState(() {});
+                ToastUtil.show(i18n("gist_token_cleared"));
               },
               child: Text(i18n("clear"), style: const TextStyle(color: Colors.red)),
             ),
@@ -232,6 +233,7 @@ class _BackupPageState extends State<BackupPage> {
               }
               GistBackupService.setToken(value);
               Navigator.of(context).pop();
+              if (mounted) setState(() {});
               ToastUtil.show(i18n("gist_ready"));
             },
             child: Text(i18n("save")),
@@ -251,7 +253,9 @@ class _BackupPageState extends State<BackupPage> {
       final backup = Get.find<BackupController>();
       final content = jsonEncode(backup.exportAllSettings());
       final id = await GistBackupService.upload(token, content);
-      ToastUtil.show('${i18n("upload_backup")} ✅ gist:$id');
+      if (mounted) setState(() {});
+      final kb = (content.length / 1024).toStringAsFixed(1);
+      ToastUtil.show('${i18n("upload_backup")} ✅ ${kb}KB · gist:$id');
     } on GistException catch (e) {
       ToastUtil.show('${i18n("gist_error")}: ${e.message}');
     } catch (e) {
@@ -281,6 +285,7 @@ class _BackupPageState extends State<BackupPage> {
       final content = await GistBackupService.read(token);
       final data = jsonDecode(content) as Map<String, dynamic>;
       Get.find<BackupController>().importAllSettings(data);
+      if (mounted) setState(() {});
       ToastUtil.show(i18n("gist_restored"));
     } on GistException catch (e) {
       ToastUtil.show('${i18n("gist_error")}: ${e.message}');
