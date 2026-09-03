@@ -93,7 +93,9 @@ subprojects {
 subprojects {
     val forceJava17 = {
         tasks.withType(org.gradle.api.tasks.compile.JavaCompile::class.java).configureEach {
-            options.release.set(17)
+            // Android 模块不能用 --release(AGP 需设 bootclasspath)，用 source/target
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
         }
     }
     if (state.executed) forceJava17() else afterEvaluate { forceJava17() }
