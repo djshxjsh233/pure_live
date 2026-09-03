@@ -88,13 +88,15 @@ subprojects {
 }
 
 // 统一 Java 编译版本(消除第三方模块 source/target 8 obsolete 警告)
-// afterEvaluate: 第三方在 configure 阶段显式 sourceCompatibility=8, 需在其后强制覆盖
+// afterEvaluate 覆盖第三方显式 sourceCompatibility=8; Gradle9 对已评估项目
+// 直接 afterEvaluate 会崩 → state.executed 分支兜底
 subprojects {
-    afterEvaluate {
+    val forceJava17 = {
         tasks.withType(org.gradle.api.tasks.compile.JavaCompile::class.java).configureEach {
             options.release.set(17)
         }
     }
+    if (state.executed) forceJava17() else afterEvaluate { forceJava17() }
 }
 
 tasks.register<Delete>("clean") {
