@@ -110,7 +110,6 @@ class PlayerManager {
       _runtimeEngine = engine;
       _currentPlayer = await playerPool.getPlayer(engine);
       await _bindPlayerStreams(_currentPlayer!);
-      LiveAudioService.setPlayer(_currentPlayer!);
       if (Platform.isAndroid) {
         floating = Floating();
         _pipSubscription?.cancel();

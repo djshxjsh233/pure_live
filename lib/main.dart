@@ -15,6 +15,14 @@ void main(List<String> args) async {
   await AppInitializer().initialize(args);
   await VersionUtil.initPackageInfo();
 
+  // ★ 启动画面期间完成播放器内核初始化（对齐原版体验：
+  // 主页出现后播放器即就绪，秒点直播间不再撞未初始化导致灰屏）
+  final savedKey = SettingsService.to.player.videoPlayerKey.v;
+  final validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+  final targetEngine = PlayerConsts.engines[validKey]!;
+  final defaultEngine = PlatformUtils.isDesktop ? PlayerEngine.mediaKit : targetEngine;
+  await GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine);
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('zh')],
@@ -40,21 +48,7 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
     if (PlatformUtils.isDesktop) {
       DesktopManager.initializeListeners(this);
     }
-    initGlopalPlayer();
-  }
-
-  Future<void> initGlopalPlayer() async {
-    final String savedKey = SettingsService.to.player.videoPlayerKey.v;
-    final String validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
-    final PlayerEngine targetEngine = PlayerConsts.engines[validKey]!;
-    final PlayerEngine defaultEngine;
-
-    if (PlatformUtils.isDesktop) {
-      defaultEngine = PlayerEngine.mediaKit;
-    } else {
-      defaultEngine = targetEngine;
-    }
-    GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine);
+    // 播放器初始化已移至 main() runApp 前 await 完成，这里不再需要
   }
 
   @override
