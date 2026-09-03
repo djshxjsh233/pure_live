@@ -147,8 +147,9 @@ class PlayerUi {
 
   static void closeAppFloating(PlayerManager manager) {
     if (!manager.isFloating.value) return;
-    floatingManager.disposeFloating(floatTag);
+    _hideTimer?.cancel();
     manager.isFloating.value = false;
+    floatingManager.disposeFloating(floatTag);
   }
 
   static Widget buildPiPOverlay(PlayerManager manager) {

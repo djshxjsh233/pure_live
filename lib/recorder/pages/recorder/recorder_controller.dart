@@ -47,6 +47,7 @@ class RecorderController extends GetxService {
   int get queuedCount => scheduler.queuedCount;
 
   late final StreamSubscription _videoProcessSub;
+  StreamSubscription? _ffmpegSub;
   @override
   void onInit() {
     super.onInit();
@@ -83,7 +84,7 @@ class RecorderController extends GetxService {
   }
 
   void _initFFmpegListener() {
-    ffmpeg.stream.listen(_onFFmpegEvent);
+    _ffmpegSub = ffmpeg.stream.listen(_onFFmpegEvent);
   }
 
   void _onFFmpegEvent(FFmpegEvent event) {
@@ -595,6 +596,7 @@ class RecorderController extends GetxService {
 
     _retryTimers.clear();
     _videoProcessSub.cancel();
+    _ffmpegSub?.cancel();
     super.onClose();
   }
 }

@@ -170,4 +170,11 @@ class _CountButtonState extends State<CountButton> {
       }
     });
   }
+
+  @override
+  void dispose() {
+    incrementTimer?.cancel();
+    decrementTimer?.cancel();
+    super.dispose();
+  }
 }
