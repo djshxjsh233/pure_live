@@ -25,6 +25,8 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   String? _currentUrl;
 
+  final Stopwatch _openStopwatch = Stopwatch();
+
   // =========================
   // subjects
   // =========================
@@ -66,7 +68,9 @@ class MediaKitAdapter implements UnifiedPlayer {
     try {
       _stateSubject.add(PlayerState.initializing);
 
+      final stopwatch = Stopwatch()..start();
       _player = Player();
+      log('MediaKitAdapter: Player() 创建耗时 ${stopwatch.elapsedMilliseconds}ms', name: 'MediaKitAdapter');
 
       if (_player.platform is NativePlayer) {
         final native = _player.platform as dynamic;
@@ -105,6 +109,7 @@ class MediaKitAdapter implements UnifiedPlayer {
         }
 
         await Future.wait(props);
+        log('MediaKitAdapter: MPV 属性下发耗时 ${stopwatch.elapsedMilliseconds}ms', name: 'MediaKitAdapter');
       }
 
       // =========================
@@ -137,6 +142,8 @@ class MediaKitAdapter implements UnifiedPlayer {
       await _bindListeners();
 
       _initialized = true;
+
+      log('MediaKitAdapter: 初始化完成 总耗时 ${stopwatch.elapsedMilliseconds}ms', name: 'MediaKitAdapter');
 
       _stateSubject.add(PlayerState.initialized);
     } catch (e, s) {
@@ -182,7 +189,12 @@ class MediaKitAdapter implements UnifiedPlayer {
 
       _heightSubject.add(null);
 
+      _openStopwatch..reset()..start();
+
       await _player.open(Media(url, httpHeaders: headers), play: true);
+
+      _openStopwatch.stop();
+      log('MediaKitAdapter: open 拉流耗时 ${_openStopwatch.elapsedMilliseconds}ms', name: 'MediaKitAdapter');
 
       _stateSubject.add(PlayerState.ready);
 

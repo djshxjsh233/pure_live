@@ -15,6 +15,15 @@ void main(List<String> args) async {
   await AppInitializer().initialize(args);
   await VersionUtil.initPackageInfo();
 
+  // ★ 提前预热播放器内核（fire-and-forget，不阻塞启动）
+  // 主页首帧渲染需几百ms，预热在此期间并行完成；用户点直播间时播放器大概率已就绪，
+  // 解决"启动头几秒点击灰屏"（@用户反馈：所有平台都有，属播放器初始化慢）
+  final savedKey = SettingsService.to.player.videoPlayerKey.v;
+  final validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+  final targetEngine = PlayerConsts.engines[validKey]!;
+  final defaultEngine = PlatformUtils.isDesktop ? PlayerEngine.mediaKit : targetEngine;
+  unawaited(GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine));
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('zh')],
