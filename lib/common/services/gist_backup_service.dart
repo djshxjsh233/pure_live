@@ -78,7 +78,7 @@ class GistBackupService {
     final (raw, code) = await _requestRaw(method, path, token: token, body: body);
     if (expect.isNotEmpty && !expect.contains(code)) {
       if (code == 404) throw const GistNotFoundException();
-      if (code == 401 || code == 403) throw const GistException('Token 无效或无权限，请检查令牌');
+      if (code == 401 || code == 403) throw const GistException('令牌缺少 Gists 读写权限（GitHub → Settings → Developer settings → Fine-grained token → 勾选 Gists: Read and write）');
       throw GistException('请求失败 HTTP $code');
     }
     try {
