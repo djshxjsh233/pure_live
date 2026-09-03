@@ -146,7 +146,7 @@ class LivePlayPage extends GetView<LivePlayController> {
           Obx(() {
             final room = controller.detail.value;
             if (room == null) return const SizedBox.shrink();
-            final task = controller.recorderController.tasks.firstWhereOrNull(
+            final task = controller.recorderController?.tasks.firstWhereOrNull(
               (t) => t.platform == room.platform && t.roomId == room.roomId,
             );
             final bool exists = task != null;
@@ -202,7 +202,11 @@ class LivePlayPage extends GetView<LivePlayController> {
                 ),
                 onPressed: () async {
                   if (!exists) {
-                    await controller.recorderController.addTask(room: room);
+                    if (controller.recorderController == null) {
+                      // 录制服务启动后台注册(3s)，秒进直播间时点录制极罕见，静默忽略
+                      return;
+                    }
+                    await controller.recorderController!.addTask(room: room);
                     ToastUtil.show(i18n("record_task_added"));
                     return;
                   }
@@ -261,13 +265,13 @@ class LivePlayPage extends GetView<LivePlayController> {
                       Get.toNamed(RoutePath.kRecordPage);
                       break;
                     case "start":
-                      controller.recorderController.forceStartTask(task);
+                      controller.recorderController!.forceStartTask(task);
                       break;
                     case "stop":
-                      controller.recorderController.stopTask(task);
+                      controller.recorderController!.stopTask(task);
                       break;
                     case "delete":
-                      controller.recorderController.unRecorder(task);
+                      controller.recorderController!.unRecorder(task);
                       break;
                   }
                 },

@@ -28,7 +28,10 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   final String site;
   final LiveRoom room;
 
-  final RecorderController recorderController = Get.find<RecorderController>();
+  /// 录制控制器是启动后后台延迟注册的重服务(3s)，秒进直播间时可能未注册——
+  /// 强取 Get.find 会抛异常导致页面构建失败(灰屏)，改可空按需获取
+  RecorderController? get recorderController =>
+      Get.isRegistered<RecorderController>() ? Get.find<RecorderController>() : null;
   final StopWatchTimer _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countDown);
 
   late Site currentSite;
