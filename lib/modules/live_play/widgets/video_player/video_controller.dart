@@ -188,6 +188,8 @@ class VideoController with ChangeNotifier {
 
 
   void initVideoController() async {
+    // ★ 确保播放器已就绪（单飞初始化，秒进房时不会因 late 未赋值卡 loading）
+    await GlobalPlayerService.instance.initialize();
     final playerManager = GlobalPlayerService.instance.playerManager;
     if (PlatformUtils.isMobile) {
       _volumeController = VolumeController.instance;

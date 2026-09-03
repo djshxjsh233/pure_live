@@ -326,6 +326,7 @@ class PlayerManager {
   }
 
   Future<void> hardDispose() async {
+    _initFuture = null; // 释放后清初始化锁, 下次 play 可重新初始化(否则复用旧Future卡死)
     lineManager.reset();
     await _clearSubscriptions();
     if (_runtimeEngine != null) {

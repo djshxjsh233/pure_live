@@ -30,9 +30,8 @@ class GlobalPlayerService {
 
   Future<void> _doInitialize(PlayerEngine defaultEngine) async {
     try {
-      MediaKit.ensureInitialized();
-      // 1. Setup the Pool with a factory that knows how to create each Adapter
-      // （精简版：仅保留 MPV(media_kit) 播放器内核）
+      // ★ 先同步创建管理器（在首个 await 之前）——让 late playerManager 立即可用，
+      // 避免用户秒进房时访问未初始化的 late 变量 -> LateInitializationError 卡 loading
       final playerPool = PlayerPool(
         factory: (engine) async {
           switch (engine) {
@@ -41,8 +40,6 @@ class GlobalPlayerService {
           }
         },
       );
-
-      // 2. Instantiate the Orchestrator with all its specialized managers
       playerManager = PlayerManager(
         playerPool: playerPool,
         fallbackManager: EngineFallbackManager(
@@ -51,6 +48,8 @@ class GlobalPlayerService {
         ),
         lineManager: LineFallbackManager(),
       );
+
+      await MediaKit.ensureInitialized();
 
       // 3. Perform basic initialization (Pre-warms the default engine)
       await playerManager.initialize(engine: defaultEngine);
