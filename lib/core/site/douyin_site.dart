@@ -601,30 +601,6 @@ class DouyinSite implements LiveSite {
   }
 
 
-  /// - [webRid] 直播间RID
-  Future<String> _getWebCookie(String webRid) async {
-    // 优先复用全局缓存的动态 cookie（浏览器会话式，长期有效），避免每次都 HEAD 增加风控请求数
-    await _refreshDynamicCookie();
-    if (_dynamicCookie.isNotEmpty) {
-      return _dynamicCookie;
-    }
-    var headResp = await HttpClient.instance.head("https://live.douyin.com/$webRid", header: headers);
-    var dyCookie = "";
-    headResp.headers["set-cookie"]?.forEach((element) {
-      var cookie = element.split(";")[0];
-      if (cookie.contains("ttwid")) {
-        dyCookie += "$cookie;";
-      }
-      if (cookie.contains("__ac_nonce")) {
-        dyCookie += "$cookie;";
-      }
-      if (cookie.contains("msToken")) {
-        dyCookie += "$cookie;";
-      }
-    });
-    return dyCookie;
-  }
-
   /// 通过webRid获取直播间Web信息
   /// - [webRid] 直播间RID
   Future<Map> _getRoomDataByHtml(String webRid) async {
