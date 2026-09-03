@@ -88,10 +88,12 @@ subprojects {
 }
 
 // 统一 Java 编译版本(消除第三方模块 source/target 8 obsolete 警告)
+// afterEvaluate: 第三方在 configure 阶段显式 sourceCompatibility=8, 需在其后强制覆盖
 subprojects {
-    tasks.withType(org.gradle.api.tasks.compile.JavaCompile::class.java).configureEach {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+    afterEvaluate {
+        tasks.withType(org.gradle.api.tasks.compile.JavaCompile::class.java).configureEach {
+            options.release.set(17)
+        }
     }
 }
 
