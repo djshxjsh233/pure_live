@@ -1,6 +1,5 @@
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/common/widgets/menu_list_tile.dart';
 
 /// AppBar 菜单按钮：设置 / 关于 / 观看历史（登录入口已随 Firebase 移除）
 class MenuButton extends StatelessWidget {

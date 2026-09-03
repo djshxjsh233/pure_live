@@ -7,7 +7,6 @@ import 'adapters/video_player_adapter.dart';
 import 'core/line_fallback_manager.dart';
 import 'package:media_kit/media_kit.dart';
 import 'core/engine_fallback_manager.dart';
-import 'package:pure_live/common/global/platform_utils.dart';
 
 class GlobalPlayerService {
   GlobalPlayerService._();

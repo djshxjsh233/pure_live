@@ -7,7 +7,6 @@ import 'package:pure_live/player/interface/unified_player_interface.dart';
 
 class LiveAudioService {
   static LiveAudioHandler? _handler;
-  static bool _isInitializing = false;
   static Completer<LiveAudioHandler?>? _initCompleter;
 
   static Future<LiveAudioHandler?> _ensureInitialized() async {
@@ -15,7 +14,6 @@ class LiveAudioService {
     final existing = _initCompleter;
     if (existing != null) return existing.future;
 
-    _isInitializing = true;
     final completer = Completer<LiveAudioHandler?>();
     _initCompleter = completer;
     try {
@@ -35,7 +33,6 @@ class LiveAudioService {
       if (!completer.isCompleted) completer.complete(null);
       rethrow;
     } finally {
-      _isInitializing = false;
       _initCompleter = null;
     }
     return _handler;

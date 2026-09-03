@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:floating/floating.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_floating/flutter_floating.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:window_manager/window_manager.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/player/core/player_manager.dart';

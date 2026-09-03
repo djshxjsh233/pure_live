@@ -37,9 +37,6 @@ class PlayerKernelSettingsPage extends GetView<SettingsService> {
               );
             }),
             Obx(() {
-              String activeKey = SettingsService.to.player.videoPlayerKey.v;
-              
-
               return context.buildTile(
                 icon: Remix.global_line,
                 title: i18n("network_proxy"),
@@ -221,19 +218,26 @@ class PlayerKernelSettingsPage extends GetView<SettingsService> {
         return SimpleDialog(
           title: Text(i18n('volume_gain')),
           children: [
-            for (final gain in options)
-              RadioListTile<int>(
-                value: gain,
-                groupValue: SettingsService.to.vol.volumeGain.v,
-                title: Text('$gain%${gain == 100 ? "（${i18n('volume_gain_default_desc')}）" : ""}'),
-                onChanged: (value) {
-                  if (value != null) {
-                    SettingsService.to.vol.volumeGain.v = value;
-                    // 增益已接入 setVolume 全路径：下一次进房/滑动音量条即生效
-                    Navigator.of(context).pop();
-                  }
-                },
+            RadioGroup<int>(
+              groupValue: SettingsService.to.vol.volumeGain.v,
+              onChanged: (value) {
+                if (value != null) {
+                  SettingsService.to.vol.volumeGain.v = value;
+                  // 增益已接入 setVolume 全路径：下一次进房/滑动音量条即生效
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Column(
+                children: [
+                  for (final gain in options)
+                    RadioListTile<int>(
+                      value: gain,
+                      title: Text(
+                          '$gain%${gain == 100 ? "（${i18n('volume_gain_default_desc')}）" : ""}'),
+                    ),
+                ],
               ),
+            ),
           ],
         );
       },

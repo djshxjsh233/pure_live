@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:async';
-import 'dart:developer';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/site/huya_site.dart';
@@ -234,9 +233,9 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
       return LiveRoom();
     }
     _enterT0 = DateTime.now().millisecondsSinceEpoch;
-    print('LivePlay: 进房流程开始 Δ0ms');
+    debugPrint('LivePlay: 进房流程开始 Δ0ms');
     var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: roomId, platform: detail.value!.platform!);
-    print('LivePlay: getRoomDetail 完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
+    debugPrint('LivePlay: getRoomDetail 完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, isReCalculate: isReCalculate);
 
     detail.value = null;
@@ -409,7 +408,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
   // 设置播放器
   // =========================================================
   void setPlayer() async {
-    print('LivePlay: setPlayer(VideoController创建) Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
+    debugPrint('LivePlay: setPlayer(VideoController创建) Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
     Map<String, String> headers = {};
 
     if (currentSite.id == Sites.bilibiliSite) {
@@ -564,7 +563,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
         hasUseDefaultResolution = true;
       }
 
-      print('LivePlay: 画质解析完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
+      debugPrint('LivePlay: 画质解析完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
       await getPlayUrl();
     } catch (_) {
       ToastUtil.show(i18n('read_video_failed'));
@@ -585,7 +584,7 @@ class LivePlayController extends StateController with GetSingleTickerProviderSta
     }
 
     playUrls.value = playUrl;
-    print('LivePlay: 获取播放URL完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
+    debugPrint('LivePlay: 获取播放URL完成 Δ${DateTime.now().millisecondsSinceEpoch - _enterT0}ms');
     setPlayer();
   }
 

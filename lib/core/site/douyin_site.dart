@@ -187,7 +187,7 @@ class DouyinSite implements LiveSite {
           CoreLog.error("douyin 分类树获取失败(3次): $e");
           return [];
         }
-        CoreLog.w("douyin 分类树第${attempt}次失败，重试: $e");
+        CoreLog.w("douyin 分类树第$attempt次失败，重试: $e");
         await Future.delayed(Duration(milliseconds: 500 * attempt));
       }
     }
@@ -272,7 +272,7 @@ class DouyinSite implements LiveSite {
           CoreLog.error("douyin 分区房间获取失败(3次): $e");
           return [];
         }
-        CoreLog.w("douyin 分区房间第${attempt}次失败，重试: $e");
+        CoreLog.w("douyin 分区房间第$attempt次失败，重试: $e");
         await Future.delayed(Duration(milliseconds: 500 * attempt));
       }
     }
@@ -600,7 +600,7 @@ class DouyinSite implements LiveSite {
         fallbackAvatar: fallbackAvatar);
   }
 
-  /// 进入直播间前需要先获取cookie
+
   /// - [webRid] 直播间RID
   Future<String> _getWebCookie(String webRid) async {
     // 优先复用全局缓存的动态 cookie（浏览器会话式，长期有效），避免每次都 HEAD 增加风控请求数

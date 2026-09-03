@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:pure_live/common/index.dart';
@@ -16,16 +15,16 @@ import 'package:pure_live/common/global/platform/desktop_manager.dart';
 /// 不依赖业务埋点覆盖（本次 RecorderController 构造崩就发生在埋点之前）
 void setupGlobalErrorLogging() {
   FlutterError.onError = (details) {
-    print('===== FLUTTER ERROR =====');
-    print('exception: ${details.exception}');
-    print('context: ${details.context}');
-    if (details.stack != null) print('stack:\n${details.stack}');
+    debugPrint('===== FLUTTER ERROR =====');
+    debugPrint('exception: ${details.exception}');
+    debugPrint('context: ${details.context}');
+    if (details.stack != null) debugPrint('stack:\n${details.stack}');
     FlutterError.presentError(details); // 保持默认错误呈现行为
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    print('===== PLATFORM ERROR =====');
-    print('exception: $error');
-    print('stack:\n$stack');
+    debugPrint('===== PLATFORM ERROR =====');
+    debugPrint('exception: $error');
+    debugPrint('stack:\n$stack');
     return false; // 保持默认处理
   };
 }
@@ -56,9 +55,9 @@ void main(List<String> args) async {
       ),
     );
   }, (Object e, StackTrace s) {
-    print('===== ZONED ERROR =====');
-    print('exception: $e');
-    print('stack:\n$s');
+    debugPrint('===== ZONED ERROR =====');
+    debugPrint('exception: $e');
+    debugPrint('stack:\n$s');
   });
 }
 

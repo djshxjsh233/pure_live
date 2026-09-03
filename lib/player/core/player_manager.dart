@@ -140,7 +140,7 @@ class PlayerManager {
     Map<String, String> headers, {
     LiveRoom? room,
   }) async {
-    print('PlayerManager: play 进入 disposed=$_disposed isClosing=$_isClosing currentPlayer=${_currentPlayer != null}');
+    debugPrint('PlayerManager: play 进入 disposed=$_disposed isClosing=$_isClosing currentPlayer=${_currentPlayer != null}');
     if (_disposed || _isClosing) return;
     final mySessionId = ++_sessionId;
 
@@ -158,9 +158,9 @@ class PlayerManager {
       await switchEngine(_defaultEngine!, isManual: false);
     }
 
-    print('PlayerManager: play 初始化分支后 currentPlayer=${_currentPlayer != null}');
+    debugPrint('PlayerManager: play 初始化分支后 currentPlayer=${_currentPlayer != null}');
     if (!_isSessionValid(mySessionId)) {
-      print('PlayerManager: play 被 session 校验拦截');
+      debugPrint('PlayerManager: play 被 session 校验拦截');
       return;
     }
 
@@ -181,7 +181,7 @@ class PlayerManager {
     hasError.value = false;
 
     try {
-      print('PlayerManager: play 开始 setDataSource url=$url');
+      debugPrint('PlayerManager: play 开始 setDataSource url=$url');
       _stateSubject.add(PlayerState.preparing);
       await player.setDataSource(targetUrl, targetPlayUrls, headers, room: room);
       if (!_isSessionValid(mySessionId)) return;

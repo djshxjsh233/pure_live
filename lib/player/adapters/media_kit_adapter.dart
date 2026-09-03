@@ -21,8 +21,6 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   bool _listenerBound = false;
 
-  bool _softwareDecode = false;
-
   String? _currentUrl;
 
   final Stopwatch _openStopwatch = Stopwatch();
@@ -70,7 +68,7 @@ class MediaKitAdapter implements UnifiedPlayer {
 
       final stopwatch = Stopwatch()..start();
       _player = Player();
-      print('MediaKitAdapter: Player() 创建耗时 ${stopwatch.elapsedMilliseconds}ms');
+      debugPrint('MediaKitAdapter: Player() 创建耗时 ${stopwatch.elapsedMilliseconds}ms');
 
       if (_player.platform is NativePlayer) {
         final native = _player.platform as dynamic;
@@ -106,7 +104,7 @@ class MediaKitAdapter implements UnifiedPlayer {
           await native.setProperty('hwdec', 'no');
         }
 
-        print('MediaKitAdapter: MPV 属性下发耗时 ${stopwatch.elapsedMilliseconds}ms');
+        debugPrint('MediaKitAdapter: MPV 属性下发耗时 ${stopwatch.elapsedMilliseconds}ms');
       }
 
       // =========================
@@ -140,7 +138,7 @@ class MediaKitAdapter implements UnifiedPlayer {
 
       _initialized = true;
 
-      print('MediaKitAdapter: 初始化完成 总耗时 ${stopwatch.elapsedMilliseconds}ms');
+      debugPrint('MediaKitAdapter: 初始化完成 总耗时 ${stopwatch.elapsedMilliseconds}ms');
 
       _stateSubject.add(PlayerState.initialized);
     } catch (e, s) {
@@ -191,7 +189,7 @@ class MediaKitAdapter implements UnifiedPlayer {
       await _player.open(Media(url, httpHeaders: headers), play: true);
 
       _openStopwatch.stop();
-      print('MediaKitAdapter: open 拉流耗时 ${_openStopwatch.elapsedMilliseconds}ms');
+      debugPrint('MediaKitAdapter: open 拉流耗时 ${_openStopwatch.elapsedMilliseconds}ms');
 
       _stateSubject.add(PlayerState.ready);
 
@@ -465,7 +463,6 @@ class MediaKitAdapter implements UnifiedPlayer {
     } else {
       await native.setProperty('hwdec', 'no');
     }
-    _softwareDecode = !enabled;
     log('setHardwareDecode: ${enabled ? "恢复硬解" : "降级软解"}');
   }
 

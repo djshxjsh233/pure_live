@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/services/gist_backup_service.dart';
@@ -116,6 +115,7 @@ class _GistBackupPageState extends State<GistBackupPage> {
                 return;
               }
               GistBackupService.setToken(value);
+              if (!context.mounted) return;
               Navigator.of(context).pop();
               if (mounted) setState(() {});
               ToastUtil.show(i18n("gist_ready"));

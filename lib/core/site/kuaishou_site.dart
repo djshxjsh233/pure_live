@@ -192,7 +192,7 @@ class KuaishowSite implements LiveSite {
       }
     } else if (data is List && data.isNotEmpty && data[0] is Map && data[0]["url"] != null) {
       // 快手移动版新结构: [{url, bitrate, codec, cdn, ...}] 直接就是流地址
-      qulityList = data as List;
+      qulityList = data;
     }
 
     for (var quality in qulityList) {
@@ -355,7 +355,6 @@ class KuaishowSite implements LiveSite {
     return res;
   }
 
-  @override
   // did/cookie 就位标记
   bool _didReady = false;
 
@@ -389,6 +388,7 @@ class KuaishowSite implements LiveSite {
     }
   }
 
+  @override
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     // 先建立 did 会话(匿名自动/已登录直接), 再取流
     await _ensureDidSession();
@@ -580,7 +580,9 @@ class KuaishowSite implements LiveSite {
     final eq = html.indexOf('=', idx);
     if (eq < 0) return null;
     var start = eq + 1;
-    while (start < html.length && (html[start] == ' ' || html[start] == '\n' || html[start] == '\r' || html[start] == '\t')) start++;
+    while (start < html.length && (html[start] == ' ' || html[start] == '\n' || html[start] == '\r' || html[start] == '\t')) {
+      start++;
+    }
     if (start >= html.length || html[start] != '{') return null;
     var depth = 0;
     var inStr = false;

@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:pure_live/core/emoji/models/unified_emoji_model.dart';
 
@@ -14,7 +15,7 @@ class EmojiManager {
   Future<void> preload(String platform) async {
     if (_loadedPlatform == platform) return;
     final sw = Stopwatch()..start();
-    print('EmojiManager: preload 开始 platform=$platform');
+    debugPrint('EmojiManager: preload 开始 platform=$platform');
     EmojiAtlas.instance.clear();
     _tempCache.clear();
     _loadedPlatform = null;
@@ -24,7 +25,7 @@ class EmojiManager {
       final str = await rootBundle.loadString('assets/emo/json/$platform.json');
       list = UnifiedEmojiModel.parseToUnifiedList(str, platform);
     } catch (_) {
-      print('EmojiManager: preload 无资源/失败 platform=$platform');
+      debugPrint('EmojiManager: preload 无资源/失败 platform=$platform');
       return;
     }
 
@@ -77,7 +78,7 @@ class EmojiManager {
     }
     _tempCache.clear();
     _loadedPlatform = platform;
-    print('EmojiManager: preload 完成 ${sw.elapsedMilliseconds}ms platform=$platform');
+    debugPrint('EmojiManager: preload 完成 ${sw.elapsedMilliseconds}ms platform=$platform');
   }
 
   void release() {

@@ -1,7 +1,6 @@
 import 'package:pure_live/common/index.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:markdown_widget/config/configs.dart';
-import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:remixicon/remixicon.dart'; // 🌟 Imported Remix Icons pack
 
 class AboutPage extends StatefulWidget {
@@ -181,7 +180,6 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   void showNewFeaturesDialog() {
-    final config = Get.isDarkMode ? MarkdownConfig.darkConfig : MarkdownConfig.defaultConfig;
     final mediaQuery = MediaQuery.of(context);
     final maxWidth = mediaQuery.size.width * 0.9;
     final maxHeight = mediaQuery.size.height * 0.7;

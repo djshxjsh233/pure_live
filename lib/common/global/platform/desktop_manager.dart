@@ -247,23 +247,10 @@ class CustomTitleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final LinearGradient bgGradient = isDark
-        ? const LinearGradient(
-            colors: [Color(0xFF0D1B2A), Color(0xFF1B263B), Color(0xFF141E27)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : const LinearGradient(
-            colors: [Color(0xFFE8FAFC), Color(0xFFC8F1F5), Color(0xFF9BE7F0)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          );
-
     return Obx(() {
       final isFullscreen = GlobalPlayerState.to.isWindowFullscreen.value;
       final bgColor = isFullscreen || isDark ? Colors.black : theme.scaffoldBackgroundColor;
       final iconColor = isFullscreen || isDark ? Colors.white.withValues(alpha: 0.75) : Colors.black;
-      final currentRoute = RouteObserverController.to.currentRoute.value;
       final currentSize = SettingsService.to.window.windowSize.value;
       final showSizeText = SettingsService.to.window.isTracking.value;
 
