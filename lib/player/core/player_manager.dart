@@ -29,6 +29,8 @@ class PlayerManager {
 
   int _sessionId = 0;
   bool _isClosing = false;
+  /// 初始化单飞锁：并发的 initialize 复用同一个 Future，避免双建播放器
+  Future<void>? _initFuture;
 
   PlayerManager({
     required this.playerPool,
@@ -96,8 +98,12 @@ class PlayerManager {
     return w / h;
   }
 
-  Future<void> initialize({PlayerEngine engine = PlayerEngine.mediaKit}) async {
-    if (_disposed) return;
+  Future<void> initialize({PlayerEngine engine = PlayerEngine.mediaKit}) {
+    if (_disposed) return Future.value();
+    return _initFuture ??= _doInitialize(engine);
+  }
+
+  Future<void> _doInitialize(PlayerEngine engine) async {
     _stateSubject.add(PlayerState.initializing);
     try {
       _defaultEngine = engine;
@@ -115,6 +121,7 @@ class PlayerManager {
       isInitialized.value = true;
       _stateSubject.add(PlayerState.initialized);
     } catch (e, s) {
+      _initFuture = null; // 失败清锁，允许下次重试
       hasError.value = true;
       final exception = PlayerException(
         message: 'Initialize player failed',

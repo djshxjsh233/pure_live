@@ -3,6 +3,8 @@ import '../interface/unified_player_interface.dart';
 
 class PlayerPool {
   final Map<PlayerEngine, UnifiedPlayer> _cache = {};
+  /// 创建中的 Future（防止并发 getPlayer 双建原生播放器）
+  final Map<PlayerEngine, Future<UnifiedPlayer>> _pending = {};
 
   final Future<UnifiedPlayer> Function(PlayerEngine) factory;
 
@@ -12,12 +14,25 @@ class PlayerPool {
     if (_cache.containsKey(engine)) {
       return _cache[engine]!;
     }
+    final inflight = _pending[engine];
+    if (inflight != null) {
+      return inflight;
+    }
+    final future = _createPlayer(engine);
+    _pending[engine] = future;
+    try {
+      final player = await future;
+      _cache[engine] = player;
+      return player;
+    } finally {
+      _pending.remove(engine);
+    }
+  }
 
+  Future<UnifiedPlayer> _createPlayer(PlayerEngine engine) async {
     final player = await factory(engine);
 
     await player.init();
-
-    _cache[engine] = player;
 
     return player;
   }

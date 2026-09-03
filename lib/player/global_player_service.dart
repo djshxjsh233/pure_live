@@ -13,43 +13,51 @@ class GlobalPlayerService {
 
   static final GlobalPlayerService instance = GlobalPlayerService._();
 
-  late final PlayerManager playerManager;
+  late PlayerManager playerManager;
 
   bool _initialized = false;
 
+  static Future<void>? _initFuture;
+
   bool get initialized => _initialized;
 
-  Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
-    if (_initialized) return;
+  /// 单飞初始化：并发调用(启动预热 + 用户秒进房)复用同一个 Future，
+  /// 避免双建原生播放器导致灰屏/卡顿
+  Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) {
+    if (_initialized) return Future.value();
+    return _initFuture ??= _doInitialize(defaultEngine);
+  }
 
-    MediaKit.ensureInitialized();
-    // 1. Setup the Pool with a factory that knows how to create each Adapter
-    // （精简版：仅保留 MPV(media_kit) 播放器内核）
-    final playerPool = PlayerPool(
-      factory: (engine) async {
-        switch (engine) {
-          case PlayerEngine.mediaKit:
-            return MediaKitAdapter();
-        }
-      },
-    );
-
-    // 2. Instantiate the Orchestrator with all its specialized managers
-    playerManager = PlayerManager(
-      playerPool: playerPool,
-      fallbackManager: EngineFallbackManager(
-        defaultEngine: PlayerEngine.mediaKit,
-        supportedEngines: [PlayerEngine.mediaKit],
-      ),
-      lineManager: LineFallbackManager(),
-    );
-
-    // 3. Perform basic initialization (Pre-warms the default engine)
+  Future<void> _doInitialize(PlayerEngine defaultEngine) async {
     try {
+      MediaKit.ensureInitialized();
+      // 1. Setup the Pool with a factory that knows how to create each Adapter
+      // （精简版：仅保留 MPV(media_kit) 播放器内核）
+      final playerPool = PlayerPool(
+        factory: (engine) async {
+          switch (engine) {
+            case PlayerEngine.mediaKit:
+              return MediaKitAdapter();
+          }
+        },
+      );
+
+      // 2. Instantiate the Orchestrator with all its specialized managers
+      playerManager = PlayerManager(
+        playerPool: playerPool,
+        fallbackManager: EngineFallbackManager(
+          defaultEngine: PlayerEngine.mediaKit,
+          supportedEngines: [PlayerEngine.mediaKit],
+        ),
+        lineManager: LineFallbackManager(),
+      );
+
+      // 3. Perform basic initialization (Pre-warms the default engine)
       await playerManager.initialize(engine: defaultEngine);
       _initialized = true;
       log("GlobalPlayerService: Initialized successfully.", name: "GlobalPlayerService");
     } catch (e) {
+      _initFuture = null; // 失败清锁，允许重试
       log("GlobalPlayerService: Failed to initialize: $e", name: "GlobalPlayerService", error: e);
     }
   }
