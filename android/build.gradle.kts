@@ -87,6 +87,14 @@ subprojects {
     }
 }
 
+// 统一 Java 编译版本(消除第三方模块 source/target 8 obsolete 警告)
+subprojects {
+    tasks.withType(org.gradle.api.tasks.compile.JavaCompile::class.java).configureEach {
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
