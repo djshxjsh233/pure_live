@@ -15,18 +15,21 @@ class HistoryController extends GetxController {
     },
   );
 
+  static const int maxHistoryCount = 50;
+
   void addRoomToHistory(LiveRoom room) {
-    historyRooms.v.removeWhere((e) => e.roomId == room.roomId);
-    if (historyRooms.v.length >= 50) {
-      historyRooms.v.removeRange(0, historyRooms.v.length - 49);
+    final list = List<LiveRoom>.from(historyRooms.v);
+    list.removeWhere((e) => e.roomId == room.roomId);
+    list.insert(0, room);
+    // 溢出时踢掉最旧的(尾部=最早观看), 新记录保持头部
+    if (list.length > maxHistoryCount) {
+      list.removeRange(maxHistoryCount, list.length);
     }
-    historyRooms.v.insert(0, room);
-    historyRooms.refresh();
+    historyRooms.v = list;
   }
 
   void clearHistory() {
-    historyRooms.v.clear();
-    historyRooms.refresh();
+    historyRooms.v = <LiveRoom>[];
   }
 
   Map<String, dynamic> toJson() {
