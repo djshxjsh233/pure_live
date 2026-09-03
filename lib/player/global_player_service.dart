@@ -49,7 +49,7 @@ class GlobalPlayerService {
         lineManager: LineFallbackManager(),
       );
 
-      await MediaKit.ensureInitialized();
+      MediaKit.ensureInitialized();
 
       // 3. Perform basic initialization (Pre-warms the default engine)
       await playerManager.initialize(engine: defaultEngine);
