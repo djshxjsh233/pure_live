@@ -14,6 +14,6 @@ void main() {
   test('leaving a failed or empty room does not float a black player window', () {
     expect(shouldFloatAfterLivePlayExit(const RoomState(), hasVideo: true), isTrue);
     expect(shouldFloatAfterLivePlayExit(const RoomState(), hasVideo: false), isFalse);
-    expect(shouldFloatAfterLivePlayExit(const RoomState(loadError: 'Shopee access'), hasVideo: true), isFalse);
+    expect(shouldFloatAfterLivePlayExit(const RoomState(loadError: 'Access restricted'), hasVideo: true), isFalse);
   });
 }
