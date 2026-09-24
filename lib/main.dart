@@ -16,6 +16,7 @@ import 'package:pure_live/common/utils/shared_media_intake.dart';
 import 'package:pure_live/common/utils/share_command_handler.dart';
 import 'package:pure_live/common/global/platform/desktop_manager.dart';
 import 'package:pure_live/common/services/settings/player_settings_controller.dart';
+import 'package:pure_live/player/utils/popup_route_tracker.dart';
 
 void main(List<String> args) async {
   // Flutter abbreviates every framework error after the first one. In release
@@ -197,7 +198,7 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
               pageTransitionsTheme: appPageTransitionsTheme,
             ),
             locale: context.locale,
-            navigatorObservers: [FlutterSmartDialog.observer, LiveRouteObserver()],
+            navigatorObservers: [FlutterSmartDialog.observer, LiveRouteObserver(), PopupRouteTracker.instance],
             builder: FlutterSmartDialog.init(
               builder: (context, child) {
                 Widget resultWidget = child ?? const SizedBox.shrink();
