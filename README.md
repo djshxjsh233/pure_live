@@ -139,7 +139,7 @@ Android 根据设备显示模式动态适配刷新率：请求当前分辨率支
 
 ## 🛠️ 本地构建
 
-项目固定使用 Flutter `3.47.0` / Dart `3.13.0`、AGP `9.3.1`、Gradle `9.5.0` 与 Java 25 构建运行时，Android 字节码目标 Java/Kotlin 17。资源档位与缓存规则见 [构建资源策略](BUILD_POLICY.md)。
+项目固定使用 Flutter `3.47.5` / Dart `3.13.4`、AGP `9.4.1`、Gradle `9.8.0` 与 Java 26 构建运行时，Android 字节码目标 Java/Kotlin 17。资源档位与缓存规则见 [构建资源策略](BUILD_POLICY.md)。
 
 完整质量门禁：
 
