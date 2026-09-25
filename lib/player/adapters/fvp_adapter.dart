@@ -21,7 +21,12 @@ import 'package:pure_live/player/models/player_state.dart';
 /// streams the older engines drop, and it prefers platform hardware decoders
 /// (MediaCodec / VideoToolbox) with FFmpeg and dav1d as software fallbacks.
 class FvpAdapter
-    implements UnifiedPlayer, VideoFitAwarePlayer, SourceTransitionAwarePlayer, AudioOutputSuppressionAwarePlayer {
+    implements
+        UnifiedPlayer,
+        VideoFitAwarePlayer,
+        SourceTransitionAwarePlayer,
+        AudioOutputSuppressionAwarePlayer,
+        PrivateInputAwarePlayer {
   mdk.Player? _player;
   bool _initialized = false;
   bool _disposed = false;
@@ -162,6 +167,9 @@ class FvpAdapter
   void setAudioOutputSuppressed(bool suppressed) => _audioOutputSuppressed = suppressed;
 
   @override
+  void setPrivateInput(bool value, {String? sourceIdentity}) => _privateInput = value;
+
+  @override
   void beginSourceTransition() {
     if (_disposed) return;
     _acceptSourceEvents = false;
@@ -189,6 +197,9 @@ class FvpAdapter
     player.state = mdk.PlaybackState.stopped;
     player.videoDecoders = videoDecoders(hardware: _hardwareDecoding);
     player.setProperty('avio.headers', encodeHeaders(headers));
+    // FFmpeg's http/tls option; an empty value (local relay, no proxy) is
+    // ignored because FFmpeg only uses an http:// proxy URL.
+    player.setProperty('avio.http_proxy', PlaybackProxyPolicy.currentNativeUrl(privateInput: _privateInput));
     player.setActiveTracks(mdk.MediaType.video, audioOnly ? const [] : const [0]);
     player.volume = _audioOutputSuppressed ? 0.0 : _volume;
     player.media = url;
