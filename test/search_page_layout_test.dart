@@ -179,6 +179,23 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+  testWidgets('long coverage notice starts on one line and expands on demand', (tester) async {
+    // Narrow viewport: this project ships five platforms, so its coverage text
+    // is shorter than upstream's and only overflows at this width.
+    await _mount(tester, lang: 'zh', size: const Size(320, 900), scale: 1, state: 'initial');
+    Text notice() => tester.widget<Text>(find.byKey(const ValueKey('search-capability-notice')));
+    expect(notice().maxLines, 1);
+    final toggle = find.byKey(const ValueKey('search-capability-toggle'));
+    expect(toggle, findsOneWidget);
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(notice().maxLines, isNull);
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(notice().maxLines, 1);
+    expect(tester.takeException(), null);
+  });
+
   for (final lang in ['zh', 'en']) {
     for (final state in ['initial', 'loading', 'empty', 'error', 'partial', 'results']) {
       testWidgets('$lang $state remains reachable in short large-text viewport', (tester) async {
