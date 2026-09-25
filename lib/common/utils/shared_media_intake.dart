@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:share_handler/share_handler.dart';
 
-enum SharedMediaIntakeKind { roomCommand, files, unsupported, failed }
+enum SharedMediaIntakeKind { roomCommand, liveLink, files, unsupported, failed }
 
 class SharedMediaIntakeResult {
   const SharedMediaIntakeResult({required this.kind, this.attemptedCount = 0, this.acceptedCount = 0});
@@ -12,7 +12,8 @@ class SharedMediaIntakeResult {
   final int attemptedCount;
   final int acceptedCount;
 
-  bool get handled => kind == SharedMediaIntakeKind.roomCommand || attemptedCount > 0;
+  bool get handled =>
+      kind == SharedMediaIntakeKind.roomCommand || kind == SharedMediaIntakeKind.liveLink || attemptedCount > 0;
 }
 
 typedef SharedRoomCommandPredicate = bool Function(String text);
@@ -27,13 +28,24 @@ class SharedMediaIntake {
     required this.consumeRoomCommand,
     required this.releaseAttachment,
     required this.notifyUnsupported,
+    SharedRoomCommandPredicate? isLiveLink,
+    SharedRoomCommandConsumer? openLiveLink,
     SharedMediaErrorReporter? reportError,
-  }) : _reportError = reportError ?? _logError;
+  }) : isLiveLink = isLiveLink ?? _noLiveLink,
+       openLiveLink = openLiveLink ?? _ignoreLiveLink,
+       _reportError = reportError ?? _logError;
+
+  static bool _noLiveLink(String _) => false;
+  static Future<bool> _ignoreLiveLink(String _) async => false;
 
   final SharedRoomCommandPredicate isRoomCommand;
   final SharedRoomCommandConsumer consumeRoomCommand;
   final SharedAttachmentReleaser releaseAttachment;
   final SharedMediaFeedback notifyUnsupported;
+
+  /// Text shared from a platform app ("快来看直播 https://live.bilibili.com/6 …").
+  final SharedRoomCommandPredicate isLiveLink;
+  final SharedRoomCommandConsumer openLiveLink;
   final SharedMediaErrorReporter _reportError;
   Future<void> _queue = Future<void>.value();
 
@@ -60,6 +72,15 @@ class SharedMediaIntake {
         final accepted = await consumeRoomCommand(text);
         return SharedMediaIntakeResult(
           kind: SharedMediaIntakeKind.roomCommand,
+          attemptedCount: 1,
+          acceptedCount: accepted ? 1 : 0,
+        );
+      }
+
+      if (text.isNotEmpty && isLiveLink(text)) {
+        final accepted = await openLiveLink(text);
+        return SharedMediaIntakeResult(
+          kind: SharedMediaIntakeKind.liveLink,
           attemptedCount: 1,
           acceptedCount: accepted ? 1 : 0,
         );

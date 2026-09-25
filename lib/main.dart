@@ -14,6 +14,7 @@ import 'package:pure_live/common/global/platform_utils.dart';
 import 'package:pure_live/routes/route_observer_controller.dart';
 import 'package:pure_live/common/utils/shared_media_intake.dart';
 import 'package:pure_live/common/utils/share_command_handler.dart';
+import 'package:pure_live/common/utils/shared_live_link_opener.dart';
 import 'package:pure_live/common/global/platform/desktop_manager.dart';
 import 'package:pure_live/common/services/settings/player_settings_controller.dart';
 import 'package:pure_live/player/utils/popup_route_tracker.dart';
@@ -111,6 +112,8 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
         await FileUtils.cleanupOwnedSharedMediaFile(File(path));
       },
       notifyUnsupported: (key) => ToastUtil.show(i18n(key)),
+      isLiveLink: SharedLiveLinkOpener.containsLiveLink,
+      openLiveLink: SharedLiveLinkOpener().open,
       reportError: (error, stackTrace) => debugPrint('Shared media receiver failed: $error\n$stackTrace'),
     );
     final receiver = SharedMediaReceiver(
