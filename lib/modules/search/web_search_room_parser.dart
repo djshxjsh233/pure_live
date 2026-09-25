@@ -27,7 +27,6 @@ import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
 import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
 import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
 import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
-import 'package:pure_live/core/site/sixroom/sixroom_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 import 'package:pure_live/core/site/seventeenlive/seventeenlive_link.dart';
@@ -173,10 +172,6 @@ class WebSearchRoomParser {
     final baiduLive = BaiduLiveLink.parseRoomId(rawUrl);
     if (baiduLive != null) {
       return WebSearchRoomTarget(platform: Sites.baiduLiveSite, roomId: baiduLive);
-    }
-    final sixRoom = SixRoomLink.parseRoomId(rawUrl);
-    if (sixRoom != null) {
-      return WebSearchRoomTarget(platform: Sites.sixRoomSite, roomId: sixRoom);
     }
     final lookLive = LookLiveLink.parseRoomId(rawUrl);
     if (lookLive != null) {

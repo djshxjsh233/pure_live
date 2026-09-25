@@ -36,7 +36,6 @@ import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
 import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
-import 'package:pure_live/core/site/sixroom/sixroom_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -179,8 +178,6 @@ class RoomExternalOpener {
         return _official(() => KugouLiveLink.watchUrl(id));
       case Sites.baiduLiveSite:
         return _official(() => BaiduLiveLink.watchUrl(id));
-      case Sites.sixRoomSite:
-        return _official(() => SixRoomLink.watchUrl(id));
       case Sites.lookLiveSite:
         return _official(() => LookLiveLink.watchUrl(id));
       case Sites.xiaohongshuSite:

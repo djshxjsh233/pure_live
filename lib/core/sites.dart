@@ -18,7 +18,6 @@ import 'site/rumble/rumble_site.dart';
 import 'site/douyin/douyin_site.dart';
 import 'site/jdlive/jd_live_site.dart';
 import 'site/youtube/youtube_site.dart';
-import 'site/sixroom/sixroom_site.dart';
 import 'site/openrec/openrec_site.dart';
 import 'site/picarto/picarto_site.dart';
 import 'site/huajiao/huajiao_site.dart';
@@ -97,7 +96,6 @@ class Sites {
   static const String taobaoLiveSite = 'taobaolive';
   static const String kugouLiveSite = 'kugoulive';
   static const String baiduLiveSite = 'baidulive';
-  static const String sixRoomSite = 'sixroom';
   static const String lookLiveSite = 'looklive';
   static const String seventeenLiveSite = '17live';
 
@@ -144,7 +142,6 @@ class Sites {
     taobaoLiveSite,
     kugouLiveSite,
     baiduLiveSite,
-    sixRoomSite,
     lookLiveSite,
     seventeenLiveSite,
     iptvSite,
@@ -200,7 +197,6 @@ class Sites {
     baiduLiveSite: '$_assetRoot/baidu.png',
     lookLiveSite: '$_assetRoot/look.png',
     seventeenLiveSite: '$_assetRoot/17live.png',
-    sixRoomSite: '$_assetRoot/sixroom.png',
     youtubeSite: '$_assetRoot/youtube.png',
     bigoSite: '$_assetRoot/bigo.png',
     liveMeSite: '$_assetRoot/liveme.png',
@@ -409,12 +405,6 @@ class Sites {
         logo: logoForId(baiduLiveSite),
         liveSite: BaiduLiveSite(),
       ),
-      sixRoomSite => Site(
-        id: sixRoomSite,
-        name: i18n('site_sixroom'),
-        logo: logoForId(sixRoomSite),
-        liveSite: SixRoomSite(),
-      ),
       lookLiveSite => Site(
         id: lookLiveSite,
         name: i18n('site_looklive'),
@@ -480,8 +470,7 @@ class Sites {
       taobaoLiveSite,
       kugouLiveSite,
       baiduLiveSite,
-      sixRoomSite,
-      lookLiveSite,
+        lookLiveSite,
       seventeenLiveSite,
       iptvSite,
     ])

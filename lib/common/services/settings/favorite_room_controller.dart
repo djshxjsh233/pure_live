@@ -90,10 +90,9 @@ class FavoriteRoomController extends GetxController {
     Sites.taobaoLiveSite, // v34
     Sites.kugouLiveSite, // v35
     Sites.baiduLiveSite, // v36
-    Sites.sixRoomSite, // v37
     Sites.lookLiveSite, // v38
   ];
-  static const int currentSiteCatalogMigration = 38;
+  static const int currentSiteCatalogMigration = 37;
 
   void _migrateSiteCatalog() {
     assert(currentSiteCatalogMigration == 2 + _catalogAdditions.length);

@@ -136,7 +136,6 @@ void main() {
       Sites.taobaoLiveSite: (NativeSearchCoverage.roomLookup, false),
       Sites.kugouLiveSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.baiduLiveSite: (NativeSearchCoverage.roomLookup, false),
-      Sites.sixRoomSite: (NativeSearchCoverage.liveAndOffline, false),
       Sites.lookLiveSite: (NativeSearchCoverage.roomLookup, false),
     };
     expect(expected.keys, everyElement(isIn(Sites.supportedSiteIds)));

@@ -20,7 +20,6 @@ void main() {
     'taobaolive': ('live:12345', 'https://h5.m.taobao.com/taolive/video.html?id=12345'),
     'kugoulive': ('12345', 'https://fanxing.kugou.com/12345'),
     'baidulive': ('123456', 'https://live.baidu.com/m/room/123456'),
-    'sixroom': ('12345', 'https://v.6.cn/12345'),
     'looklive': ('12345', 'https://look.163.com/live?id=12345'),
   };
   for (final entry in newPlatformWebTargets.entries) {
@@ -65,7 +64,6 @@ void main() {
       'taobaolive': 'live:0',
       'kugoulive': 'abc',
       'baidulive': '12345',
-      'sixroom': '1',
       'looklive': '1',
     };
     for (final entry in invalid.entries) {

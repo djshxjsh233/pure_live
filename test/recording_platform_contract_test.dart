@@ -50,7 +50,6 @@ void main() {
         Sites.taobaoLiveSite,
         Sites.kugouLiveSite,
         Sites.baiduLiveSite,
-        Sites.sixRoomSite,
         Sites.lookLiveSite,
         Sites.iptvSite,
       ]),

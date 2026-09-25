@@ -270,7 +270,6 @@ void main() {
     Sites.taobaoLiveSite,
     Sites.kugouLiveSite,
     Sites.baiduLiveSite,
-    Sites.sixRoomSite,
     Sites.lookLiveSite,
   ]) {
     testWidgets('$platform native search is actionable and keeps its web capability', (tester) async {

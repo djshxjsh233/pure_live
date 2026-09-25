@@ -148,11 +148,6 @@ class LiveSearchCapabilities {
       supportsPagination: false,
       supportsWebSearch: false,
     ),
-    Sites.sixRoomSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.lookLiveSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.roomLookup,
       supportsPagination: false,
