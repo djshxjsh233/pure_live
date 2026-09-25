@@ -13,6 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   ffmpeg_kit_extended_flutter
   flutter_acrylic
   flutter_inappwebview_windows
+  fvp
   media_kit_video
   permission_handler_windows
   screen_retriever_windows
