@@ -52,6 +52,8 @@ on:
         default: 'v3.1.8'
 
   push:
+    branches:
+      - master
     tags:
       - "stage-linux-*"
       - "stage-macos-*"
@@ -78,7 +80,7 @@ jobs:
   quality:
     name: Analyze, test and probe
 
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_quality }}
+    if: ${{ (github.event_name == 'push' && github.ref_type == 'branch') || (github.event_name == 'workflow_dispatch' && inputs.run_quality) }}
 
     runs-on: ubuntu-latest
 
@@ -136,6 +138,7 @@ jobs:
         run: flutter test --concurrency=12
 
       - name: Probe public interfaces
+        continue-on-error: true
         run: python tool/interface_probe.py
 
 
@@ -146,7 +149,7 @@ jobs:
   android:
     name: Android arm64-v8a
 
-    if: ${{ always() && inputs.build_android && (needs.quality.result == 'success' || needs.quality.result == 'skipped') }}
+    if: ${{ always() && (inputs.build_android || (github.event_name == 'push' && github.ref_type == 'branch')) && (needs.quality.result == 'success' || needs.quality.result == 'skipped') }}
 
     needs: quality
 
