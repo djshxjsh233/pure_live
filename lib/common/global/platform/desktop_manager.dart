@@ -655,6 +655,10 @@ mixin DesktopWindowMixin<T extends StatefulWidget> on State<T> implements Window
     }
   }
 
+  /// Resolves once the app navigator is past the splash route. A share that
+  /// cold-starts the app arrives before routes exist.
+  Future<void> waitForShareNavigator() => _waitForShareCommandNavigator();
+
   Future<BuildContext> _waitForShareCommandNavigator() async {
     final deadline = DateTime.now().add(const Duration(seconds: 8));
     while (mounted && DateTime.now().isBefore(deadline)) {
