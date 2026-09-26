@@ -84,15 +84,12 @@ class AppInitializer {
     // SettingsService was registered, then work on a later launch only because
     // the database/cache files had already been created.
     await InitialServices.init();
+    // A window opened by WindowsMultiInstanceLauncher starts from the opening
+    // window's settings (proxy, cookies, follows) instead of an empty profile.
     final configFilePath = WindowsMultiInstanceLauncher.configFileFromArgs(args);
-
-    if (configFilePath != null && configFilePath.isNotEmpty) {
+    if (configFilePath != null) {
       final restored = await Get.find<BackupController>().recoverAndDelete(File(configFilePath));
-      log(
-        restored
-            ? 'Windows multi-instance settings restored: $configFilePath'
-            : 'Windows multi-instance settings restore failed: $configFilePath',
-      );
+      log('Windows multi-instance settings ${restored ? 'restored' : 'restore failed'}: $configFilePath');
     }
     configureRecorderProxyRouting((_) {
       final proxy = SettingsService.to.proxy;

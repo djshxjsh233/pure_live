@@ -463,6 +463,7 @@ class _MultiviewPageState extends State<MultiviewPage> {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // 页级弹幕开关（连接管理在核心层，UI 只切显隐开关）。
           Obx(() {
             final enabled = controller.danmakuEnabled.value;
             final theme = Theme.of(context);
