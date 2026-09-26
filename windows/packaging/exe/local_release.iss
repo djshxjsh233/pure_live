@@ -52,7 +52,7 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 ; installs over the previous application directory. Remove only replaceable
 ; runtime payload before copying the reviewed package so retired plugins,
 ; obsolete assets and linker by-products cannot survive an upgrade. AppData
-; remains outside this list and retains follows, settings, IPTV and recordings.
+; remains outside this list and retains follows, settings and recordings.
 Type: filesandordirs; Name: "{app}\data"
 Type: files; Name: "{app}\*.dll"
 Type: files; Name: "{app}\*.exp"
@@ -62,7 +62,7 @@ Type: files; Name: "{app}\*.pdb"
 
 [Dirs]
 ; Runtime state is intentionally retained during an uninstall/reinstall so a
-; normal version upgrade never removes follows, settings or IPTV providers.
+; normal version upgrade never removes follows or settings.
 Name: "{app}\AppData"; Flags: uninsneveruninstall
 
 [Icons]
@@ -128,8 +128,8 @@ begin
      SameText(RemoveBackslashUnlessRoot(PreviousInstallDirectory), NewDirectory) then
     exit;
 
-  { The app consumes this ledger on first start and merges the old Hive/IPTV
-    data into the newly selected directory before controllers initialize. }
+  { The app consumes this ledger on first start and merges the old Hive data
+    into the newly selected directory before controllers initialize. }
   LedgerPath := AddBackslash(NewDirectory) + 'AppData\previous_install_locations.txt';
   ForceDirectories(ExtractFileDir(LedgerPath));
   SaveStringToFile(LedgerPath, RemoveBackslashUnlessRoot(PreviousInstallDirectory) + #13#10, True);

@@ -39,30 +39,11 @@ void main() {
     expect(result, [newC, rewatchedA]);
   });
 
-  test('IPTV provider catch-up policy survives room JSON without accepting non-finite numbers', () {
-    final stored = LiveRoom(
-      roomId: 'iptv-1',
-      platform: 'iptv',
-      catchUpMode: 'append',
-      catchUpSource: '&start={utc}',
-      catchUpDays: 3.5,
-      catchUpCorrectionHours: -2.5,
-    );
-    final decoded = LiveRoom.fromJson(stored.toJson());
-
-    expect(decoded.catchUpMode, 'append');
-    expect(decoded.catchUpSource, '&start={utc}');
-    expect(decoded.catchUpDays, 3.5);
-    expect(decoded.catchUpCorrectionHours, -2.5);
-    expect(LiveRoom.fromJson({'catchUpDays': 'NaN'}).catchUpDays, isNull);
-    expect(LiveRoom.fromJson({'catchUpCorrectionHours': double.infinity}).catchUpCorrectionHours, isNull);
-  });
-
-  test('IPTV HTTP headers survive room JSON with normalized names and no control characters', () {
+  test('room HTTP headers survive room JSON with normalized names and no control characters', () {
     final decoded = LiveRoom.fromJson(
       LiveRoom(
-        roomId: 'iptv-headers',
-        platform: 'iptv',
+        roomId: 'headers-1',
+        platform: 'douyin',
         httpHeaders: const {
           'User-Agent': 'Channel Agent',
           'Referrer': 'https://fixture/room',

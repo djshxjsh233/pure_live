@@ -88,13 +88,6 @@ class PlaybackHeaderResolver {
           if (cookie.isNotEmpty) 'cookie': cookie,
         };
         break;
-      case Sites.iptvSite:
-        final userAgent = _configuredValue((settings) => settings.iptv.customIptvUserAgent.value);
-        headers = <String, String>{
-          if (userAgent.isNotEmpty) 'user-agent': userAgent,
-          ...HttpHeaderPolicy.normalize(roomHeaders),
-        };
-        break;
       default:
         headers = const <String, String>{};
     }

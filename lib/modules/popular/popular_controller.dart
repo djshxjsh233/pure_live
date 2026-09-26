@@ -54,10 +54,6 @@ class PopularController extends GetxController with GetTickerProviderStateMixin 
               ),
             );
           }
-          if (site.id == Sites.iptvSite) {
-            return PopularLocalReactiveController(site);
-          }
-
           if (site.id == Sites.kuaishouSite) {
             return PopularServerAllController(site);
           }

@@ -167,7 +167,7 @@ void main() {
   tearDown(Get.reset);
   tearDownAll(Hive.close);
 
-  for (final platform in [Sites.douyinSite, Sites.kuaishouSite, Sites.iptvSite, Sites.bilibiliSite]) {
+  for (final platform in [Sites.douyinSite, Sites.kuaishouSite, Sites.bilibiliSite]) {
     testWidgets('empty search action follows actual $platform capability', (tester) async {
       final c = await _mount(tester, platform: platform);
       final status = tester.widget<AppStatusView>(find.byType(AppStatusView));

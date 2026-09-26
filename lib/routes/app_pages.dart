@@ -1,7 +1,6 @@
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/auth/mine_page.dart';
-import 'package:pure_live/modules/iptv/iptv_page.dart';
 import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/auth/sign_in_page.dart';
@@ -79,7 +78,6 @@ class AppPages {
     GetPage(name: RoutePath.kHistory, page: _smoothPage(HistoryPage.new)),
     GetPage(name: RoutePath.kSearch, page: _smoothPage(SearchPage.new), bindings: [SearchBinding()]),
     GetPage(name: RoutePath.kBackup, page: _smoothPage(BackupPage.new)),
-    GetPage(name: RoutePath.kIptv, page: _smoothPage(IptvPage.new)),
     GetPage(name: RoutePath.kAbout, page: _smoothPage(AboutPage.new)),
     GetPage(
       name: RoutePath.kAreaRooms,

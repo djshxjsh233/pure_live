@@ -115,8 +115,8 @@ LivePlayQuality resolveAppliedPlayQuality({
 
 /// Removes blank and duplicate lines while preserving platform priority.
 ///
-/// Scheme validation remains adapter-specific because imported IPTV sources
-/// may legitimately use non-HTTP protocols.
+/// Scheme validation stays adapter-specific because a platform may legitimately
+/// resolve a non-HTTP play protocol.
 List<String> normalizeResolvedPlayUrls(Iterable<String> urls) {
   final result = <String>[];
   final seen = <String>{};

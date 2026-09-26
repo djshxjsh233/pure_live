@@ -445,7 +445,7 @@ function Select-PlatformTab {
         $name = "home-platform-tab-$attempt"
         Save-UiDump $name
         $xmlText = Get-Content -LiteralPath (Join-Path $evidence "$name.xml") -Raw -Encoding UTF8
-        $tabs = @(Get-RecordingPlatformTabs -Xml $xmlText -KnownLabels @(@($platformLabels.Values) + @('全部', 'All', 'IPTV')))
+        $tabs = @(Get-RecordingPlatformTabs -Xml $xmlText -KnownLabels @(@($platformLabels.Values) + @('全部', 'All')))
         $target = @($tabs | Where-Object { $_.Label -ceq $Label -and ($_.Right - $_.Left) -ge 20 })
         if ($target.Count -eq 1) {
             if ($target[0].Selected) { return }

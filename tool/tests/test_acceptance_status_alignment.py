@@ -8,8 +8,6 @@ ROOT = Path(__file__).resolve().parents[2]
 MATRIX = ROOT / "docs" / "ACCEPTANCE_MATRIX_3_1_0.md"
 STATUS = ROOT / "docs" / "ACCEPTANCE_STATUS_3_2_0.md"
 SITES = ROOT / "lib" / "core" / "sites.dart"
-EXPANSION = ROOT / "docs" / "PLATFORM_EXPANSION_AUDIT_2026_09_07.md"
-FEATURE_PLAN = ROOT / "docs" / "FEATURE_EXPANSION_3_2_0.md"
 
 
 class AcceptanceStatusAlignmentTests(unittest.TestCase):
@@ -57,40 +55,24 @@ class AcceptanceStatusAlignmentTests(unittest.TestCase):
         )
         self.assertTrue(current_summary in status, f"Missing current state summary: {current_summary}")
 
-    def test_current_platform_totals_follow_the_registry_and_expansion_head(self):
+    def test_current_platform_totals_follow_the_registry_and_status_head(self):
         sites = SITES.read_text(encoding="utf-8")
         status = STATUS.read_text(encoding="utf-8")
-        expansion = EXPANSION.read_text(encoding="utf-8")
         block_match = re.search(
-            r"static const Set<String> supportedSiteIds = \{(?P<body>.*?)^\s*\};",
+            r"static const Set<String> supportedSiteIds = \{(?P<body>.*?)\};",
             sites,
             re.MULTILINE | re.DOTALL,
         )
         self.assertIsNotNone(block_match)
-        registered = re.findall(r"^\s+(\w+Site),\s*$", block_match.group("body"), re.MULTILINE)
-        self.assertIn("iptvSite", registered)
-        self.assertEqual(len(registered), len(set(registered)))
-        ordinary_count = len(registered) - 1
-
-        expansion_match = re.search(
-            r"当前 \*\*(\d+) 个直播站点 \+ IPTV，(\d+) 组未注册\*\*",
-            expansion,
+        registered = re.findall(r"(\w+Site)", block_match.group("body"))
+        self.assertEqual(
+            registered,
+            ["bilibiliSite", "douyuSite", "huyaSite", "douyinSite", "kuaishouSite"],
         )
-        self.assertIsNotNone(expansion_match)
-        self.assertEqual(int(expansion_match.group(1)), ordinary_count)
-        remaining_count = int(expansion_match.group(2))
+        self.assertEqual(len(registered), len(set(registered)))
 
-        expected_summary = f"当前 **{ordinary_count} 个直播站点 + IPTV，{remaining_count} 组未注册**"
+        expected_summary = f"当前 **{len(registered)} 个直播站点，共 {len(registered)} 个适配器**"
         self.assertTrue(expected_summary in status, f"Missing current platform summary: {expected_summary}")
-
-        feature_plan = FEATURE_PLAN.read_text(encoding="utf-8")
-        expected_plan_total = f"**{ordinary_count} 个直播站点 + IPTV，共 {len(registered)} 个适配器**"
-        self.assertIn(expected_plan_total, feature_plan)
-        self.assertIn(f"## A. 已注册的 {len(registered)} 个适配器", feature_plan)
-        plan_section = feature_plan.split("## A. 已注册的", 1)[1].split("### ", 1)[0]
-        plan_rows = re.findall(r"^\| P[01] \| ([^|]+) \|", plan_section, re.MULTILINE)
-        self.assertEqual(len(plan_rows), len(registered))
-        self.assertEqual(len(set(plan_rows)), len(plan_rows))
 
 
 if __name__ == "__main__":

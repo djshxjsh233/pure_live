@@ -1,8 +1,8 @@
 /// Normalizes image links returned by the supported live platforms.
 ///
-/// Several APIs still return protocol-relative CDN links (`//...`) while some
-/// IPTV lists contain a host without a scheme. Flutter's network image loader
-/// requires an absolute HTTP(S) URI.
+/// Several APIs still return protocol-relative CDN links (`//...`) or a bare
+/// host without a scheme. Flutter's network image loader requires an absolute
+/// HTTP(S) URI.
 String normalizeNetworkImageUrl(String? source) {
   var value = source?.trim() ?? '';
   if (value.isEmpty || value.toLowerCase() == 'null') return '';

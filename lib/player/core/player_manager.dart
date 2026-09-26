@@ -2361,7 +2361,7 @@ class PlayerManager {
 
   bool get _isContinuousLiveSource {
     final room = currentFloatRoom;
-    return room != null && room.isRecord != true && room.isCatchUp != true;
+    return room != null && room.isRecord != true;
   }
 
   bool _shouldMaintainPlayback(UnifiedPlayer player, int sessionId) {

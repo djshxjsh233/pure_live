@@ -6,7 +6,6 @@ enum NativeSearchCoverage {
   channelLookup,
   roomLookup,
   showcaseSnapshot,
-  localChannels,
   webOnly,
   unavailable,
 }
@@ -37,11 +36,6 @@ class LiveSearchCapabilities {
     Sites.huyaSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.douyinSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.kuaishouSite: LiveSearchCapability(coverage: NativeSearchCoverage.webOnly, supportsPagination: false),
-    Sites.iptvSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.localChannels,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
   };
 
   static const LiveSearchCapability _unknown = LiveSearchCapability(

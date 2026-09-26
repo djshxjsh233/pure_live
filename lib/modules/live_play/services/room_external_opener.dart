@@ -64,8 +64,7 @@ class RoomExternalOpener {
               : 'kwai://liveaggregatesquare?liveStreamId=$encoded&recoStreamId=$encoded&recoLiveStreamId=$encoded&liveSquareSource=28&path=/rest/n/live/feed/sharePage/slide/more&mt_product=H5_OUTSIDE_CLIENT_SHARE',
         );
       default:
-        // IPTV has media locations, not an official room webpage. Never forward
-        // an arbitrary imported link or an empty string as a shell target.
+        // Never forward an arbitrary link or an empty string as a shell target.
         return null;
     }
   }

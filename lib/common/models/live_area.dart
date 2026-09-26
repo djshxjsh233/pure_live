@@ -29,7 +29,7 @@ class LiveArea {
   }
 
   /// Legacy sites identify categories by platform and ID, independently of
-  /// parent taxonomy. IPTV likewise resolves globally unique channel IDs.
+  /// the parent taxonomy.
   static String? identityKeyFor({String? platform, String? areaId, String? areaType}) {
     final site = platform?.trim().toLowerCase() ?? '';
     final id = areaId?.trim() ?? '';

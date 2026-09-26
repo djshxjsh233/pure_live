@@ -271,18 +271,6 @@
             880
           ]
         },
-        "settings.iptv": {
-          "x": 720,
-          "y": 1232,
-          "label": "设置：IPTV",
-          "semantic": "IPTV 设置…",
-          "bounds": [
-            64,
-            1056,
-            1376,
-            1408
-          ]
-        },
         "settings.refresh": {
           "x": 720,
           "y": 1760,
@@ -1014,28 +1002,6 @@
               "center": [
                 720.0,
                 704.0
-              ],
-              "clickable": true,
-              "longClickable": false,
-              "scrollable": false,
-              "checkable": false,
-              "checked": false,
-              "selected": false
-            },
-            {
-              "text": "",
-              "semantic": "IPTV 设置\n管理您的播放列表和 EPG 订阅源",
-              "resourceId": "",
-              "class": "android.widget.Button",
-              "bounds": [
-                64,
-                1056,
-                1376,
-                1408
-              ],
-              "center": [
-                720.0,
-                1232.0
               ],
               "clickable": true,
               "longClickable": false,
@@ -2933,18 +2899,6 @@
             435,
             1147,
             724
-          ]
-        },
-        "settings.iptv": {
-          "x": 600,
-          "y": 1014,
-          "label": "设置：IPTV",
-          "semantic": "IPTV 设置…",
-          "bounds": [
-            53,
-            869,
-            1147,
-            1159
           ]
         },
         "settings.refresh": {

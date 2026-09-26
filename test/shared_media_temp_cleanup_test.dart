@@ -68,16 +68,6 @@ void main() {
     expect(await sibling.exists(), isTrue);
     expect(await sibling.parent.exists(), isTrue);
   });
-
-  test('shared importers always release plugin-owned temporary input', () {
-    final playlistSource = File('lib/core/iptv/services/iptv_import_manager.dart').readAsStringSync();
-    final epgSource = File('lib/core/iptv/services/epg_import_manager.dart').readAsStringSync();
-
-    for (final source in [playlistSource, epgSource]) {
-      expect(source, contains('finally {'));
-      expect(source, contains('FileUtils.cleanupOwnedSharedMediaFile(file)'));
-    }
-  });
 }
 
 class _TemporaryPaths extends PathProviderPlatform {

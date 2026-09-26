@@ -14,9 +14,7 @@ import 'package:pure_live/common/global/platform_utils.dart';
 import 'package:pure_live/routes/route_observer_controller.dart';
 import 'package:pure_live/common/utils/shared_media_intake.dart';
 import 'package:pure_live/common/utils/share_command_handler.dart';
-import 'package:pure_live/core/iptv/services/epg_import_manager.dart';
 import 'package:pure_live/common/global/platform/desktop_manager.dart';
-import 'package:pure_live/core/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/common/services/settings/player_settings_controller.dart';
 
 void main(List<String> args) async {
@@ -108,8 +106,6 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
     final intake = SharedMediaIntake(
       isRoomCommand: ShareCommandHandler.isUsableCommand,
       consumeRoomCommand: handleIncomingShareCommand,
-      importPlaylist: (path) => IptvImportManager().importFromSharedMedia(SharedMedia(content: path)),
-      importEpg: (path) => EpgImportManager().importFromSharedMedia(SharedMedia(content: path)),
       releaseAttachment: (path) async {
         await FileUtils.cleanupOwnedSharedMediaFile(File(path));
       },

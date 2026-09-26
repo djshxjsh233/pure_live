@@ -49,13 +49,13 @@ class PopularLocalReactiveController extends LocalReactivePageController<LiveRoo
     if (isClosed) return [];
     final rooms = await site.liveSite.getRecommendRooms(page: 1, pageSize: pageSize.value);
     if (isClosed) return [];
-    return site.id == Sites.iptvSite ? rooms : _rankForCurrentSettings(rooms);
+    return _rankForCurrentSettings(rooms);
   }
 
   Future<List<LiveRoom>> refreshNetworkStatus(List<LiveRoom> currentPool, int page, int pageSize) async {
     try {
       final rooms = await site.liveSite.getRecommendRooms(page: page, pageSize: pageSize);
-      return site.id == Sites.iptvSite ? rooms : _rankForCurrentSettings(rooms);
+      return _rankForCurrentSettings(rooms);
     } catch (e) {
       if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
         throw Exception("loginRequired");

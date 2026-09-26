@@ -272,7 +272,6 @@ try {
         }
         $runtimeState = @(
             Join-Path $windowsSource 'AppData'
-            Join-Path $windowsSource 'IPTV_CACHE'
         ) | Where-Object { Test-Path -LiteralPath $_ }
         if ($runtimeState) {
             # A previously launched Debug/Release tree writes portable user

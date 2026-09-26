@@ -566,7 +566,7 @@ class LivePlayContent extends StatelessWidget {
             video: LivePlayVideo(controller: controller, expandToParent: useAdaptivePortraitFrame),
             resolution: ResolutionsRow(controller: controller),
             danmaku: _buildDanmaku(),
-            showPanel: controller.site != Sites.iptvSite,
+            showPanel: true,
             isPortraitSource: isPortrait,
             sourceAspectRatio: manager.currentPresentationAspectRatio,
             adaptivePortraitHeight: settings.enablePortraitStreamAdaptation.v && settings.portraitAdaptiveHeight.v,
@@ -590,7 +590,7 @@ class LivePlayContent extends StatelessWidget {
   Widget _buildDanmaku() {
     return Obx(() {
       final state = controller.state.value;
-      if (!state.room.success || controller.site == Sites.iptvSite) {
+      if (!state.room.success) {
         return const SizedBox.shrink();
       }
       final globalState = GlobalPlayerState.to;

@@ -324,10 +324,9 @@ class DanmakuController extends GetxController {
     if (!_initialized) return;
     final room = _state.room.detail;
     if (room == null) return;
-    const except = [Sites.iptvSite];
     final settings = SettingsService.to.danmaku;
     try {
-      if (except.contains(room.platform) || (!settings.enableDanmakuDisplay.v && !settings.enablePipDanmaku.v)) {
+      if (!settings.enableDanmakuDisplay.v && !settings.enablePipDanmaku.v) {
         await stopDanmaku();
       } else {
         await connectRoom(room);
@@ -352,9 +351,8 @@ class DanmakuController extends GetxController {
   bool _isRecoveryAllowed(LiveRoom room) {
     final override = recoveryAllowed;
     if (override != null) return override(room);
-    const except = [Sites.iptvSite];
     final settings = SettingsService.to.danmaku;
-    return !except.contains(room.platform) && (settings.enableDanmakuDisplay.v || settings.enablePipDanmaku.v);
+    return settings.enableDanmakuDisplay.v || settings.enablePipDanmaku.v;
   }
 
   String _roomKey(LiveRoom room) => '${room.platform ?? ''}:${room.roomId ?? ''}';

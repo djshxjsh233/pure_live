@@ -104,8 +104,6 @@ class _TestAssetLoader extends AssetLoader {
     'theme_settings': 'Theme Settings',
     'theme_customization': 'Theme Customization',
     'theme_customization_desc': 'Customize skins, dark mode, and primary colors',
-    'iptv_settings': 'IPTV Settings',
-    'manage_iptv_sources': 'Manage IPTV sources',
     'refresh_settings': 'Refresh Settings',
     'refresh_settings_subtitle': 'Refresh favorites and live data',
     'video_settings': 'Video Settings',

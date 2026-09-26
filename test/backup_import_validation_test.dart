@@ -149,7 +149,6 @@ void main() {
       'theme': {'enableDynamicTheme': 'bad'},
       'font': {'fontSizeBodySmall': 'bad'},
       'exit': {'autoShutDownTime': 'bad'},
-      'iptv': {'autoSyncHoursInterval': 'bad'},
       'startup': {'enableStartUp': 'bad'},
       'proxy': {'proxyPort': 'bad'},
       'refresh': {'autoRefreshInterval': 'bad'},

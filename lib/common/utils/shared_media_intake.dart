@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:path/path.dart' as p;
 import 'package:share_handler/share_handler.dart';
 
 enum SharedMediaIntakeKind { roomCommand, files, unsupported, failed }
@@ -18,7 +17,6 @@ class SharedMediaIntakeResult {
 
 typedef SharedRoomCommandPredicate = bool Function(String text);
 typedef SharedRoomCommandConsumer = Future<bool> Function(String text);
-typedef SharedFileImporter = Future<bool> Function(String path);
 typedef SharedAttachmentReleaser = Future<void> Function(String path);
 typedef SharedMediaFeedback = void Function(String localizationKey);
 typedef SharedMediaErrorReporter = void Function(Object error, StackTrace stackTrace);
@@ -27,20 +25,13 @@ class SharedMediaIntake {
   SharedMediaIntake({
     required this.isRoomCommand,
     required this.consumeRoomCommand,
-    required this.importPlaylist,
-    required this.importEpg,
     required this.releaseAttachment,
     required this.notifyUnsupported,
     SharedMediaErrorReporter? reportError,
   }) : _reportError = reportError ?? _logError;
 
-  static const Set<String> playlistExtensions = {'.m3u', '.m3u8', '.txt'};
-  static const Set<String> epgExtensions = {'.xml', '.gz', '.json'};
-
   final SharedRoomCommandPredicate isRoomCommand;
   final SharedRoomCommandConsumer consumeRoomCommand;
-  final SharedFileImporter importPlaylist;
-  final SharedFileImporter importEpg;
   final SharedAttachmentReleaser releaseAttachment;
   final SharedMediaFeedback notifyUnsupported;
   final SharedMediaErrorReporter _reportError;
@@ -74,29 +65,6 @@ class SharedMediaIntake {
         );
       }
 
-      final paths = <String>{...attachmentPaths};
-      if (text.isNotEmpty && _supportedExtension(text) != null) {
-        paths.add(text);
-      }
-
-      var attempted = 0;
-      var accepted = 0;
-      for (final path in paths) {
-        final extension = _supportedExtension(path);
-        if (extension == null) continue;
-        attempted++;
-        final imported = playlistExtensions.contains(extension) ? await importPlaylist(path) : await importEpg(path);
-        if (imported) accepted++;
-      }
-
-      if (attempted > 0) {
-        return SharedMediaIntakeResult(
-          kind: SharedMediaIntakeKind.files,
-          attemptedCount: attempted,
-          acceptedCount: accepted,
-        );
-      }
-
       _notifyUnsupportedSafely();
       return const SharedMediaIntakeResult(kind: SharedMediaIntakeKind.unsupported);
     } catch (error, stackTrace) {
@@ -111,15 +79,6 @@ class SharedMediaIntake {
         }
       }
     }
-  }
-
-  static String? _supportedExtension(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return null;
-    final uri = Uri.tryParse(trimmed);
-    final path = uri != null && uri.scheme.toLowerCase() == 'file' ? uri.toFilePath() : uri?.path ?? trimmed;
-    final extension = p.extension(path).toLowerCase();
-    return playlistExtensions.contains(extension) || epgExtensions.contains(extension) ? extension : null;
   }
 
   void _notifyUnsupportedSafely() {

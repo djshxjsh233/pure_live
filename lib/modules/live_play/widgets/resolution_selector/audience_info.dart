@@ -8,10 +8,6 @@ class AudienceInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (controller.site == Sites.iptvSite) {
-      return const SizedBox.shrink();
-    }
-
     return Obx(() {
       final room = controller.state.value.room.detail;
 

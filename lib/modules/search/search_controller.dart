@@ -419,7 +419,6 @@ class SearchController extends GetxController {
         NativeSearchCoverage.channelLookup => i18n('search_coverage_channel_lookup', args: {'site': site.name}),
         NativeSearchCoverage.liveAndOffline => i18n('search_coverage_live_and_offline', args: {'site': site.name}),
         NativeSearchCoverage.liveOnly => i18n('search_coverage_live_only', args: {'site': site.name}),
-        NativeSearchCoverage.localChannels => i18n('search_coverage_local', args: {'site': site.name}),
         NativeSearchCoverage.webOnly => i18n('search_coverage_web_only', args: {'site': site.name}),
         NativeSearchCoverage.unavailable => i18n('search_coverage_unavailable', args: {'site': site.name}),
       };

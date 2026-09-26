@@ -80,13 +80,6 @@ void main() {
     expect(controller.isFavoriteArea(area('huya', id: 'Other')), isFalse);
   });
 
-  test('IPTV channel identity survives provider metadata changes', () {
-    final controller = Get.put(FavoriteRoomController());
-    controller.favoriteAreas.value = [area('iptv', id: 'channel-1', type: 'provider-1')];
-    expect(controller.addArea(area('iptv', id: 'channel-1', type: 'provider-2')), isFalse);
-    expect(controller.removeArea(area('iptv', id: 'channel-1')), isTrue);
-  });
-
   test('unidentified legacy entries are preserved but not matched or newly added', () {
     final controller = Get.put(FavoriteRoomController());
     final old = LiveArea(areaName: '旧数据');
@@ -134,7 +127,7 @@ void main() {
       'favoriteAreas': [
         jsonEncode(area('huya', name: '保留名称').toJson()),
         jsonEncode(area('douyin', id: 'k1', type: 'catalog').toJson()),
-        jsonEncode(area('iptv', id: 'channel').toJson()),
+        jsonEncode(area('douyin', id: 'channel').toJson()),
       ],
     };
     final incoming = {
@@ -143,14 +136,14 @@ void main() {
           area('huya', type: 'parent', name: '替换名称').toJson(),
           area('douyu').toJson(),
           area('douyin', id: 'k2', type: 'tag').toJson(),
-          area('iptv', id: 'channel', type: 'provider').toJson(),
+          area('douyin', id: 'channel', type: 'provider').toJson(),
         ],
       }),
     };
     final merged = SettingsUpgradeMigration.mergeRawSettings(current, [incoming]);
     final items = (jsonDecode(merged['favoriteAreas'] as String) as Map)['list'] as List;
     expect(items, hasLength(5));
-    expect(items.map((e) => e['platform']), ['huya', 'douyin', 'iptv', 'douyu', 'douyin']);
+    expect(items.map((e) => e['platform']), ['huya', 'douyin', 'douyin', 'douyu', 'douyin']);
     expect(items.first['areaName'], '保留名称');
     expect(items.first['areaType'], 'parent');
     expect(items[2]['areaType'], 'provider');

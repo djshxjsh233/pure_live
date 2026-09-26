@@ -334,14 +334,11 @@ jobs:
           New-Item -ItemType Directory -Path $temporary -Force | Out-Null
           Get-ChildItem $bundle -Force |
             Where-Object {
-              $_.Name -notin @("AppData", "IPTV_CACHE")
+              $_.Name -notin @("AppData")
             } |
             Copy-Item -Destination $temporary -Recurse -Force
           if (Test-Path (Join-Path $temporary "AppData")) {
             Remove-Item (Join-Path $temporary "AppData") -Recurse -Force
-          }
-          if (Test-Path (Join-Path $temporary "IPTV_CACHE")) {
-            Remove-Item (Join-Path $temporary "IPTV_CACHE") -Recurse -Force
           }
           Compress-Archive `
             -Path (Join-Path $temporary "*") `
@@ -361,7 +358,7 @@ jobs:
             Write-Error "Portable package not found: $portable"
           }
           $entries = tar -tf $portable
-          if ($entries | Where-Object { $_ -match '(^|/)(AppData|IPTV_CACHE)(/|$)' }) {
+          if ($entries | Where-Object { $_ -match '(^|/)(AppData)(/|$)' }) {
             Write-Error "Runtime state was found in the Windows portable package."
           }
       - name: Rename Windows installers

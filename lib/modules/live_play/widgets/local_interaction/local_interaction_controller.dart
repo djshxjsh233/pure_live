@@ -286,14 +286,6 @@ class LocalInteractionController extends GetxController {
       accentColor: Color(0xFFFF4906),
       badge: '🎬',
     ),
-    LocalPlatformPack(
-      id: Sites.iptvSite,
-      nameKey: 'site_iptv',
-      currencyKey: 'local_currency_generic',
-      levelKey: 'local_level_generic',
-      accentColor: Color(0xFF00A2FF),
-      badge: '🌐',
-    ),
   ];
 
   static const _platformGifts = <String, List<LocalGift>>{

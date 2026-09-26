@@ -17,7 +17,6 @@ void main() {
 
   test('platform source labels are localized while technical resolution stays precise', () {
     expect(LiveQualityLabel.normalize(platform: 'huya', rawLabel: 'source', id: 0), '原画');
-    expect(LiveQualityLabel.normalize(platform: 'iptv', rawLabel: 'default'), '默认');
   });
 
   test('Bilibili qn and resolution fallback remain deterministic', () {

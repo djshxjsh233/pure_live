@@ -5,7 +5,6 @@ import 'site/douyin/douyin_site.dart';
 
 import 'package:pure_live/common/index.dart';
 
-import 'package:pure_live/core/site/iptv/iptv_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
 import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 
@@ -16,9 +15,8 @@ class Sites {
   static const String huyaSite = "huya";
   static const String douyinSite = "douyin";
   static const String kuaishouSite = "kuaishou";
-  static const String iptvSite = "iptv";
 
-  static const Set<String> supportedSiteIds = {bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite, iptvSite};
+  static const Set<String> supportedSiteIds = {bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite};
 
   /// Root directory for all platform artwork.
   static const String _assetRoot = 'assets/images';
@@ -34,7 +32,6 @@ class Sites {
     huyaSite: '$_assetRoot/huya.png',
     douyinSite: '$_assetRoot/douyin.png',
     kuaishouSite: '$_assetRoot/kuaishou.png',
-    iptvSite: '$_assetRoot/iptv.png',
   };
 
   static bool isSupported(String id) => supportedSiteIds.contains(id.trim().toLowerCase());
@@ -76,7 +73,6 @@ class Sites {
         logo: logoForId(kuaishouSite),
         liveSite: KuaishowSite(),
       ),
-      iptvSite => Site(id: iptvSite, name: i18n("site_iptv"), logo: logoForId(iptvSite), liveSite: IptvSite()),
       _ => throw StateError('Unsupported live site: $normalizedId'),
     };
   }
@@ -87,7 +83,7 @@ class Sites {
   /// authentication or request-related state. Recreating them every time
   /// `supportSites` is accessed would unnecessarily discard that state.
   static final List<Site> _supportedSites = List<Site>.unmodifiable([
-    for (final id in [bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite, iptvSite]) _createSite(id),
+    for (final id in [bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite]) _createSite(id),
   ]);
 
   static List<Site> get supportSites => _supportedSites;

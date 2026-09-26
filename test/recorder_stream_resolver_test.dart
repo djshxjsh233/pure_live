@@ -202,7 +202,7 @@ void main() {
     expect(site.strictCalls, 1);
   });
 
-  test('recording resolution carries authoritative IPTV channel headers with the selected URL', () async {
+  test('recording resolution carries authoritative room headers with the selected URL', () async {
     final site = _FakeSite(
       qualities: <LivePlayQuality>[LivePlayQuality(quality: '原画', id: 'source')],
       urls: const <String>['https://cdn.example/live.m3u8'],
@@ -210,7 +210,7 @@ void main() {
     );
 
     final resolved = await StreamResolverService(siteResolver: (_) => site)
-        .resolveStream(roomId: '1', platform: 'iptv', preferredQuality: '原画');
+        .resolveStream(roomId: '1', platform: 'douyin', preferredQuality: '原画');
 
     expect(resolved.httpHeaders, {'user-agent': 'Playlist Agent', 'referer': 'https://fixture/room'});
   });

@@ -38,8 +38,8 @@ int _measureDirectoryBytes(List<String> paths) {
 
 /// Defines the app-owned temporary directories shown by Cache & Data.
 ///
-/// Recordings, downloads (including fonts and update packages), and IPTV data
-/// are persistent user data and deliberately never enter this list.
+/// Recordings and downloads (including fonts and update packages) are
+/// persistent user data and deliberately never enter this list.
 abstract final class CacheStoragePolicy {
   static const localDirectoryNames = <String>[AppPathManager.dirImageCache, AppPathManager.dirEmojiCache];
 }

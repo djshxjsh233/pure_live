@@ -122,24 +122,7 @@ class LiveRoom {
   // 直播状态
   LiveStatus? liveStatus;
 
-  /// EPG channel id
-  String? epgId;
-
-  /// 当前节目
-  String? currentProgramme;
-
-  /// 当前节目描述
-  String? currentProgrammeDescription;
-
-  String? catchUpUrl; // 时移播放地址
-  bool? isCatchUp; // 是否正在时移
-  int? catchUpStart; // 时移开始时间戳
-  int? catchUpEnd; // 时移结束时间戳
-  String? catchUpMode; // M3U provider catch-up mode
-  String? catchUpSource; // M3U provider URL template/query
-  double? catchUpDays; // Provider archive window
-  double? catchUpCorrectionHours; // Provider timestamp correction
-  Map<String, String> httpHeaders; // Per-channel IPTV media request fields
+  Map<String, String> httpHeaders; // Per-room media request fields
 
   /// Local epoch-millisecond timestamp used by the viewing-history UI.
   int? lastWatchedAt;
@@ -168,17 +151,6 @@ class LiveRoom {
     this.status = false,
     this.notice,
     this.introduction,
-    this.epgId,
-    this.currentProgramme,
-    this.currentProgrammeDescription,
-    this.catchUpUrl,
-    this.isCatchUp = false,
-    this.catchUpStart,
-    this.catchUpEnd,
-    this.catchUpMode,
-    this.catchUpSource,
-    this.catchUpDays,
-    this.catchUpCorrectionHours,
     this.httpHeaders = const <String, String>{},
     this.lastWatchedAt,
     List<String>? tagIds,
@@ -210,17 +182,6 @@ class LiveRoom {
       notice = json['notice'] ?? '',
       introduction = json['introduction'] ?? '',
       isRecord = json['isRecord'] ?? false,
-      epgId = json['epgId'] ?? '',
-      currentProgramme = json['currentProgramme'] ?? '',
-      currentProgrammeDescription = json['currentProgrammeDescription'] ?? '',
-      catchUpUrl = json['catchUpUrl'],
-      isCatchUp = json['isCatchUp'] ?? false,
-      catchUpStart = json['catchUpStart'],
-      catchUpEnd = json['catchUpEnd'],
-      catchUpMode = json['catchUpMode']?.toString(),
-      catchUpSource = json['catchUpSource']?.toString(),
-      catchUpDays = _finiteDoubleFromJson(json['catchUpDays']),
-      catchUpCorrectionHours = _finiteDoubleFromJson(json['catchUpCorrectionHours']),
       httpHeaders = HttpHeaderPolicy.normalize(json['httpHeaders'] is Map ? json['httpHeaders'] as Map : null),
       lastWatchedAt = json['lastWatchedAt'] is num ? (json['lastWatchedAt'] as num).toInt() : null {
     // Earlier builds stored Huya's userCount/URI 8006 popularity in the
@@ -259,17 +220,6 @@ class LiveRoom {
     dynamic danmakuData,
     bool? isRecord,
     LiveStatus? liveStatus,
-    String? epgId,
-    String? currentProgramme,
-    String? currentProgrammeDescription,
-    String? catchUpUrl,
-    bool? isCatchUp,
-    int? catchUpStart,
-    int? catchUpEnd,
-    String? catchUpMode,
-    String? catchUpSource,
-    double? catchUpDays,
-    double? catchUpCorrectionHours,
     Map<String, String>? httpHeaders,
     int? lastWatchedAt,
     List<String>? tagIds,
@@ -297,17 +247,6 @@ class LiveRoom {
       danmakuData: danmakuData ?? this.danmakuData,
       isRecord: isRecord ?? this.isRecord,
       liveStatus: liveStatus ?? this.liveStatus,
-      epgId: epgId ?? this.epgId,
-      currentProgramme: currentProgramme ?? this.currentProgramme,
-      currentProgrammeDescription: currentProgrammeDescription ?? this.currentProgrammeDescription,
-      catchUpUrl: catchUpUrl ?? this.catchUpUrl,
-      isCatchUp: isCatchUp ?? this.isCatchUp,
-      catchUpStart: catchUpStart ?? this.catchUpStart,
-      catchUpEnd: catchUpEnd ?? this.catchUpEnd,
-      catchUpMode: catchUpMode ?? this.catchUpMode,
-      catchUpSource: catchUpSource ?? this.catchUpSource,
-      catchUpDays: catchUpDays ?? this.catchUpDays,
-      catchUpCorrectionHours: catchUpCorrectionHours ?? this.catchUpCorrectionHours,
       httpHeaders: httpHeaders ?? this.httpHeaders,
       lastWatchedAt: lastWatchedAt ?? this.lastWatchedAt,
       tagIds: tagIds ?? this.tagIds,
@@ -317,8 +256,6 @@ class LiveRoom {
   String get normalizedPlatformId => platform?.trim().toLowerCase() ?? '';
 
   String get normalizedRoomId => roomId?.trim() ?? '';
-
-  bool get isCatchUpActive => isCatchUp == true || (catchUpUrl?.trim().isNotEmpty ?? false);
 
   /// Canonical room state used by presentation and playback decisions.
   ///
@@ -376,7 +313,7 @@ class LiveRoom {
 
   @override
   String toString() {
-    return 'LiveRoom{roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, data: $data, danmakuData: $danmakuData, isRecord: $isRecord, liveStatus: $liveStatus, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, lastWatchedAt: $lastWatchedAt}';
+    return 'LiveRoom{roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, data: $data, danmakuData: $danmakuData, isRecord: $isRecord, liveStatus: $liveStatus, lastWatchedAt: $lastWatchedAt}';
   }
 
   double getSavedVolume() {
@@ -411,17 +348,6 @@ class LiveRoom {
       'status': isLiveNow,
       'notice': notice,
       'introduction': introduction,
-      'epgId': epgId,
-      'currentProgramme': currentProgramme,
-      'currentProgrammeDescription': currentProgrammeDescription,
-      'catchUpUrl': catchUpUrl,
-      'isCatchUp': isCatchUp,
-      'catchUpStart': catchUpStart,
-      'catchUpEnd': catchUpEnd,
-      'catchUpMode': catchUpMode,
-      'catchUpSource': catchUpSource,
-      'catchUpDays': catchUpDays,
-      'catchUpCorrectionHours': catchUpCorrectionHours,
       'httpHeaders': HttpHeaderPolicy.normalize(httpHeaders),
       'lastWatchedAt': lastWatchedAt,
     };
@@ -627,11 +553,6 @@ class LiveRoom {
     final text = value?.trim() ?? '';
     return text.isNotEmpty && text != 'null' && RegExp(r'[0-9]').hasMatch(text);
   }
-
-  static double? _finiteDoubleFromJson(dynamic value) {
-    final parsed = value is num ? value.toDouble() : double.tryParse(value?.toString().trim() ?? '');
-    return parsed != null && parsed.isFinite ? parsed : null;
-  }
 }
 
 extension LiveRoomExtension on LiveRoom {
@@ -677,19 +598,7 @@ extension LiveRoomExtension on LiveRoom {
       data: incoming.data ?? data,
       danmakuData: incoming.danmakuData ?? danmakuData,
 
-      epgId: _preferValue(incoming.epgId, epgId),
-      currentProgramme: _preferValue(incoming.currentProgramme, currentProgramme),
-      currentProgrammeDescription: _preferValue(incoming.currentProgrammeDescription, currentProgrammeDescription),
-
-      catchUpUrl: _preferValue(incoming.catchUpUrl, catchUpUrl),
-      isCatchUp: incoming.isCatchUp ?? isCatchUp,
-      catchUpStart: incoming.catchUpStart ?? catchUpStart,
-      catchUpEnd: incoming.catchUpEnd ?? catchUpEnd,
-      catchUpMode: _preferValue(incoming.catchUpMode, catchUpMode),
-      catchUpSource: _preferValue(incoming.catchUpSource, catchUpSource),
-      catchUpDays: incoming.catchUpDays ?? catchUpDays,
-      catchUpCorrectionHours: incoming.catchUpCorrectionHours ?? catchUpCorrectionHours,
-      httpHeaders: incoming.normalizedPlatformId == 'iptv' ? incoming.httpHeaders : httpHeaders,
+      httpHeaders: httpHeaders,
 
       lastWatchedAt: incoming.lastWatchedAt ?? lastWatchedAt,
     );
@@ -711,20 +620,6 @@ extension LiveRoomExtension on LiveRoom {
       isRecord: false,
       watching: (watching ?? '').trim() == '0' ? '' : watching,
     );
-  }
-
-  /// Returns a fresh room snapshot for the original live stream.
-  ///
-  /// [copyWith] deliberately treats null as "keep the previous value", which
-  /// is useful for partial metadata merges but cannot clear catch-up state.
-  /// Returning to live must remove the old interval as one snapshot so a later
-  /// schedule render never highlights a retired programme.
-  LiveRoom withoutCatchUp() {
-    final liveRoom = copyWith(isCatchUp: false);
-    liveRoom.catchUpUrl = null;
-    liveRoom.catchUpStart = null;
-    liveRoom.catchUpEnd = null;
-    return liveRoom;
   }
 
   LiveRoom fillFromDetail(LiveRoom? detail) {

@@ -13,7 +13,6 @@ import 'package:pure_live/common/services/settings/window_size_controller.dart';
 import 'package:pure_live/common/services/settings/app_settings_controller.dart';
 import 'package:pure_live/common/services/settings/favorite_room_controller.dart';
 import 'package:pure_live/common/services/settings/font_settings_controller.dart';
-import 'package:pure_live/common/services/settings/iptv_settings_controller.dart';
 import 'package:pure_live/common/services/settings/exit_settings_controller.dart';
 import 'package:pure_live/common/services/settings/page_settings_controller.dart';
 import 'package:pure_live/common/services/settings/refresh_config_controller.dart';
@@ -70,7 +69,6 @@ class BackupController extends GetxController {
       'volume': Get.find<VolumeSettingsController>().toJson(),
       'favorite': Get.find<FavoriteRoomController>().toJson(),
       'history': Get.find<HistoryController>().toJson(),
-      'iptv': Get.find<IptvSettingsController>().toJson(),
       'proxy': Get.find<ProxySettingsController>().toJson(),
       'windowSize': Get.find<WindowSizeController>().toJson(),
       'exit': Get.find<ExitSettingsController>().toJson(),
@@ -128,7 +126,6 @@ class BackupController extends GetxController {
     'favorite': FavoriteRoomController.extractConfig(null).keys.toSet(),
     'history': HistoryController.extractConfig(null).keys.toSet(),
     'webdav': WebDavController.extractConfig(null).keys.toSet(),
-    'iptv': IptvSettingsController.extractConfig(null).keys.toSet(),
     'cookie': CookieSettingsController.extractConfig(null).keys.toSet(),
     'proxy': ProxySettingsController.extractConfig(null).keys.toSet(),
     'windowSize': WindowSizeController.extractConfig(null).keys.toSet(),
@@ -186,7 +183,6 @@ class BackupController extends GetxController {
       'roomCard': RoomCardSettingsController.parseConfig,
       'font': FontSettingsController.parseConfig,
       'exit': ExitSettingsController.parseConfig,
-      'iptv': IptvSettingsController.parseConfig,
       'startup': StartupController.parseConfig,
       'proxy': ProxySettingsController.parseConfig,
       'refresh': RefreshConfigController.parseConfig,
@@ -260,8 +256,6 @@ class BackupController extends GetxController {
       Get.find<WebDavController>().fromJson(Map<String, dynamic>.from(data['webdav'] ?? {}));
     }
 
-    Get.find<IptvSettingsController>().fromJson(Map<String, dynamic>.from(data['iptv'] ?? {}));
-
     if (data.containsKey('cookie')) {
       Get.find<CookieSettingsController>().fromJson(Map<String, dynamic>.from(data['cookie'] ?? {}));
     }
@@ -304,7 +298,6 @@ class BackupController extends GetxController {
       'favorite',
       'history',
       'webdav',
-      'iptv',
       'cookie',
       'proxy',
       'windowSize',
@@ -334,7 +327,6 @@ class BackupController extends GetxController {
     Get.find<FavoriteRoomController>().fromJson(data);
     Get.find<HistoryController>().fromJson(data);
     Get.find<WebDavController>().fromJson(data);
-    Get.find<IptvSettingsController>().fromJson(data);
     Get.find<CookieSettingsController>().fromJson(data);
     Get.find<ProxySettingsController>().fromJson(data);
     Get.find<WindowSizeController>().fromJson(data);
@@ -502,16 +494,10 @@ class BackupController extends GetxController {
 
   Map<String, dynamic> exportToTVSettings({bool includeSensitiveData = true}) {
     final danmaku = Get.find<DanmakuSettingsController>().toJson();
-    final iptv = Get.find<IptvSettingsController>().toJson();
     final favorite = Get.find<FavoriteRoomController>().toJson();
     final history = Get.find<HistoryController>().toJson();
 
-    final data = <String, dynamic>{
-      ...danmaku,
-      ...favorite,
-      ...history,
-      'customIptvUserAgent': iptv['customIptvUserAgent'],
-    };
+    final data = <String, dynamic>{...danmaku, ...favorite, ...history};
     if (includeSensitiveData) {
       data.addAll(Get.find<CookieSettingsController>().toJson());
     }

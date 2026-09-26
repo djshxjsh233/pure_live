@@ -53,7 +53,7 @@ Future<void> _flush() async {
   }
 }
 
-const _manyNativeIds = [Sites.bilibiliSite, Sites.douyuSite, Sites.huyaSite, Sites.douyinSite, Sites.iptvSite];
+const _manyNativeIds = [Sites.bilibiliSite, Sites.douyuSite, Sites.huyaSite, Sites.douyinSite];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

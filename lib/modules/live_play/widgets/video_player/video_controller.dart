@@ -4,14 +4,11 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 
-import 'iptv_programme_policy.dart';
-
 import 'package:flutter/scheduler.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/player/utils/fullscreen.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:volume_controller/volume_controller.dart';
@@ -22,20 +19,12 @@ import 'package:pure_live/player/models/player_exception.dart';
 import 'package:pure_live/player/models/player_error_type.dart';
 import 'package:pure_live/modules/live_play/states/load_type.dart';
 import 'package:pure_live/modules/live_play/states/ui_state.dart';
-import 'package:pure_live/core/iptv/local/database.dart' as database;
 import 'package:pure_live/modules/live_play/controllers/player_state.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/danmaku/danmaku_message_actions.dart';
 import 'package:pure_live/modules/live_play/widgets/danmaku/danmaku_settings_binding.dart';
 
 typedef AudioOnlyCallback = Future<void> Function(bool value);
-
-typedef EpgProgrammeLoader = Future<List<database.EpgProgramme>> Function({
-  required String sourceId,
-  required String epgId,
-  required DateTime start,
-  required DateTime end,
-});
 
 enum PlayerStatus { idle, loading, playing, error, disposed }
 
@@ -320,8 +309,6 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
   static const _controllerHideDelay = Duration(seconds: 4);
   static const _fullscreenDelay = Duration(milliseconds: 1000);
   static const _volumeHideDelay = Duration(seconds: 1);
-  static const _epgLookBackDays = 2;
-  static const _epgLookForwardDays = 1;
 
   // 依赖注入
   final LiveRoom room;
@@ -348,10 +335,8 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
 
   final Battery _battery;
   final SettingsService _settingsService;
-  final DbService _dbService;
   final PlayerManager _playerManager;
   final LivePlayController _livePlayController;
-  final EpgProgrammeLoader? _loadEpgProgrammes;
 
   // 资源管理
   final List<StreamSubscription> _subscriptions = [];
@@ -368,7 +353,6 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
   final isMenuOpen = false.obs;
   final showVolume = false.obs;
   final audioModeSwitching = false.obs;
-  final catchUpSwitching = false.obs;
   final batteryLevel = 100.obs;
   final currentVolume = 1.0.obs;
   final FullscreenOrientationRestoreState _fullscreenOrientationRestore = FullscreenOrientationRestoreState();
@@ -398,14 +382,6 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
   @override
   final danmakuFps = 60.obs;
   final danmakuFontFamilyName = ''.obs;
-
-  // EPG相关
-  final RxList<database.EpgProgramme> currentChannelSchedule = <database.EpgProgramme>[].obs;
-  final scheduleLoading = false.obs;
-  final scheduleLoadFailed = false.obs;
-  final ScrollController scheduleScrollController = createPureLiveScrollController();
-  bool hasScrolledToLive = false;
-  int _epgLoadEpoch = 0;
 
   // 控制器
   late final VolumeController _volumeController;
@@ -460,17 +436,13 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
     VolumeController? systemVolumeController,
     PlayerManager? playerManager,
     SettingsService? settingsService,
-    DbService? dbService,
     LivePlayController? livePlayController,
-    EpgProgrammeLoader? epgProgrammeLoader,
   }) : audioOnlyState = isAudioOnly.obs,
        _battery = battery ?? Battery(),
        _injectedVolumeController = systemVolumeController,
        _playerManager = playerManager ?? GlobalPlayerService.instance.player,
        _settingsService = settingsService ?? SettingsService.to,
-       _dbService = dbService ?? Get.find<DbService>(),
-       _livePlayController = livePlayController ?? Get.find<LivePlayController>(),
-       _loadEpgProgrammes = epgProgrammeLoader {
+       _livePlayController = livePlayController ?? Get.find<LivePlayController>() {
     currentVolume.value = room.getSavedVolume();
     _initControllers();
     _initPagesConfig();
@@ -523,10 +495,6 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
     if (_isDisposed) return;
 
     _setupDefaultFullscreen();
-
-    if (room.platform == Sites.iptvSite) {
-      await loadFullChannelSchedule(room.epgId);
-    }
 
     if (_playerManager.hasError.value) {
       _setStatus(PlayerStatus.error);
@@ -1003,245 +971,6 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
     pipDanmakuController.clear();
   }
 
-  // EPG管理
-  Future<void> loadFullChannelSchedule(String? epgId) async {
-    final loadEpoch = ++_epgLoadEpoch;
-    if (_isDisposed) return;
-    final normalizedEpgId = epgId?.trim() ?? '';
-    final sourceId = _settingsService.iptv.selectedSourceId.v.trim();
-    scheduleLoadFailed.value = false;
-    if (normalizedEpgId.isEmpty || sourceId.isEmpty) {
-      scheduleLoading.value = false;
-      currentChannelSchedule.clear();
-      hasScrolledToLive = false;
-      return;
-    }
-    scheduleLoading.value = true;
-    currentChannelSchedule.clear();
-    hasScrolledToLive = false;
-
-    final now = DateTime.now();
-    final startTime = now.subtract(const Duration(days: _epgLookBackDays));
-    final endTime = now.add(const Duration(days: _epgLookForwardDays));
-
-    try {
-      final loader = _loadEpgProgrammes;
-      final programmes = loader == null
-          ? await _fetchEpgProgrammes(sourceId: sourceId, epgId: normalizedEpgId, start: startTime, end: endTime)
-          : await loader(sourceId: sourceId, epgId: normalizedEpgId, start: startTime, end: endTime);
-      if (!_isEpgLoadCurrent(loadEpoch, sourceId)) return;
-      currentChannelSchedule.value = programmes;
-      _logEpgLoadSuccess(programmes.length);
-    } catch (e, stackTrace) {
-      if (!_isEpgLoadCurrent(loadEpoch, sourceId)) return;
-      scheduleLoadFailed.value = true;
-      _logEpgLoadError(e, stackTrace);
-    } finally {
-      if (!_isDisposed && loadEpoch == _epgLoadEpoch) {
-        scheduleLoading.value = false;
-      }
-    }
-  }
-
-  bool claimInitialScheduleScroll(int liveIndex) {
-    if (liveIndex < 0 || hasScrolledToLive) return false;
-    hasScrolledToLive = true;
-    return true;
-  }
-
-  bool _isEpgLoadCurrent(int loadEpoch, String sourceId) {
-    return !_isDisposed && loadEpoch == _epgLoadEpoch && _settingsService.iptv.selectedSourceId.v.trim() == sourceId;
-  }
-
-  Future<List<database.EpgProgramme>> _fetchEpgProgrammes({
-    required String sourceId,
-    required String epgId,
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    final db = _dbService.db;
-    final resolved = await db.resolveEpgChannelId(sourceId, epgId);
-    if (resolved == null) return [];
-    return db.getProgrammes(epgChannelId: resolved, start: start, end: end);
-  }
-
-  void _logEpgLoadSuccess(int count) {
-    debugPrint(
-      "📅 [EPG Matrix] Loaded $count total program rows spanning the (-${_epgLookBackDays}d to +${_epgLookForwardDays}d) timeline.",
-    );
-  }
-
-  void _logEpgLoadError(Object error, StackTrace stackTrace) {
-    debugPrint("❌ EPG Schedule Loading Failure: $error");
-    log('EPG load error', error: error, stackTrace: stackTrace);
-  }
-
-  // 回放URL生成
-  String generateCatchupUrl({
-    required String originalUrl,
-    required database.EpgProgramme programme,
-    CatchupUrlType type = CatchupUrlType.default_,
-    DateTime? now,
-  }) {
-    return buildIptvCatchupUrl(
-      originalUrl: originalUrl,
-      start: programme.start,
-      stop: programme.stop,
-      type: type,
-      now: now,
-      mode: room.catchUpMode,
-      source: room.catchUpSource,
-      correctionHours: room.catchUpCorrectionHours,
-      catchupId: programme.catchupId,
-    );
-  }
-
-  Future<IptvProgrammeSelectionResult> onProgrammeTapped(
-    database.EpgProgramme programme, {
-    DateTime? now,
-    VoidCallback? closeSchedule,
-    ValueChanged<String>? showMessage,
-  }) async {
-    if (catchUpSwitching.value) return IptvProgrammeSelectionResult.busy;
-    final actionTime = now ?? DateTime.now();
-    final phase = classifyIptvProgramme(start: programme.start, stop: programme.stop, now: actionTime);
-    final notify = showMessage ?? ToastUtil.show;
-
-    if (phase == IptvProgrammePhase.scheduled) {
-      notify(i18n('program_scheduled_hint'));
-      return IptvProgrammeSelectionResult.scheduled;
-    }
-
-    if (phase == IptvProgrammePhase.live) {
-      return returnToLive(closeSchedule: closeSchedule, showMessage: showMessage);
-    }
-
-    final availability = evaluateIptvCatchupAvailability(
-      programmeStop: programme.stop,
-      now: actionTime,
-      mode: room.catchUpMode,
-      source: room.catchUpSource,
-      days: room.catchUpDays,
-      catchupId: programme.catchupId,
-    );
-    if (availability != IptvCatchupAvailability.available) {
-      notify(i18n('catchup_unavailable'));
-      return IptvProgrammeSelectionResult.catchupUnavailable;
-    }
-
-    final originalUrl = room.link?.trim() ?? '';
-    if (originalUrl.isEmpty) {
-      notify(i18n('invalid_play_url'));
-      return IptvProgrammeSelectionResult.invalidUrl;
-    }
-
-    late final String catchupUrl;
-    try {
-      catchupUrl = generateCatchupUrl(
-        originalUrl: originalUrl,
-        programme: programme,
-        type: CatchupUrlType.playseek,
-        now: actionTime,
-      );
-    } on FormatException {
-      notify(i18n('invalid_play_url'));
-      return IptvProgrammeSelectionResult.invalidUrl;
-    } on ArgumentError {
-      notify(i18n('invalid_play_url'));
-      return IptvProgrammeSelectionResult.invalidUrl;
-    } on UnsupportedError {
-      notify(i18n('catchup_unavailable'));
-      return IptvProgrammeSelectionResult.catchupUnavailable;
-    }
-
-    catchUpSwitching.value = true;
-    _closeSchedule(closeSchedule);
-    try {
-      final switchResult = await _reloadWithCatchup(catchupUrl, programme);
-      if (switchResult == IptvPlaybackSwitchResult.superseded) {
-        return IptvProgrammeSelectionResult.superseded;
-      }
-      if (switchResult == IptvPlaybackSwitchResult.failed) {
-        notify(i18n('play_video_failed'));
-        return IptvProgrammeSelectionResult.failed;
-      }
-      notify('${i18n('playing_catchup')}: ${programme.title}');
-      return IptvProgrammeSelectionResult.catchupStarted;
-    } catch (error, stackTrace) {
-      log('IPTV catch-up switch failed', name: 'VideoController', error: error, stackTrace: stackTrace);
-      notify(i18n('play_video_failed'));
-      return IptvProgrammeSelectionResult.failed;
-    } finally {
-      catchUpSwitching.value = false;
-    }
-  }
-
-  Future<IptvProgrammeSelectionResult> returnToLive({
-    VoidCallback? closeSchedule,
-    ValueChanged<String>? showMessage,
-  }) async {
-    if (catchUpSwitching.value) return IptvProgrammeSelectionResult.busy;
-    if (!room.isCatchUpActive) {
-      _closeSchedule(closeSchedule);
-      return IptvProgrammeSelectionResult.live;
-    }
-    if ((room.link?.trim() ?? '').isEmpty) {
-      (showMessage ?? ToastUtil.show)(i18n('invalid_play_url'));
-      return IptvProgrammeSelectionResult.invalidUrl;
-    }
-
-    catchUpSwitching.value = true;
-    _closeSchedule(closeSchedule);
-    final notify = showMessage ?? ToastUtil.show;
-    try {
-      final switchResult = await _reloadWithLive();
-      if (switchResult == IptvPlaybackSwitchResult.superseded) {
-        return IptvProgrammeSelectionResult.superseded;
-      }
-      if (switchResult == IptvPlaybackSwitchResult.failed) {
-        notify(i18n('play_video_failed'));
-        return IptvProgrammeSelectionResult.failed;
-      }
-      notify(i18n('returned_to_live'));
-      return IptvProgrammeSelectionResult.live;
-    } catch (error, stackTrace) {
-      log('IPTV return-to-live switch failed', name: 'VideoController', error: error, stackTrace: stackTrace);
-      notify(i18n('play_video_failed'));
-      return IptvProgrammeSelectionResult.failed;
-    } finally {
-      catchUpSwitching.value = false;
-    }
-  }
-
-  void _closeSchedule(VoidCallback? closeSchedule) {
-    if (closeSchedule != null) {
-      closeSchedule();
-      return;
-    }
-    final context = Get.context;
-    if (context != null && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  Future<IptvPlaybackSwitchResult> _reloadWithCatchup(String catchupUrl, database.EpgProgramme programme) async {
-    clearListener();
-    await _playerManager.close();
-    await destory();
-    return _livePlayController.startCatchUp(
-      catchUpUrl: catchupUrl,
-      startTime: programme.start.millisecondsSinceEpoch,
-      endTime: programme.stop.millisecondsSinceEpoch,
-    );
-  }
-
-  Future<IptvPlaybackSwitchResult> _reloadWithLive() async {
-    clearListener();
-    await _playerManager.close();
-    await destory();
-    return _livePlayController.returnToLive();
-  }
-
   // 播放控制
   Future<void> toggleAudioOnly() async {
     if (audioModeSwitching.value) return;
@@ -1509,14 +1238,12 @@ class VideoController with ChangeNotifier implements DanmakuSettingsBinding {
   @override
   void dispose() {
     if (_isDisposed) return;
-    _epgLoadEpoch++;
     _setStatus(PlayerStatus.disposed);
 
     // 清理资源
     _playerManager.detachVideoController(this);
     _danmakuManager.dispose();
     _cancelAllTimers();
-    scheduleScrollController.dispose();
     _controlHoverOwners.clear();
     _isMouseOverPlayer = false;
     // 异步清理

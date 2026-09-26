@@ -122,7 +122,5 @@ void main() {
     expect(LiveSearchCapabilities.forPlatform('huya').coverage, NativeSearchCoverage.liveOnly);
     expect(LiveSearchCapabilities.forPlatform('douyin').supportsNativeSearch, isTrue);
     expect(LiveSearchCapabilities.forPlatform('kuaishou').supportsNativeSearch, isFalse);
-    expect(LiveSearchCapabilities.forPlatform('iptv').supportsPagination, isFalse);
-    expect(LiveSearchCapabilities.forPlatform('iptv').supportsWebSearch, isFalse);
   });
 }

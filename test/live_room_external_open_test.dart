@@ -77,7 +77,7 @@ void main() {
     expect(launches.single['useSafariVC'], isFalse);
   });
 
-  for (final site in ['unknown-fixture', Sites.iptvSite]) {
+  for (final site in ['unknown-fixture']) {
     test('$site never hands an empty or local target to the OS', () async {
       await controller(site).openNaviteAPP();
       expect(launches, isEmpty);

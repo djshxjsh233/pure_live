@@ -9,7 +9,6 @@ import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/services/settings_service.dart';
-import 'package:pure_live/common/services/settings/iptv_settings_controller.dart';
 import 'package:pure_live/common/services/settings/backup_controller.dart';
 import 'package:pure_live/common/services/settings/room_card_settings_controller.dart';
 import 'package:pure_live/modules/web_dav/webdav_service.dart';
@@ -36,7 +35,6 @@ void main() {
 
   Future<SettingsService> initialize() async {
     Get.testMode = true;
-    Get.put(IptvSettingsController(), permanent: true);
     final settings = Get.put(SettingsService());
     await settings.font.ensureInitialized();
     return settings;

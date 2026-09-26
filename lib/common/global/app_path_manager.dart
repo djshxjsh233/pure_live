@@ -19,8 +19,6 @@ class AppPathManager {
 
   static const String dirAppData = 'AppData';
   static const String softNameDir = 'PURE_LIVE';
-  static const String dirIptvCache = 'IPTV_CACHE';
-  static const String iptvTable = 'pure_live_tv';
   static const String dirDownload = 'DOWNLOADS';
   static const String dirLogs = 'LOGS';
   static const String dirHiveDB = 'HIVE_DB';
@@ -36,9 +34,6 @@ class AppPathManager {
   // Compatibility alias retained for upstream call sites introduced in
   // 5aa1a40a. Both names intentionally resolve to the same canonical folder.
   static const String fontCacheDir = fontDirectoryName;
-  static const String iptvCategoryFile = 'categories.json';
-  static const String iptvHotFile = 'hot.m3u';
-  static const String iptvHotRemoteFile = 'https://raw.githubusercontent.com/YueChan/Live/main/GNTV.m3u';
 
   String? _basePath;
   List<String> _legacyHiveFiles = const [];
@@ -80,7 +75,6 @@ class AppPathManager {
       );
       _legacyHiveFiles = await _findLegacyHiveFiles(roots: legacyRoots, targetRoot: rootPath);
       await _createMigrationBackups(_legacyHiveFiles);
-      await _recoverMissingPersistentData(legacyRoots);
       await _recoverLegacyPluginPreferences(supportDir);
 
       // Portable/EXE builds keep plugin support, cache and temporary state
@@ -270,49 +264,6 @@ class AppPathManager {
     await marker.writeAsString(const JsonEncoder.withIndent('  ').convert(manifest), flush: true);
   }
 
-  Future<void> _recoverMissingPersistentData(Iterable<String> roots) async {
-    final marker = File(p.join(basePath, 'persistent_data_migration_v4.lock'));
-    if (await marker.exists()) return;
-
-    // IPTV contains user-added providers, favorites, EPG mappings and timers.
-    // Prefer the richest existing database, then copy only absent files; a
-    // database already used by the new installation always wins.
-    final sources = <Directory>[];
-    for (final root in roots) {
-      final source = Directory(p.join(root, dirIptvCache));
-      if (!await source.exists()) continue;
-      final target = Directory(p.join(basePath, dirIptvCache));
-      if (await _sameDirectory(source, target)) continue;
-      sources.add(source);
-    }
-    sources.sort((a, b) => _iptvDatabaseSize(b).compareTo(_iptvDatabaseSize(a)));
-    final target = Directory(p.join(basePath, dirIptvCache));
-    for (final source in sources) {
-      await _copyMissingTree(source, target);
-    }
-    await marker.writeAsString(DateTime.now().toIso8601String(), flush: true);
-  }
-
-  int _iptvDatabaseSize(Directory root) {
-    final file = File(p.join(root.path, iptvTable, '$iptvTable.db'));
-    try {
-      return file.existsSync() ? file.lengthSync() : 0;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  Future<bool> _sameDirectory(Directory a, Directory b) async {
-    if (!await a.exists() || !await b.exists()) {
-      return a.absolute.path == b.absolute.path;
-    }
-    try {
-      return await FileSystemEntity.identical(a.path, b.path);
-    } catch (_) {
-      return a.absolute.path == b.absolute.path;
-    }
-  }
-
   Future<void> _recoverLegacyPluginPreferences(Directory supportDir) async {
     final source = File(p.join(supportDir.path, 'shared_preferences.json'));
     if (!await source.exists()) return;
@@ -320,24 +271,6 @@ class AppPathManager {
     if (await target.exists()) return;
     await target.parent.create(recursive: true);
     await source.copy(target.path);
-  }
-
-  Future<void> _copyMissingTree(Directory source, Directory target) async {
-    await target.create(recursive: true);
-    try {
-      await for (final entity in source.list(recursive: true, followLinks: false)) {
-        final relative = p.relative(entity.path, from: source.path);
-        final destination = p.join(target.path, relative);
-        if (entity is Directory) {
-          await Directory(destination).create(recursive: true);
-        } else if (entity is File && !await File(destination).exists()) {
-          await File(destination).parent.create(recursive: true);
-          await entity.copy(destination);
-        }
-      }
-    } catch (error) {
-      log('旧数据目录读取失败 (${source.path}): $error');
-    }
   }
 
   Future<bool> _checkDirectoryWritable(String path) async {
@@ -360,7 +293,6 @@ class AppPathManager {
     return directory;
   }
 
-  Future<Directory> get iptvCacheDir => getDir(dirIptvCache);
   Future<Directory> get downloadDir => getDir(dirDownload);
   Future<Directory> get logsDir => getDir(dirLogs);
   Future<Directory> get logFilesDir => getDir(p.join(dirLogs, 'log'));

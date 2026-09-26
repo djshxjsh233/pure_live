@@ -1,10 +1,8 @@
 import 'dart:developer' as developer;
 
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/modules/auth/auth_controller.dart';
-import 'package:pure_live/common/services/settings/iptv_settings_controller.dart';
 import 'package:pure_live/recorder/services/cache_service.dart';
 import 'package:pure_live/recorder/consts/recorder_config.dart';
 import 'package:pure_live/recorder/consts/recorder_keys.dart';
@@ -12,26 +10,18 @@ import 'package:pure_live/routes/route_observer_controller.dart';
 import 'package:pure_live/recorder/services/stream_resolver_service.dart';
 import 'package:pure_live/modules/live_play/controllers/player_state.dart';
 import 'package:pure_live/recorder/pages/recorder/recorder_controller.dart';
-import 'package:pure_live/core/iptv/services/channel_detail_controller.dart';
 import 'package:pure_live/recorder/pages/record_settings/record_settings_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/local_interaction/local_interaction_controller.dart';
 
 class InitialServices {
   static void initGlobalServices() {
     Get.put(SettingsService(), permanent: true);
-    // Register IPTV only after SettingsService has finished its own onInit.
-    // Creating this controller from inside SettingsService.onInit can re-enter
-    // the dependency container during a cold Hive migration and stall the
-    // first frame. A direct, post-registration owner also avoids the old
-    // lazy-then-permanent collision in GetX.
-    Get.put(IptvSettingsController(), permanent: true);
     Get.put(LocalInteractionController(), permanent: true);
     Get.put(RouteObserverController(), permanent: true);
   }
 
   static void initLazyControllers() {
     Get.lazyPut(() => FavoriteController(), fenix: true);
-    Get.lazyPut(() => ChannelDetailController(), fenix: true);
     Get.lazyPut(() => PopularController(), fenix: true);
     Get.lazyPut(() => AreasController(), fenix: true);
     Get.lazyPut(() => GlobalPlayerState(), fenix: true);
@@ -47,14 +37,7 @@ class InitialServices {
     Get.lazyPut(() => AuthController(), fenix: true);
   }
 
-  static Future<void> initDb() async {
-    final db = DbService();
-    await db.init();
-    Get.put<DbService>(db, permanent: true);
-  }
-
   static Future<void> init() async {
-    await initDb();
     initGlobalServices();
     // Load and register the persisted custom font before MyApp builds its
     // first ThemeData. This makes the selection survive a full process restart.

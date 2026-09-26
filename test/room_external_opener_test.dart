@@ -179,8 +179,8 @@ void main() {
     );
   });
 
-  test('unknown site and IPTV ignore imported URLs', () async {
-    for (final site in ['unknown', 'iptv']) {
+  test('unknown site and unsupported links ignore imported URLs', () async {
+    for (final site in ['unknown']) {
       expect(
         await RoomExternalOpener.open(
           site: site,

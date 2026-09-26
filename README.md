@@ -24,26 +24,11 @@ A third-party live stream aggregator built with Flutter.
 ---
 
 ## 📺 支持站点
-**22 个直播站点 + IPTV 自定义直播源。** 各站分区、搜索、弹幕、人数口径与能力边界见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
-### 🇨🇳 国内平台
+**5 个直播站点：哔哩哔哩、斗鱼、虎牙、抖音、快手。** 各站分区、搜索、弹幕、人数口径与能力边界见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
 | | | |
 | --- | --- | --- |
 | <img src="assets/images/bilibili.png" width="26"/> **哔哩哔哩** | <img src="assets/images/douyu.png" width="26"/> **斗鱼** | <img src="assets/images/huya.png" width="26"/> **虎牙** |
-| <img src="assets/images/douyin.png" width="26"/> **抖音** | <img src="assets/images/kuaishou.png" width="26"/> **快手** | <img src="assets/images/yy.png" width="26"/> **YY 直播** |
-| <img src="assets/images/cc.png" width="26"/> **网易 CC** | <img src="assets/images/acfun.png" width="26"/> **AcFun** | <img src="assets/images/kilakila.png" width="26"/> **克拉克拉** |
-| <img src="assets/images/huajiao.png" width="26"/> **花椒直播** | <img src="assets/images/xiaohongshu.png" width="26"/> **小红书** | <img src="assets/images/taobao.png" width="26"/> **淘宝直播** |
-| <img src="assets/images/look.png" width="26"/> **LOOK 直播** | | |
-### 🌍 海外平台
-| | | |
-| --- | --- | --- |
-| <img src="assets/images/twitch.png" width="26"/> **Twitch** | <img src="assets/images/soop.png" width="26"/> **SOOP Live** | <img src="assets/images/kick.png" width="26"/> **Kick** |
-| <img src="assets/images/bigo.png" width="26"/> **Bigo Live** | <img src="assets/images/showroom.png" width="26"/> **SHOWROOM** | <img src="assets/images/openrec.png" width="26"/> **OPENREC / mellow-fan** |
-| <img src="assets/images/ttinglive.png" width="26"/> **TTingLive / FLEX TV** | <img src="assets/images/goodgame.png" width="26"/> **GoodGame** | <img src="assets/images/fc2.png" width="26"/> **FC2 Live** |
-
-### 📡 IPTV / 自定义直播源
-
-- 支持 **M3U / M3U8**、本地直播源、网络直播源导入
-- 按分区、平台和频道管理，支持 EPG 节目单与订阅源同步
+| <img src="assets/images/douyin.png" width="26"/> **抖音** | <img src="assets/images/kuaishou.png" width="26"/> **快手** | |
 
 
 ---
@@ -61,7 +46,7 @@ A third-party live stream aggregator built with Flutter.
 | 📲 iOS | TrollStore IPA / 未签名 ZIP | arm64 |
 
 - Android 使用正式包名 `com.mystyle.purelive`，正式 Release 使用仓库专用持久签名，可直接覆盖升级。
-- Windows 安装向导支持选择其他磁盘，设置、关注、历史、IPTV、录制和缓存集中保存在安装目录 `AppData`。
+- Windows 安装向导支持选择其他磁盘，设置、关注、历史、录制和缓存集中保存在安装目录 `AppData`。
 - macOS / Linux / iOS 源码保留构建能力，相关产物以具体 Release 说明为准，属社区验证范围。
 
 ---
@@ -70,7 +55,7 @@ A third-party live stream aggregator built with Flutter.
 
 ### 🎬 多平台聚合
 
-- 聚合 22 个直播平台，按平台与分区浏览、筛选和隐藏入口
+- 聚合 5 个直播平台，按平台与分区浏览、筛选和隐藏入口
 - 跨平台搜索，支持综合 / 平台顺序 / 观众 / 粉丝等排序，直播 / 未开播筛选
 - 各平台保持独立分页状态；"全部"搜索按平台完成顺序渐进显示，单平台超时不挡其他结果
 

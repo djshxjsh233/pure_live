@@ -12,7 +12,6 @@ void main() {
         Sites.huyaSite,
         Sites.douyinSite,
         Sites.kuaishouSite,
-        Sites.iptvSite,
       ]),
     );
     for (final siteId in Sites.supportedSiteIds) {

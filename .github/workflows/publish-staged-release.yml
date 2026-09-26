@@ -124,7 +124,7 @@ jobs:
             }
           }
           $entries = tar -tf $portable
-          if ($entries | Where-Object { $_ -match '(^|/)(AppData|IPTV_CACHE)(/|$)' }) {
+          if ($entries | Where-Object { $_ -match '(^|/)(AppData)(/|$)' }) {
             throw 'Runtime state was found in the Windows portable package.'
           }
           $signature = Get-AuthenticodeSignature -LiteralPath $installer

@@ -19,7 +19,6 @@ class LiveQualityLabel {
       'bilibili' => _bilibili(token, id),
       'douyin' => _douyin(token),
       'douyu' || 'huya' || 'kuaishou' => _generic(token),
-      'iptv' => token == 'default' ? '默认' : null,
       _ => _generic(token),
     };
     if (mapped != null) return mapped;

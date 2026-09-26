@@ -22,7 +22,6 @@ void main() {
     expect(CacheStoragePolicy.localDirectoryNames, [AppPathManager.dirImageCache, AppPathManager.dirEmojiCache]);
     expect(CacheStoragePolicy.localDirectoryNames, isNot(contains(AppPathManager.dirRecords)));
     expect(CacheStoragePolicy.localDirectoryNames, isNot(contains(AppPathManager.dirDownload)));
-    expect(CacheStoragePolicy.localDirectoryNames, isNot(contains(AppPathManager.dirIptvCache)));
   });
 
   test('cache copy distinguishes temporary cache from persistent user data', () {
@@ -30,8 +29,8 @@ void main() {
     final chinese = jsonDecode(File('assets/translations/zh.json').readAsStringSync()) as Map<String, dynamic>;
 
     expect(english['clear_local_cache'], 'Clear Local Cache');
-    expect(english['clear_local_cache_desc'], allOf(contains('Recordings'), contains('fonts'), contains('IPTV')));
-    expect(chinese['clear_local_cache_desc'], allOf(contains('录制'), contains('字体'), contains('IPTV')));
+    expect(english['clear_local_cache_desc'], allOf(contains('Recordings'), contains('fonts')));
+    expect(chinese['clear_local_cache_desc'], allOf(contains('录制'), contains('字体')));
     expect(english['clear_all_cache'], contains('Recording'));
     expect(chinese['clear_all_cache'], contains('录制'));
   });
@@ -40,11 +39,9 @@ void main() {
     final cache = Directory('${root.path}/cache')..createSync();
     final records = Directory('${root.path}/records')..createSync();
     final downloads = Directory('${root.path}/downloads')..createSync();
-    final iptv = Directory('${root.path}/iptv')..createSync();
     await File('${cache.path}/cover.bin').writeAsBytes(List.filled(1024, 1));
     final recording = await File('${records.path}/record.mp4').writeAsString('recording');
     final font = await File('${downloads.path}/font.ttf').writeAsString('font');
-    final playlist = await File('${iptv.path}/playlist.db').writeAsString('iptv');
     var backendClearCalls = 0;
     final controller = CacheController(
       cacheDirectoryResolver: () async => [cache, cache],
@@ -63,7 +60,6 @@ void main() {
     expect(await File('${cache.path}/cover.bin').exists(), isFalse);
     expect(await recording.readAsString(), 'recording');
     expect(await font.readAsString(), 'font');
-    expect(await playlist.readAsString(), 'iptv');
     expect(controller.cacheSizeMB.value, 0);
     expect(controller.imageCacheEpoch.value, 1);
   });

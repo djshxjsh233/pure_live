@@ -82,7 +82,7 @@ packages:
     source: hosted
     version: "1.0.4"
   archive:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: archive
       sha256: "6c5bcd986e06b94e3c40244af471750840a3d2341d1f9763a1100a14add517b4"
@@ -329,14 +329,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  charcode:
-    dependency: transitive
-    description:
-      name: charcode
-      sha256: fb0f1107cac15a5ea6ef0a6ef71a807b9e4267c713bb93e00e92d737cc8dbd8a
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.0"
   charset_converter:
     dependency: "direct main"
     description:
@@ -601,22 +593,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.10"
-  drift:
-    dependency: "direct main"
-    description:
-      name: drift
-      sha256: e3b6352aa02e60bed6ffc3cc9894c421578dad5fbef21b1f7f57cdc0e4edabcb
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.35.0"
-  drift_dev:
-    dependency: "direct dev"
-    description:
-      name: drift_dev
-      sha256: fbad5c1e3a73820cdb1f32161eb2f40bb5e5f03c0c1a3d236595725aec7efc6d
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.35.0"
   dynamic_color:
     dependency: "direct main"
     description:
@@ -1769,14 +1745,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.2"
-  recase:
-    dependency: transitive
-    description:
-      name: recase
-      sha256: e4eb4ec2dcdee52dcf99cb4ceabaffc631d7424ee55e56f280bc039737f89213
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   record_use:
     dependency: transitive
     description:
@@ -2078,22 +2046,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.2"
-  sqlite3:
-    dependency: transitive
-    description:
-      name: sqlite3
-      sha256: fa3fd961e83b2dca8890a7b1014ab1226831d2b5908067c0ab7f385ffb655caf
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.6.0"
-  sqlparser:
-    dependency: transitive
-    description:
-      name: sqlparser
-      sha256: "772bb2f6f5bce0631a60f26b57d6e8882e1105c22345b05c163ee6ee5d7ba32d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.45.0"
   stack_trace:
     dependency: transitive
     description:
@@ -2510,14 +2462,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.4"
-  yaml_edit:
-    dependency: transitive
-    description:
-      name: yaml_edit
-      sha256: "07c9e63ba42519745182b88ca12264a7ba2484d8239958778dfe4d44fe760488"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.4"
 sdks:
   dart: ">=3.13.0 <4.0.0"
   flutter: ">=3.47.0"

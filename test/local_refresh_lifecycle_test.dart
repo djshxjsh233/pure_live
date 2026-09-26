@@ -58,7 +58,7 @@ class _Site extends LiveSite {
 }
 
 class _Popular extends PopularLocalReactiveController with _Probe<LiveRoom> {
-  _Popular(_Site source, {String id = Sites.iptvSite})
+  _Popular(_Site source, {String id = Sites.douyinSite})
     : super(Site(id: id, name: 'Fixture', logo: '', liveSite: source));
 }
 
@@ -354,7 +354,7 @@ void main() {
   });
 
   for (final fails in [false, true]) {
-    test('IPTV late loading fails=$fails never publishes or presents', () async {
+    test('late loading fails=$fails never publishes or presents', () async {
       final source = _Site();
       final gate = Completer<List<LiveRoom>>();
       source.response = gate.future;
@@ -373,43 +373,6 @@ void main() {
     });
   }
 
-  test('IPTV initial load shares one operation and preserves playlist order', () async {
-    final source = _Site();
-    final gate = Completer<List<LiveRoom>>();
-    source.response = gate.future;
-    final c = track(_Popular(source));
-    final first = c.loadData();
-    final second = c.loadData();
-    final during = source.calls;
-    gate.complete([LiveRoom(roomId: 'b'), LiveRoom(roomId: 'a')]);
-    await Future.wait([first, second]);
-    expect(during, 1);
-    expect(c.list.map((e) => e.roomId), ['b', 'a']);
-    expect(c.finishes, hasLength(1));
-    expect(c.activePageOperation, isNull);
-  });
-
-  test('IPTV refresh failure stays failed and a later refresh recovers', () async {
-    final source = _Site();
-    final c = track(_Popular(source));
-    await c.loadData();
-    final old = c.list.toList();
-    final gate = Completer<List<LiveRoom>>();
-    source.response = gate.future;
-    final refresh = c.refreshData();
-    await _flush();
-    gate.completeError(StateError('playlist failed'));
-    await refresh;
-    expect(c.list, old);
-    expect(c.errors, hasLength(1));
-    expect(c.finishes.last, IndicatorResult.fail);
-    source.response = null;
-    await c.refreshData();
-    expect(c.errors, hasLength(1));
-    expect(c.pageError.value, isFalse);
-    expect(c.list.map((e) => e.roomId), ['b', 'a']);
-  });
-
   test('popular local raw hook does not read settings after deletion', () async {
     final source = _Site();
     final gate = Completer<List<LiveRoom>>();
@@ -420,90 +383,4 @@ void main() {
     gate.complete([LiveRoom(roomId: 'late')]);
     expect(await operation, isEmpty);
   });
-
-  test('empty IPTV snapshot completes the initial loading state once', () async {
-    final source = _Site()..response = Future.value(<LiveRoom>[]);
-    final c = track(_Popular(source));
-    await c.loadData();
-    expect(c.totalCount.value, 0);
-    expect(c.pageEmpty.value, isTrue);
-    expect(c.loadding.value, isFalse);
-    expect(c.pageLoadding.value, isFalse);
-    expect(c.finishes, [IndicatorResult.noMore]);
-  });
-
-  for (final desktop in [false, true]) {
-    testWidgets('IPTV BasePageView resize waits for its external snapshot desktop=$desktop', (tester) async {
-      Get.testMode = true;
-      Get.reset();
-      Get.put(SettingsService(), permanent: true);
-      tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = Size(desktop ? 900 : 400, 640);
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final source = _Site();
-      _Popular? owner;
-      await tester.pumpWidget(
-        GetMaterialApp(
-          home: Builder(
-            builder: (_) {
-              owner ??= _Popular(source)
-                ..pageSize.value = 2
-                ..updateLocalReactivePool([LiveRoom(roomId: 'seed')]);
-              return Scaffold(
-                body: BasePageView<_Popular, LiveRoom>(
-                  controller: owner!,
-                  enableRefresh: false,
-                  enableLoadMore: false,
-                  wrapMobileRefresh: false,
-                  showScrollToTopBtn: false,
-                  contentBuilder: (_, rows, scroll) => ListView(
-                    key: const ValueKey('local-rows'),
-                    controller: scroll,
-                    children: [for (final room in rows) Text(room.roomId ?? '')],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-      for (var frame = 0; frame < 10 && owner == null; frame++) {
-        await tester.pump();
-      }
-      expect(owner, isNotNull);
-      final c = owner!;
-      addTearDown(() async {
-        c.onDelete();
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pump();
-        Get.reset();
-      });
-      await tester.pump();
-      expect(find.byKey(const ValueKey('local-rows')), findsOneWidget);
-      expect(c.usesDesktopPagination, desktop);
-      final gate = Completer<List<LiveRoom>>();
-      source.response = gate.future;
-      final operation = c.loadData();
-      await tester.pump();
-      tester.view.physicalSize = Size(desktop ? 400 : 900, 640);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
-      final duringMode = c.usesDesktopPagination;
-      final duringSize = c.pageSize.value;
-      gate.complete(List.generate(40, (i) => LiveRoom(roomId: '$i')));
-      await tester.pump();
-      await operation;
-      await tester.pumpAndSettle();
-      expect(duringMode, desktop);
-      expect(duringSize, 2);
-      expect(c.usesDesktopPagination, !desktop);
-      expect(source.calls, 2);
-      expect(source.sizes, [2, c.pageSize.value]);
-      expect(c.list.length, desktop ? 40 : c.pageSize.value.clamp(1, 40));
-      expect(c.list.first.roomId, '0');
-      expect(find.byKey(const ValueKey('local-rows')), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  }
 }

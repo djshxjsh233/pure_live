@@ -469,10 +469,10 @@ class PlayerController extends GetxController {
   /// Opens a caller-supplied direct source under this controller's normal
   /// latest-load fence.
   ///
-  /// IPTV does not run the quality-discovery pipeline, so calling [setPlayer]
-  /// directly used to omit the load epoch that protects ordinary sources.
-  /// A room switch could therefore attach the older direct source after the
-  /// new room had already invalidated playback work.
+  /// A caller-supplied direct source bypasses the quality-discovery pipeline,
+  /// so it used to omit the load epoch that protects ordinary sources. A room
+  /// switch could therefore attach the older direct source after the new room
+  /// had already invalidated playback work.
   Future<VideoController?> setDirectPlayer({required LiveRoom room, required Site site}) async {
     final roomId = room.normalizedRoomId;
     if (roomId.isEmpty) return null;

@@ -21,7 +21,6 @@ import 'package:pure_live/modules/live_play/widgets/content_first_panel_layout.d
 import 'package:pure_live/modules/live_play/widgets/video_player/volume_control.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/portrait_playback_picker_dialog.dart';
-import 'package:pure_live/modules/live_play/widgets/video_player/iptv_schedule_dialog.dart';
 import 'package:pure_live/modules/live_play/widgets/danmaku/danmaku_settings_binding.dart';
 import 'package:pure_live/modules/live_play/widgets/local_interaction/local_danmaku_style_editor.dart';
 import 'package:pure_live/player/core/portrait_stream_support.dart';
@@ -348,34 +347,11 @@ class TopActionBar extends StatelessWidget {
                             decoration: TextDecoration.none,
                           ),
                         ),
-                        if (_liveProgramme(controller.room) case final programme?) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            "${i18n('now_playing')}: $programme",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
                 ),
 
-                if (controller.room.platform == Sites.iptvSite)
-                  IconButton(
-                    icon: const Icon(Icons.assignment_outlined), // 节目单账本图标
-                    tooltip: i18n('view_schedule'),
-                    visualDensity: VisualDensity.standard,
-                    constraints: const BoxConstraints(
-                      minWidth: kMinInteractiveDimension,
-                      minHeight: kMinInteractiveDimension,
-                    ),
-                    color: Colors.white,
-                    onPressed: () => _showSchedule(context),
-                  ),
                 for (final slot in resolveTopActionTrailingSlots(
                   fullscreen: GlobalPlayerState.to.fullscreenUI,
                   android: PlatformUtils.isAndroid,
@@ -425,27 +401,6 @@ class TopActionBar extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _showSchedule(BuildContext context) async {
-    if (controller.isMenuOpen.value) return;
-    controller.isMenuOpen.value = true;
-    controller.stopHideController();
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          contentPadding: EdgeInsets.zero,
-          content: IptvScheduleDialogContent(controller: controller),
-        ),
-      );
-    } finally {
-      if (controller.status != PlayerStatus.disposed) {
-        controller.isMenuOpen.value = false;
-        controller.enableController();
-      }
-    }
   }
 }
 
@@ -1804,11 +1759,6 @@ String _liveRoomTitle(LiveRoom room) {
     if (value.isNotEmpty) return value;
   }
   return i18n('untitled_room');
-}
-
-String? _liveProgramme(LiveRoom room) {
-  final programme = room.currentProgramme?.trim() ?? '';
-  return programme.isEmpty ? null : programme;
 }
 
 class SettingsButton extends StatelessWidget {
