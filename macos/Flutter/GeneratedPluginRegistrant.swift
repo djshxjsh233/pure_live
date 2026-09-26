@@ -17,7 +17,6 @@ import dynamic_color
 import ffmpeg_kit_extended_flutter
 import file_picker_darwin
 import flutter_inappwebview_macos
-import fvp
 import macos_window_utils
 import media_kit_video
 import mobile_scanner
@@ -45,7 +44,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FfmpegKitExtendedFlutterPlugin.register(with: registry.registrar(forPlugin: "FfmpegKitExtendedFlutterPlugin"))
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
   InAppWebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "InAppWebViewFlutterPlugin"))
-  FvpPlugin.register(with: registry.registrar(forPlugin: "FvpPlugin"))
   MacOSWindowUtilsPlugin.register(with: registry.registrar(forPlugin: "MacOSWindowUtilsPlugin"))
   MediaKitVideoPlugin.register(with: registry.registrar(forPlugin: "MediaKitVideoPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))

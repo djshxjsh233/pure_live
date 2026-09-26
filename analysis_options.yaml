@@ -11,6 +11,8 @@ analyzer:
     # Device captures, build records and one-off forensic helpers live here;
     # they are evidence artifacts rather than application source.
     - local-artifacts/**
+    # Vendored 包（fvp 0.38.1），由上游自行分析/校验。
+    - third_party/fvp/**
     - android/**
     - ios/**
     - web/**
