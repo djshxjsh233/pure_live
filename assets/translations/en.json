@@ -1935,7 +1935,6 @@
   "kick_directory_scope": "Official public live directory with native page links. Native search returns live matches and offline channels from the current bounded result window.",
   "kick_public_directory": "Public live directory",
   "kick_mature_notice": "This stream is marked as mature content by Kick.",
-  "site_17live": "17LIVE",
   "seventeen_directory_scope": "The public JP recommendation feed uses its native cursor, not a full-site directory. Search covers the website's current-live window; exact room IDs and official room/profile links remain available, but offline nicknames are not indexed here.",
   "seventeen_age_notice": "17LIVE requires viewers to be 18 or older.",
   "seventeen_audio_room": "Audio live",

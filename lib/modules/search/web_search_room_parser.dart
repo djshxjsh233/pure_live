@@ -29,7 +29,6 @@ import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
 import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
-import 'package:pure_live/core/site/seventeenlive/seventeenlive_link.dart';
 import 'package:pure_live/core/site/tting/tting_link.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
 
@@ -113,10 +112,6 @@ class WebSearchRoomParser {
     if (chzzk != null) return WebSearchRoomTarget(platform: Sites.chzzkSite, roomId: chzzk);
     final kick = KickLink.parse(rawUrl);
     if (kick != null) return WebSearchRoomTarget(platform: Sites.kickSite, roomId: kick);
-    final seventeenLive = SeventeenLiveLink.parse(rawUrl);
-    if (seventeenLive != null) {
-      return WebSearchRoomTarget(platform: Sites.seventeenLiveSite, roomId: seventeenLive);
-    }
     final liveMe = LiveMeLink.parseDurableRoomId(rawUrl);
     if (liveMe != null) return WebSearchRoomTarget(platform: Sites.liveMeSite, roomId: liveMe);
     final tiktok = TikTokLink.parseDurableUsername(rawUrl);

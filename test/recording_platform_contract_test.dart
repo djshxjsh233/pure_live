@@ -31,7 +31,6 @@ void main() {
         Sites.showroomSite,
         Sites.chzzkSite,
         Sites.kickSite,
-        Sites.seventeenLiveSite,
         Sites.liveMeSite,
         Sites.tiktokSite,
         Sites.youtubeSite,

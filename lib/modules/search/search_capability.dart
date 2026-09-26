@@ -51,11 +51,6 @@ class LiveSearchCapabilities {
       supportsPagination: false,
       supportsWebSearch: false,
     ),
-    Sites.seventeenLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveOnly,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.liveMeSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: true,

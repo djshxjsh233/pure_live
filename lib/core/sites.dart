@@ -40,7 +40,6 @@ import 'site/vkvideolive/vkvideolive_site.dart';
 import 'site/dailymotion/dailymotion_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';
 import 'site/twitcasting/twitcasting_site.dart';
-import 'site/seventeenlive/seventeenlive_site.dart';
 
 import 'package:pure_live/core/site/cc/cc_site.dart';
 
@@ -97,7 +96,6 @@ class Sites {
   static const String kugouLiveSite = 'kugoulive';
   static const String baiduLiveSite = 'baidulive';
   static const String lookLiveSite = 'looklive';
-  static const String seventeenLiveSite = '17live';
 
   static const Set<String> supportedSiteIds = {
     weiboSite,
@@ -143,7 +141,6 @@ class Sites {
     kugouLiveSite,
     baiduLiveSite,
     lookLiveSite,
-    seventeenLiveSite,
     iptvSite,
   };
 
@@ -196,7 +193,6 @@ class Sites {
     kugouLiveSite: '$_assetRoot/kugou.png',
     baiduLiveSite: '$_assetRoot/baidu.png',
     lookLiveSite: '$_assetRoot/look.png',
-    seventeenLiveSite: '$_assetRoot/17live.png',
     youtubeSite: '$_assetRoot/youtube.png',
     bigoSite: '$_assetRoot/bigo.png',
     liveMeSite: '$_assetRoot/liveme.png',
@@ -411,12 +407,6 @@ class Sites {
         logo: logoForId(lookLiveSite),
         liveSite: LookLiveSite(),
       ),
-      seventeenLiveSite => Site(
-        id: seventeenLiveSite,
-        name: i18n('site_17live'),
-        logo: logoForId(seventeenLiveSite),
-        liveSite: SeventeenLiveSite(),
-      ),
       _ => throw StateError('Unsupported live site: $normalizedId'),
     };
   }
@@ -471,7 +461,6 @@ class Sites {
       kugouLiveSite,
       baiduLiveSite,
         lookLiveSite,
-      seventeenLiveSite,
       iptvSite,
     ])
       _createSite(id),

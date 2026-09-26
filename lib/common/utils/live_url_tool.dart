@@ -35,7 +35,6 @@ import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_api.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
-import 'package:pure_live/core/site/seventeenlive/seventeenlive_link.dart';
 
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/utils/live_short_link_session.dart';
@@ -127,7 +126,6 @@ class LiveUrlTool {
       if (ShowroomLink.parse(raw) != null) return true;
       if (ChzzkLink.parse(raw) != null) return true;
       if (KickLink.parse(raw) != null) return true;
-      if (SeventeenLiveLink.parse(raw) != null) return true;
       if (LiveMeLink.parse(raw) != null) return true;
       if (TikTokLink.parse(raw) != null) return true;
       if (YouTubeLink.parse(raw) != null) return true;

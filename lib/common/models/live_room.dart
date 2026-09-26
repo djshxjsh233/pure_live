@@ -131,11 +131,6 @@ class LiveRoom {
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
     // The room detail keeps current liveViewerCount separate from cumulative viewerCount.
-    '17live': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: true,
-      onlineAvailability: AudienceOnlineAvailability.roomRealtime,
-    ),
     // LiveMe exposes platform heat, current playnumber and cumulative
     // watchnumber as separate fields in both its directory and room response.
     'liveme': AudiencePlatformCapability(

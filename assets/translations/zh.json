@@ -1887,7 +1887,6 @@
   "kick_directory_scope": "官方公开直播目录，保留原生页码；原生搜索在当前有界结果窗口内返回直播匹配及未开播频道。",
   "kick_public_directory": "公开直播目录",
   "kick_mature_notice": "该直播已被 Kick 标记为成人内容。",
-  "site_17live": "17LIVE",
   "seventeen_directory_scope": "官网日本区公开推荐按原生游标加载，不代表全站目录；搜索覆盖官网当前直播窗口，精确房间号与官方直播间/主播主页链接继续支持，未开播昵称不在搜索结果中。",
   "seventeen_age_notice": "17LIVE 要求观看者年满 18 周岁。",
   "seventeen_audio_room": "音频直播",

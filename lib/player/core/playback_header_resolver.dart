@@ -24,7 +24,6 @@ import 'package:pure_live/core/site/youtube/youtube_api.dart';
 import 'package:pure_live/core/site/bigo/bigo_api.dart';
 import 'package:pure_live/core/site/pandalive/pandalive_api.dart';
 import 'package:pure_live/core/site/popkontv/popkontv_api.dart';
-import 'package:pure_live/core/site/seventeenlive/seventeenlive_api.dart';
 import 'package:pure_live/core/common/http_header_policy.dart';
 
 /// Resolves the HTTP headers used to read a platform's media stream.
@@ -190,9 +189,6 @@ class PlaybackHeaderResolver {
         break;
       case Sites.kickSite:
         headers = KickApi.mediaHeaders(roomId);
-        break;
-      case Sites.seventeenLiveSite:
-        headers = SeventeenLiveApi.mediaHeaders(roomId);
         break;
       case Sites.liveMeSite:
         headers = LiveMeApi.mediaHeaders(roomId);

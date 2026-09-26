@@ -23,7 +23,6 @@ import 'package:pure_live/core/site/bigo/bigo_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_api.dart';
 import 'package:pure_live/core/site/pandalive/pandalive_link.dart';
 import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
-import 'package:pure_live/core/site/seventeenlive/seventeenlive_link.dart';
 import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
 import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
 import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
@@ -103,12 +102,6 @@ class RoomExternalOpener {
       case Sites.kickSite:
         try {
           return RoomExternalTarget(web: KickLink.url(id));
-        } on FormatException {
-          return null;
-        }
-      case Sites.seventeenLiveSite:
-        try {
-          return RoomExternalTarget(web: SeventeenLiveLink.url(id));
         } on FormatException {
           return null;
         }
