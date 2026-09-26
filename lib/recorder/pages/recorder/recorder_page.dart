@@ -183,14 +183,8 @@ class _TaskCard extends GetView<RecorderController> {
 
       case Sites.douyinSite:
         return const Color(0xFF000000);
-      case Sites.ccSite:
-        return const Color.fromARGB(253, 13, 145, 233);
       case Sites.iptvSite:
         return const Color.fromARGB(255, 204, 71, 9);
-      case Sites.twitchSite:
-        return const Color(0xFF9146FF);
-      case Sites.soopSite:
-        return const Color(0xFF0675E8);
       default:
         return const Color.fromARGB(255, 11, 223, 117);
     }

@@ -16,11 +16,8 @@ void main() {
   });
 
   test('platform source labels are localized while technical resolution stays precise', () {
-    expect(LiveQualityLabel.normalize(platform: 'soop', rawLabel: 'original', id: 'original'), '原画');
     expect(LiveQualityLabel.normalize(platform: 'huya', rawLabel: 'source', id: 0), '原画');
     expect(LiveQualityLabel.normalize(platform: 'iptv', rawLabel: 'default'), '默认');
-    expect(LiveQualityLabel.normalize(platform: 'twitch', rawLabel: '1080p60 (Source)'), '1080P60（原画）');
-    expect(LiveQualityLabel.normalize(platform: 'twitch', rawLabel: '720p'), '720P');
   });
 
   test('Bilibili qn and resolution fallback remain deterministic', () {

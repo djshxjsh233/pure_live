@@ -77,7 +77,7 @@ void main() {
                 }
               }();
             });
-            var task = LiveRecordTask.fromRoom(LiveRoom(platform: 'kilakila', roomId: label, nick: 'Local AVC fixture'))
+            var task = LiveRecordTask.fromRoom(LiveRoom(platform: 'showroom', roomId: label, nick: 'Local AVC fixture'))
               ..outputDir = directory.path;
             final manager = FFmpegManager.to;
             final started = Completer<void>();

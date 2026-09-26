@@ -9,7 +9,7 @@ param(
     [int] $ScreenOffSeconds = 0,
     [ValidateRange(10, 90)]
     [int] $PlatformLoadTimeoutSeconds = 45,
-    [ValidateSet('bilibili', 'douyu', 'huya', 'douyin', 'kuaishou', 'cc', 'twitch', 'soop', 'yy', 'acfun')]
+    [ValidateSet('bilibili', 'douyu', 'huya', 'douyin', 'kuaishou')]
     [string] $Platform = 'bilibili',
     [ValidatePattern('^[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+$')]
     [string] $Package = 'com.mystyle.purelive',
@@ -66,14 +66,9 @@ $platformLabels = @{
     huya = '虎牙'
     douyin = '抖音'
     kuaishou = '快手'
-    cc = '网易CC'
-    twitch = 'Twitch'
-    soop = 'Soop'
-    yy = 'YY'
-    acfun = 'AcFun 直播'
 }
 $platformLabel = $platformLabels[$Platform]
-$danmakuSupported = $Platform -notin @('cc', 'acfun')
+$danmakuSupported = $true
 $qualityLabelPattern = '^(?i:(?:.*(?:原画|蓝光|超清|高清|标清|流畅|省流|自动).*)|(?:\d{3,4}p(?:\d{2,3}|\s+\d+(?:\.\d+)?fps)?(?:\s*\([^)]*\)|（[^）]*）)?)|(?:HLS\s+(?:Auto|high|medium|low|\d+(?:\.\d+)?\s+Mbps))|(?:source|origin|uhd|fhd|hd|sd|ld|high|medium|low))$'
 $lineLabelPattern = '^(?:线路\s*\d+|主线路|备用线路)$'
 $script:foregroundInterferenceCount = 0
@@ -808,11 +803,11 @@ try {
     Save-Screenshot 'quality-before-record'
     $qualityOptions = @(
         Get-UiLabels -Xml $qualityState.Xml | Where-Object {
-            # Platform labels are not consistently prefix-based. Twitch, for
-            # example, exposes `1080P60（原画）`, while Chinese providers use
-            # values such as `原画2K60` or `蓝光10M`. Match the quality token
-            # anywhere, or a complete resolution/FPS label, without treating
-            # unrelated room text as a quality option.
+            # Platform labels are not consistently prefix-based. Some
+            # providers, for example, expose `1080P60（原画）`, while Chinese
+            # providers use values such as `原画2K60` or `蓝光10M`. Match the
+            # quality token anywhere, or a complete resolution/FPS label,
+            # without treating unrelated room text as a quality option.
             $_ -match $qualityLabelPattern
         }
     )

@@ -11,10 +11,6 @@ class AppSettingsController extends GetxController {
   static const List<String> defaultRealOnlinePlatforms = [
     Sites.douyinSite,
     Sites.kuaishouSite,
-    Sites.ccSite,
-    Sites.twitchSite,
-    Sites.soopSite,
-    Sites.acfunSite,
     Sites.openrecSite,
     Sites.ttingSite,
   ];
@@ -74,24 +70,12 @@ class AppSettingsController extends GetxController {
     final normalizedMenus = normalizeMenuIds(savedMenuIds.v);
     if (!listEquals(savedMenuIds.v, normalizedMenus)) savedMenuIds.v = normalizedMenus;
     if (audienceMetricMigration.v < 1) {
-      if (!realOnlinePlatforms.contains('twitch')) realOnlinePlatforms.add('twitch');
+      if (!realOnlinePlatforms.contains(Sites.openrecSite)) realOnlinePlatforms.add(Sites.openrecSite);
       audienceMetricMigration.v = 1;
     }
     if (audienceMetricMigration.v < 2) {
-      if (!realOnlinePlatforms.contains('soop')) realOnlinePlatforms.add('soop');
-      audienceMetricMigration.v = 2;
-    }
-    if (audienceMetricMigration.v < 3) {
-      if (!realOnlinePlatforms.contains(Sites.acfunSite)) realOnlinePlatforms.add(Sites.acfunSite);
-      audienceMetricMigration.v = 3;
-    }
-    if (audienceMetricMigration.v < 4) {
-      if (!realOnlinePlatforms.contains(Sites.openrecSite)) realOnlinePlatforms.add(Sites.openrecSite);
-      audienceMetricMigration.v = 4;
-    }
-    if (audienceMetricMigration.v < 5) {
       if (!realOnlinePlatforms.contains(Sites.ttingSite)) realOnlinePlatforms.add(Sites.ttingSite);
-      audienceMetricMigration.v = 5;
+      audienceMetricMigration.v = 2;
     }
     _repairRealOnlinePlatforms();
     _realOnlinePlatformsWorker = ever<List<String>>(realOnlinePlatforms, (_) => _repairRealOnlinePlatforms());

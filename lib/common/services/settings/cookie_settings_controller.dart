@@ -10,9 +10,6 @@ class CookieSettingsController extends GetxController {
   final RxString douyuCookie = hiveString('douyuCookie', '');
   final RxString douyinCookie = hiveString('douyinCookie', '');
   final RxString kuaishouCookie = hiveString('kuaishouCookie', '');
-  final RxString twitchCookie = hiveString('twitchCookie', '');
-  final RxString soopCookie = hiveString('soopCookie', '');
-  final RxString yyCookie = hiveString('yyCookie', '');
   final RxString taobaoCookie = hiveString('taobaoCookie', '');
 
   @override
@@ -28,9 +25,6 @@ class CookieSettingsController extends GetxController {
       douyuCookie,
       douyinCookie,
       kuaishouCookie,
-      twitchCookie,
-      soopCookie,
-      yyCookie,
       taobaoCookie,
     ]) {
       final normalized = normalizeAccountCookie(cookie.v);
@@ -44,9 +38,6 @@ class CookieSettingsController extends GetxController {
     douyuCookie.v = '';
     douyinCookie.v = '';
     kuaishouCookie.v = '';
-    twitchCookie.v = '';
-    soopCookie.v = '';
-    yyCookie.v = '';
     taobaoCookie.v = '';
     bilibiliUid.v = 0;
   }
@@ -59,9 +50,6 @@ class CookieSettingsController extends GetxController {
       'douyinCookie': douyinCookie.v,
       'kuaishouCookie': kuaishouCookie.v,
       'bilibiliUid': bilibiliUid.v,
-      'twitchCookie': twitchCookie.v,
-      'soopCookie': soopCookie.v,
-      'yyCookie': yyCookie.v,
       'taobaoCookie': taobaoCookie.v,
     };
   }
@@ -75,9 +63,6 @@ class CookieSettingsController extends GetxController {
       'douyinCookie': normalizeAccountCookie((json['douyinCookie'] ?? '') as String),
       'kuaishouCookie': normalizeAccountCookie((json['kuaishouCookie'] ?? '') as String),
       'bilibiliUid': (json['bilibiliUid'] ?? 0) as int,
-      'twitchCookie': normalizeAccountCookie((json['twitchCookie'] ?? '') as String),
-      'soopCookie': normalizeAccountCookie((json['soopCookie'] ?? '') as String),
-      'yyCookie': normalizeAccountCookie((json['yyCookie'] ?? '') as String),
       'taobaoCookie': normalizeAccountCookie((json['taobaoCookie'] ?? '') as String),
     };
   }
@@ -90,9 +75,6 @@ class CookieSettingsController extends GetxController {
     douyinCookie.v = parsed['douyinCookie'];
     kuaishouCookie.v = parsed['kuaishouCookie'];
     bilibiliUid.v = parsed['bilibiliUid'];
-    twitchCookie.v = parsed['twitchCookie'];
-    soopCookie.v = parsed['soopCookie'];
-    yyCookie.v = parsed['yyCookie'];
     taobaoCookie.v = parsed['taobaoCookie'];
 
     BiliBiliAccountService.instance.setCookie(bilibiliCookie.v);

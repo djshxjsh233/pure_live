@@ -3,10 +3,6 @@ import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
 import 'package:pure_live/core/site/openrec/openrec_api.dart';
 import 'package:pure_live/core/site/openrec/openrec_link.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:pure_live/core/site/huajiao/huajiao_api.dart';
-import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_link.dart';
@@ -94,9 +90,7 @@ class LiveUrlTool {
       if (XiaohongshuLink.parse(raw) != null ||
           XiaohongshuLink.shortUri(raw) != null ||
           TtingLink.parse(raw) != null ||
-          OpenrecLink.parse(raw) != null ||
-          HuajiaoLink.parse(raw) != null ||
-          KilakilaLink.parse(raw) != null) {
+          OpenrecLink.parse(raw) != null) {
         return true;
       }
       if (ShowroomLink.parse(raw) != null) return true;
@@ -122,11 +116,8 @@ class LiveUrlTool {
       if (segments.length == 1 && host == 'www.bilibili.com') {
         return WebSearchRoomParser.isRoomIdentifier(segments.single, RegExp(r'^\d+$'));
       }
-      if (segments.length == 1 && (_hostIs(host, 'douyu.com') || host == 'cc.163.com')) {
+      if (segments.length == 1 && _hostIs(host, 'douyu.com')) {
         return WebSearchRoomParser.isRoomIdentifier(segments.single, RegExp(r'^[a-zA-Z0-9_-]+$'));
-      }
-      if (_hostIs(host, 'sooplive.com')) {
-        return WebSearchRoomParser.isRoomIdentifier(segments.first, RegExp(r'^[a-zA-Z0-9_-]+$'));
       }
       if (host == 'webcast.amemv.com') {
         return RegExp(r'(?:^|/)reflow/\d+(?:/|$)').hasMatch(uri.path);
@@ -140,8 +131,6 @@ class LiveUrlTool {
     String text, {
     dio.Dio Function()? clientFactory,
     dio.CancelToken? cancelToken,
-    KilakilaApi? kilakilaApi,
-    HuajiaoApi? huajiaoApi,
     OpenrecApi? openrecApi,
     TaobaoLiveApi? taobaoLiveApi,
     Duration timeout = const Duration(seconds: 12),
@@ -153,8 +142,6 @@ class LiveUrlTool {
       final parsing = _parseLiveUrl(
         text,
         session,
-        kilakilaApi ?? KilakilaApi(),
-        huajiaoApi ?? HuajiaoApi(),
         openrecApi ?? OpenrecApi(),
         taobaoLiveApi ?? TaobaoLiveApi(),
         ownedCancel,
@@ -178,8 +165,6 @@ class LiveUrlTool {
   static Future<List<String>> _parseLiveUrl(
     String text,
     LiveShortLinkSession session,
-    KilakilaApi kilakilaApi,
-    HuajiaoApi huajiaoApi,
     OpenrecApi openrecApi,
     TaobaoLiveApi taobaoLiveApi,
     dio.CancelToken cancel,
@@ -210,20 +195,6 @@ class LiveUrlTool {
         if (session.isClosed || cancel.isCancelled) return [];
         return [key.value, Sites.openrecSite];
       }
-      final huajiao = HuajiaoLink.parse(raw);
-      if (huajiao != null) {
-        if (huajiao.kind == HuajiaoLinkKind.owner) return [huajiao.id, Sites.huajiaoSite];
-        final ownerId = await huajiaoApi.broadcastOwnerId(huajiao.id, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [ownerId, Sites.huajiaoSite];
-      }
-      final kilakila = KilakilaLink.parse(raw);
-      if (kilakila != null) {
-        if (kilakila.kind == KilakilaLinkKind.owner) return [kilakila.id, Sites.kilakilaSite];
-        final owner = await kilakilaApi.ownerFromLink(raw, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [owner.userId, Sites.kilakilaSite];
-      }
       final bigo = BigoLink.parse(raw);
       if (bigo != null) return [bigo, Sites.bigoSite];
       final goodGame = GoodGameLink.parse(raw);
@@ -253,8 +224,6 @@ class LiveUrlTool {
         final target = await _parseLiveUrl(
           location.toString(),
           session,
-          kilakilaApi,
-          huajiaoApi,
           openrecApi,
           taobaoLiveApi,
           cancel,
@@ -289,12 +258,6 @@ class LiveUrlTool {
       } else if (host == 'live.kuaishou.cn' && segments.length >= 2 && segments.first == 'u') {
         platform = Sites.kuaishouSite;
         id = segments[1];
-      } else if (host == 'cc.163.com') {
-        platform = Sites.ccSite;
-        id = segments.first;
-      } else if (_hostIs(host, 'sooplive.com')) {
-        platform = Sites.soopSite;
-        id = segments.first;
       }
       if (platform != null && id != null && WebSearchRoomParser.isRoomIdentifier(id, pattern)) {
         return [id, platform];

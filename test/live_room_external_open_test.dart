@@ -70,9 +70,9 @@ void main() {
     Get.reset();
   });
 
-  test('YY menu hands the official room URL to the external launcher', () async {
-    await controller(Sites.yySite).openNaviteAPP();
-    expect(launches.map((call) => call['url']), ['https://www.yy.com/12345']);
+  test('Kuaishou menu hands the official room URL to the external launcher', () async {
+    await controller(Sites.kuaishouSite).openNaviteAPP();
+    expect(launches.map((call) => call['url']), ['https://live.kuaishou.com/u/12345']);
     expect(launches.single['useWebView'], isFalse);
     expect(launches.single['useSafariVC'], isFalse);
   });
@@ -85,8 +85,8 @@ void main() {
   }
 
   for (final roomId in <String?>[null, '', '  ']) {
-    test('YY missing room identity $roomId does not open a guessed room', () async {
-      await controller(Sites.yySite, roomId: roomId).openNaviteAPP();
+    test('Kuaishou missing room identity $roomId does not open a guessed room', () async {
+      await controller(Sites.kuaishouSite, roomId: roomId).openNaviteAPP();
       expect(launches, isEmpty);
     });
   }
@@ -103,25 +103,25 @@ void main() {
 
   test('a failed webpage launch is contained and not retried identically', () async {
     throwLaunch = true;
-    await controller(Sites.twitchSite).openNaviteAPP();
+    await controller(Sites.kuaishouSite).openNaviteAPP();
     expect(launches.length, 1);
   });
 
   test('false webpage result does not trigger duplicate browser launches', () async {
     launchResult = false;
-    await controller(Sites.twitchSite).openNaviteAPP();
+    await controller(Sites.kuaishouSite).openNaviteAPP();
     expect(launches.length, 1);
   });
 
   test('missing detail does not call a launcher', () async {
-    final owner = controller(Sites.yySite);
+    final owner = controller(Sites.kuaishouSite);
     owner.state.value = const LivePlayState();
     await owner.openNaviteAPP();
     expect(launches, isEmpty);
   });
 
   test('repeated menu input shares one pending launch and releases after completion', () async {
-    final owner = controller(Sites.yySite);
+    final owner = controller(Sites.kuaishouSite);
     final pending = pendingLaunch = Completer<bool>();
     final action = owner.openNaviteAPP();
     await owner.openNaviteAPP();
@@ -136,17 +136,17 @@ void main() {
   });
 
   test('room replacement while the OS request is pending leaves the new room intact', () async {
-    final owner = controller(Sites.yySite);
+    final owner = controller(Sites.kuaishouSite);
     final pending = pendingLaunch = Completer<bool>();
     final action = owner.openNaviteAPP();
-    final next = LiveRoom(roomId: '999', platform: Sites.yySite);
+    final next = LiveRoom(roomId: '999', platform: Sites.kuaishouSite);
     owner.state.value = LivePlayState(room: RoomState(detail: next));
     pending.complete(false);
     await action;
     expect(owner.state.value.room.detail, same(next));
-    expect(launches.map((call) => call['url']), ['https://www.yy.com/12345']);
+    expect(launches.map((call) => call['url']), ['https://live.kuaishou.com/u/12345']);
     pendingLaunch = null;
     await owner.openNaviteAPP();
-    expect(launches.last['url'], 'https://www.yy.com/999');
+    expect(launches.last['url'], 'https://live.kuaishou.com/u/999');
   });
 }

@@ -1,19 +1,14 @@
-import 'site/yy/yy_site.dart';
 import 'site/kick/kick_site.dart';
 import 'site/bigo/bigo_site.dart';
-import 'site/soop/soop_site.dart';
 import 'site/huya/huya_site.dart';
 import 'interface/live_site.dart';
 import 'site/fc2live/fc2_site.dart';
 import 'site/tting/tting_site.dart';
-import 'site/acfun/acfun_site.dart';
 import 'site/douyu/douyu_site.dart';
 import 'site/douyin/douyin_site.dart';
 import 'site/openrec/openrec_site.dart';
-import 'site/huajiao/huajiao_site.dart';
 import 'site/goodgame/goodgame_site.dart';
 import 'site/showroom/showroom_site.dart';
-import 'site/kilakila/kilakila_site.dart';
 import 'site/looklive/look_live_site.dart';
 
 import 'package:pure_live/common/index.dart';
@@ -21,11 +16,9 @@ import 'package:pure_live/common/index.dart';
 import 'site/taobaolive/taobao_live_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';
 
-import 'package:pure_live/core/site/cc/cc_site.dart';
 
 
 import 'package:pure_live/core/site/iptv/iptv_site.dart';
-import 'package:pure_live/core/site/twitch/twitch_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
 import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 
@@ -36,14 +29,7 @@ class Sites {
   static const String huyaSite = "huya";
   static const String douyinSite = "douyin";
   static const String kuaishouSite = "kuaishou";
-  static const String ccSite = "cc";
   static const String iptvSite = "iptv";
-  static const String twitchSite = "twitch";
-  static const String soopSite = 'soop';
-  static const String yySite = 'yy';
-  static const String acfunSite = 'acfun';
-  static const String kilakilaSite = 'kilakila';
-  static const String huajiaoSite = 'huajiao';
   static const String openrecSite = 'openrec';
   static const String ttingSite = 'ttinglive';
   static const String xiaohongshuSite = 'xiaohongshu';
@@ -61,13 +47,6 @@ class Sites {
     huyaSite,
     douyinSite,
     kuaishouSite,
-    ccSite,
-    twitchSite,
-    soopSite,
-    yySite,
-    acfunSite,
-    kilakilaSite,
-    huajiaoSite,
     openrecSite,
     ttingSite,
     xiaohongshuSite,
@@ -95,14 +74,7 @@ class Sites {
     huyaSite: '$_assetRoot/huya.png',
     douyinSite: '$_assetRoot/douyin.png',
     kuaishouSite: '$_assetRoot/kuaishou.png',
-    ccSite: '$_assetRoot/cc.png',
     iptvSite: '$_assetRoot/iptv.png',
-    twitchSite: '$_assetRoot/twitch.png',
-    soopSite: '$_assetRoot/soop.png',
-    yySite: '$_assetRoot/yy.png',
-    acfunSite: '$_assetRoot/acfun.png',
-    kilakilaSite: '$_assetRoot/kilakila.png',
-    huajiaoSite: '$_assetRoot/huajiao.png',
     openrecSite: '$_assetRoot/openrec.png',
     ttingSite: '$_assetRoot/ttinglive.png',
     xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
@@ -154,29 +126,7 @@ class Sites {
         logo: logoForId(kuaishouSite),
         liveSite: KuaishowSite(),
       ),
-      ccSite => Site(id: ccSite, name: i18n("site_cc"), logo: logoForId(ccSite), liveSite: CCSite()),
-      twitchSite => Site(
-        id: twitchSite,
-        name: i18n("site_twitch"),
-        logo: logoForId(twitchSite),
-        liveSite: TwitchSite(),
-      ),
-      soopSite => Site(id: soopSite, name: i18n("site_soop"), logo: logoForId(soopSite), liveSite: SoopSite()),
-      yySite => Site(id: yySite, name: i18n("site_yy"), logo: logoForId(yySite), liveSite: YYSite()),
-      acfunSite => Site(id: acfunSite, name: i18n('site_acfun'), logo: logoForId(acfunSite), liveSite: AcfunSite()),
       iptvSite => Site(id: iptvSite, name: i18n("site_iptv"), logo: logoForId(iptvSite), liveSite: IptvSite()),
-      kilakilaSite => Site(
-        id: kilakilaSite,
-        name: i18n('site_kilakila'),
-        logo: logoForId(kilakilaSite),
-        liveSite: KilakilaSite(),
-      ),
-      huajiaoSite => Site(
-        id: huajiaoSite,
-        name: i18n('site_huajiao'),
-        logo: logoForId(huajiaoSite),
-        liveSite: HuajiaoSite(),
-      ),
       openrecSite => Site(
         id: openrecSite,
         name: 'mellow-fan (OPENREC)',
@@ -238,13 +188,6 @@ class Sites {
       huyaSite,
       douyinSite,
       kuaishouSite,
-      ccSite,
-      twitchSite,
-      soopSite,
-      yySite,
-      acfunSite,
-      kilakilaSite,
-      huajiaoSite,
       openrecSite,
       ttingSite,
       xiaohongshuSite,

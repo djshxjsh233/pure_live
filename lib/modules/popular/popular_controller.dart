@@ -70,25 +70,6 @@ class PopularController extends GetxController with GetTickerProviderStateMixin 
             return PopularServerFixedController(site, fixedSize: 120);
           }
 
-          if (site.id == Sites.soopSite) {
-            return PopularServerFixedController(site, fixedSize: 60);
-          }
-
-          if (site.id == Sites.twitchSite) {
-            // Twitch currently permits a large first directory page without
-            // browser integrity, while follow-up cursor requests can be
-            // challenged. Cache that stable first window and slice it locally
-            // so normal mobile scrolling neither stalls nor discards cards.
-            return PopularServerFixedController(site, fixedSize: 100);
-          }
-
-          if (site.id == Sites.ccSite) {
-            // CC's server order is heat-based. Fetch a larger stable candidate
-            // window so real-online mode can rank by vision_visitor rather
-            // than merely reordering each 20-card slice.
-            return PopularServerFixedController(site, fixedSize: 100);
-          }
-
           if (site.id == Sites.douyinSite) {
             return PopularServerFixedController(site, fixedSize: 20);
           }

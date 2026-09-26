@@ -85,13 +85,7 @@ class RoutePath {
 
   static const kDouyinCookie = "/douyin_cookie";
 
-  static const kTwitchCookie = "/twitch_cookie";
-
-  static const kYyCookie = "/yy_cookie";
-
   static const kTaobaoCookie = "/taobao_cookie";
-
-  static const kSoop = "/soop";
 
   // WebDavPage
   static const kWebDavPage = "/web_dav_page";

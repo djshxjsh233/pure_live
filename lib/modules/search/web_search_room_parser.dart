@@ -1,6 +1,4 @@
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_link.dart';
@@ -53,14 +51,6 @@ class WebSearchRoomParser {
     }
     // Broadcast shares need asynchronous owner lookup in LiveUrlTool. Only
     // verified owner links can be mapped synchronously to a durable app ID.
-    final huajiao = HuajiaoLink.parse(rawUrl);
-    if (huajiao?.kind == HuajiaoLinkKind.owner) {
-      return WebSearchRoomTarget(platform: Sites.huajiaoSite, roomId: huajiao!.id);
-    }
-    final kilakila = KilakilaLink.parse(rawUrl.trim());
-    if (kilakila?.kind == KilakilaLinkKind.owner) {
-      return WebSearchRoomTarget(platform: Sites.kilakilaSite, roomId: kilakila!.id);
-    }
     final uri = Uri.tryParse(rawUrl.trim());
     if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) return null;
     // Bare composite IDs belong to exact search, not web navigation. Preserve
@@ -107,23 +97,8 @@ class WebSearchRoomParser {
       if (segments.length < 2 || segments.first.toLowerCase() != 'u') return null;
       return _target(Sites.kuaishouSite, segments[1], RegExp(r'^[a-zA-Z0-9_-]+$'));
     }
-    if (host == 'cc.163.com') {
-      return _firstSegment(segments, Sites.ccSite, RegExp(r'^\d+$'));
-    }
     if (host == 'live.bilibili.com') {
       return _firstSegment(segments, Sites.bilibiliSite, RegExp(r'^\d+$'));
-    }
-    if (_matchesHost(host, 'twitch.tv')) {
-      return _firstSegment(segments, Sites.twitchSite, RegExp(r'^[a-zA-Z0-9_]+$'));
-    }
-    if (_matchesHost(host, 'sooplive.co.kr')) {
-      return _firstSegment(segments, Sites.soopSite, RegExp(r'^[a-zA-Z0-9_-]+$'));
-    }
-    if (_matchesHost(host, 'yy.com')) {
-      return _firstSegment(segments, Sites.yySite, RegExp(r'^\d+$'));
-    }
-    if (host == 'live.acfun.cn' && uri.userInfo.isEmpty && segments.length == 2 && segments.first == 'live') {
-      return _target(Sites.acfunSite, segments[1], RegExp(r'^[1-9][0-9]{0,19}$'));
     }
     return null;
   }

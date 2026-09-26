@@ -8,13 +8,9 @@ void main() {
       expect(LiveRoom(platform: 'douyu').effectiveAudienceMetricType, AudienceMetricType.popularity);
       expect(LiveRoom(platform: 'huya').effectiveAudienceMetricType, AudienceMetricType.popularity);
       expect(LiveRoom(platform: 'kuaishou').effectiveAudienceMetricType, AudienceMetricType.onlineViewers);
-      expect(LiveRoom(platform: 'twitch').effectiveAudienceMetricType, AudienceMetricType.onlineViewers);
-      expect(LiveRoom(platform: 'twitch').supportsRealOnlineCount, isTrue);
-      expect(LiveRoom(platform: 'soop').effectiveAudienceMetricType, AudienceMetricType.onlineViewers);
-      expect(LiveRoom(platform: 'soop').supportsRealOnlineCount, isTrue);
+      expect(LiveRoom(platform: 'kuaishou').supportsRealOnlineCount, isTrue);
       expect(LiveRoom(platform: 'douyin').effectiveAudienceMetricType, AudienceMetricType.totalViewers);
-      expect(LiveRoom(platform: 'cc').effectiveAudienceMetricType, AudienceMetricType.popularity);
-      expect(LiveRoom(platform: 'yy').effectiveAudienceMetricType, AudienceMetricType.popularity);
+      expect(LiveRoom(platform: 'huya').effectiveAudienceMetricType, AudienceMetricType.popularity);
       expect(LiveRoom(platform: 'huya', onlineViewers: '3210').supportsRealOnlineCount, isFalse);
       expect(LiveRoom(platform: 'huya').supportsRealOnlineCount, isFalse);
       expect(LiveRoom(platform: 'huya').hasRealOnlineCount, isFalse);
@@ -84,7 +80,7 @@ void main() {
 
     test('concurrent ranking separates explicit, pending, and native metric tiers', () {
       final explicit = LiveRoom(roomId: 'explicit', platform: 'douyin', onlineViewers: '120');
-      final pending = LiveRoom(roomId: 'pending', platform: 'soop', popularity: '900万');
+      final pending = LiveRoom(roomId: 'pending', platform: 'douyin', popularity: '900万');
       final heat = LiveRoom(roomId: 'heat', platform: 'bilibili', popularity: '900万');
       final rooms = [heat, pending, explicit]
         ..sort(
@@ -101,8 +97,8 @@ void main() {
     test('equal ranking values use stable platform-room identity', () {
       final rooms =
           [
-            LiveRoom(roomId: '2', platform: 'twitch', onlineViewers: '50'),
-            LiveRoom(roomId: '1', platform: 'twitch', onlineViewers: '50'),
+            LiveRoom(roomId: '2', platform: 'kuaishou', onlineViewers: '50'),
+            LiveRoom(roomId: '1', platform: 'kuaishou', onlineViewers: '50'),
           ]..sort(
             (left, right) =>
                 LiveRoom.compareAudienceRanking(left, right, preferRealOnline: true, platformEnabled: (_) => true),
@@ -112,7 +108,7 @@ void main() {
     });
 
     test('round-trips an explicit metric and migrates older records', () {
-      final room = LiveRoom.fromJson({'roomId': '1', 'platform': 'cc', 'audienceMetricType': 'followers'});
+      final room = LiveRoom.fromJson({'roomId': '1', 'platform': 'huya', 'audienceMetricType': 'followers'});
       expect(room.effectiveAudienceMetricType, AudienceMetricType.followers);
       expect(room.toJson()['audienceMetricType'], 'followers');
 

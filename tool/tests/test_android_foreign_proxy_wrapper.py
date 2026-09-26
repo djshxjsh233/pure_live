@@ -53,7 +53,7 @@ class ProxyWrapperTests(unittest.TestCase):
             env = os.environ.copy()
             env.update(FAIL_SETUP=setup, FAIL_SMOKE=str(int(smoke)), FAIL_RESTORE=str(int(restore)))
             run = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'tool/android_foreign_recording_smoke.ps1'),
-                                  '-Serial', '192.0.2.10:5555', '-Platform', 'twitch', '-ProxyPort', '7909'],
+                                  '-Serial', '192.0.2.10:5555', '-Platform', 'douyu', '-ProxyPort', '7909'],
                                  cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=45)
             path = root / 'calls.jsonl'
             calls = [json.loads(line) for line in path.read_text(encoding='utf-8-sig').splitlines()] if path.exists() else []

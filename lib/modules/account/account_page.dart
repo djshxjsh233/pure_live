@@ -61,19 +61,6 @@ class AccountPage extends GetView<AccountController> {
               );
             }),
             Obx(() {
-              final isLogined = cookie.yyCookie.v.isNotEmpty;
-              return _buildAccountTile(
-                context,
-                logo: 'assets/images/yy.png',
-                title: i18n("site_yy"),
-                subtitle: isLogined ? i18n("logined") : i18n("set_cookie"),
-                isLogined: isLogined,
-                onTap: () => isLogined
-                    ? _showLogoutDialog(context, accountName: i18n('site_yy'), onConfirm: () => cookie.yyCookie.v = "")
-                    : Get.toNamed(RoutePath.kYyCookie),
-              );
-            }),
-            Obx(() {
               final isLogined = cookie.taobaoCookie.v.isNotEmpty;
               return _buildAccountTile(
                 context,
@@ -127,40 +114,6 @@ class AccountPage extends GetView<AccountController> {
                         onConfirm: () => cookie.kuaishouCookie.v = "",
                       )
                     : Get.toNamed(RoutePath.kKuaishouCookie),
-              );
-            }),
-            Obx(() {
-              final isLogined = cookie.twitchCookie.v.isNotEmpty;
-              return _buildAccountTile(
-                context,
-                logo: 'assets/images/twitch.png',
-                title: i18n("site_twitch"),
-                subtitle: isLogined ? i18n("logined") : i18n("set_cookie"),
-                isLogined: isLogined,
-                onTap: () => isLogined
-                    ? _showLogoutDialog(
-                        context,
-                        accountName: i18n('site_twitch'),
-                        onConfirm: () => cookie.twitchCookie.v = "",
-                      )
-                    : Get.toNamed(RoutePath.kTwitchCookie),
-              );
-            }),
-            Obx(() {
-              final isLogined = cookie.soopCookie.v.isNotEmpty;
-              return _buildAccountTile(
-                context,
-                logo: 'assets/images/soop.png',
-                title: i18n("site_soop"),
-                subtitle: isLogined ? i18n("logined") : i18n("set_cookie"),
-                isLogined: isLogined,
-                onTap: () => isLogined
-                    ? _showLogoutDialog(
-                        context,
-                        accountName: i18n('site_soop'),
-                        onConfirm: () => cookie.soopCookie.v = "",
-                      )
-                    : Get.toNamed(RoutePath.kSoop),
               );
             }),
             Obx(() {

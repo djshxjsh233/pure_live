@@ -10,7 +10,7 @@ void main() {
       path: 'https://fixture-user:fixture-password@cdn.example/fixture-path-secret/stream.flv?token=fixture-token#fixture-fragment',
       method: 'POST',
       extra: {'ts': DateTime.now().millisecondsSinceEpoch - 25},
-      queryParameters: {'acfun.api.visitor_st': 'fixture-visitor', 'authorId': 'fixture-author'},
+      queryParameters: {'fixture.api.visitor_st': 'fixture-visitor', 'authorId': 'fixture-author'},
       data: {
         'password': 'fixture-body-secret',
         'nested': {'cookie': 'fixture-nested-secret'},

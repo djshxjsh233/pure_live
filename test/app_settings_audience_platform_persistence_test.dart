@@ -35,16 +35,16 @@ void main() {
 
   test('backup parser and config extraction canonicalize audience platform ids', () {
     final parsed = AppSettingsController.parseConfig({
-      'realOnlinePlatforms': [' DOUYIN ', 'SOOP', 'douyin', 'huya'],
+      'realOnlinePlatforms': [' DOUYIN ', 'KUAISHOU', 'douyin', 'huya'],
     });
     final extracted = AppSettingsController.extractConfig({
       'app': {
-        'realOnlinePlatforms': [' LOOKLIVE ', 'TWITCH', 'looklive', 'showroom'],
+        'realOnlinePlatforms': [' LOOKLIVE ', 'KUAISHOU', 'looklive', 'kuaishou'],
       },
     });
 
-    expect(parsed['realOnlinePlatforms'], ['douyin', 'soop']);
-    expect(extracted['realOnlinePlatforms'], ['looklive', 'twitch']);
+    expect(parsed['realOnlinePlatforms'], ['douyin', 'kuaishou']);
+    expect(extracted['realOnlinePlatforms'], ['looklive', 'kuaishou']);
     expect(
       () => AppSettingsController.parseConfig({
         'realOnlinePlatforms': ['douyin', 7],
@@ -55,34 +55,34 @@ void main() {
 
   test('startup repairs same-length legacy spellings before the first consumer', () async {
     await HivePrefUtil.setInt('audienceMetricMigration', 7);
-    await HivePrefUtil.setStringList('realOnlinePlatforms', [' DOUYIN ', 'SOOP']);
+    await HivePrefUtil.setStringList('realOnlinePlatforms', [' DOUYIN ', 'KUAISHOU']);
 
     final settings = Get.put(AppSettingsController());
 
-    expect(settings.realOnlinePlatforms, ['douyin', 'soop']);
+    expect(settings.realOnlinePlatforms, ['douyin', 'kuaishou']);
     expect(settings.isRealOnlineEnabledFor(' DOUYIN '), isTrue);
-    expect(settings.isRealOnlineEnabledFor('soop'), isTrue);
+    expect(settings.isRealOnlineEnabledFor('kuaishou'), isTrue);
 
     await Future<void>.delayed(Duration.zero);
     await HivePrefUtil.flush();
-    expect(HivePrefUtil.getStringList('realOnlinePlatforms'), ['douyin', 'soop']);
+    expect(HivePrefUtil.getStringList('realOnlinePlatforms'), ['douyin', 'kuaishou']);
   });
 
   test('runtime malformed writes stay consumer-safe and are repaired once', () async {
     await HivePrefUtil.setInt('audienceMetricMigration', 7);
     final settings = Get.put(AppSettingsController());
 
-    settings.realOnlinePlatforms.assignAll([' DOUYIN ', 'SOOP', 'douyin', 'huya']);
+    settings.realOnlinePlatforms.assignAll([' DOUYIN ', 'KUAISHOU', 'douyin', 'huya']);
 
     expect(settings.isRealOnlineEnabledFor('douyin'), isTrue);
-    expect(settings.isRealOnlineEnabledFor('soop'), isTrue);
+    expect(settings.isRealOnlineEnabledFor('kuaishou'), isTrue);
     expect(settings.isRealOnlineEnabledFor('huya'), isFalse);
-    expect(settings.toJson()['realOnlinePlatforms'], ['douyin', 'soop']);
+    expect(settings.toJson()['realOnlinePlatforms'], ['douyin', 'kuaishou']);
 
     await Future<void>.delayed(Duration.zero);
-    expect(settings.realOnlinePlatforms, ['douyin', 'soop']);
+    expect(settings.realOnlinePlatforms, ['douyin', 'kuaishou']);
     await HivePrefUtil.flush();
-    expect(HivePrefUtil.getStringList('realOnlinePlatforms'), ['douyin', 'soop']);
+    expect(HivePrefUtil.getStringList('realOnlinePlatforms'), ['douyin', 'kuaishou']);
 
     settings.realOnlinePlatforms.assignAll([' DOUYIN ']);
     settings.setRealOnlineEnabledFor('douyin', false);

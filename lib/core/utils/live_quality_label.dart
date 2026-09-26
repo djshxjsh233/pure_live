@@ -18,9 +18,7 @@ class LiveQualityLabel {
     final mapped = switch (platformToken) {
       'bilibili' => _bilibili(token, id),
       'douyin' => _douyin(token),
-      'douyu' || 'huya' || 'kuaishou' || 'cc' || 'yy' => _generic(token),
-      'soop' => _soop(token),
-      'twitch' => _twitch(raw, token),
+      'douyu' || 'huya' || 'kuaishou' => _generic(token),
       'iptv' => token == 'default' ? '默认' : null,
       _ => _generic(token),
     };
@@ -59,17 +57,6 @@ class LiveQualityLabel {
     _ => _generic(token),
   };
 
-  static String? _soop(String token) => switch (token) {
-    'original' || 'origin' || 'source' => '原画',
-    'master' || 'uhd' => '蓝光',
-    'fullhd' || 'fhd' => '超清',
-    'hd' => '高清',
-    'sd' || 'normal' => '标清',
-    'low' || 'ld' => '流畅',
-    'auto' => '自动',
-    _ => _generic(token),
-  };
-
   static String? _generic(String token) => switch (token) {
     'original' || 'origin' || 'origion' || 'source' => '原画',
     'blue' || 'bluray' || 'blueray' => '蓝光',
@@ -81,16 +68,6 @@ class LiveQualityLabel {
     'default' => '默认',
     _ => null,
   };
-
-  static String? _twitch(String raw, String token) {
-    final source = token.contains('source');
-    final match = RegExp(r'(\d{3,4})p(?:\s*(\d{2,3}))?', caseSensitive: false).firstMatch(raw);
-    if (match != null) {
-      final fps = match.group(2) ?? '';
-      return '${match.group(1)}P$fps${source ? '（原画）' : ''}';
-    }
-    return source ? '原画' : _generic(token);
-  }
 
   static String _token(String value) => value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
 

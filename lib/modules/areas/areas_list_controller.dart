@@ -16,9 +16,6 @@ class AreasListController extends ServerAllPageController<LiveArea> {
   bool get isFlatten => site.id == Sites.douyinSite;
 
   @override
-  bool get showInlineError => site.id == Sites.ccSite;
-
-  @override
   int get localItemCount => _getCurrentTabAllChildren().length;
 
   AreasListController(this.site);

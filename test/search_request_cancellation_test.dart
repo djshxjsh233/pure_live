@@ -59,11 +59,9 @@ const _manyNativeIds = [
   Sites.douyuSite,
   Sites.huyaSite,
   Sites.douyinSite,
-  Sites.ccSite,
-  Sites.twitchSite,
-  Sites.soopSite,
-  Sites.yySite,
-  Sites.acfunSite,
+  Sites.openrecSite,
+  Sites.ttingSite,
+  Sites.xiaohongshuSite,
   Sites.showroomSite,
   Sites.kickSite,
   Sites.bigoSite,
@@ -71,6 +69,7 @@ const _manyNativeIds = [
   Sites.fc2LiveSite,
   Sites.taobaoLiveSite,
   Sites.lookLiveSite,
+  Sites.iptvSite,
 ];
 
 void main() {

@@ -201,18 +201,17 @@ function Open-QuietRoom {
     Dismiss-DebugCompatibilityDialog 'debug-compatibility-room'
     & (Join-Path $repo 'tool\android_ui.ps1') -TapSemantic '热门' -Serial $Serial -CaptureOnFailure
     if ($LASTEXITCODE -ne 0) { throw 'Opening the popular page failed.' }
-    # CC intentionally has no remote danmaku transport in this project. It is
-    # therefore the deterministic device fixture for proving that one locally
+    # A stable single-platform fixture is required to prove that one locally
     # submitted row remains observable instead of being displaced by a busy
     # platform socket while UIAutomator is taking a snapshot.
     Invoke-Adb -AdbArguments @('shell', 'input', 'swipe', '980', '228', '500', '228', '420') | Out-Null
     Start-Sleep -Milliseconds 350
     [void](Save-UiDump 'popular-platforms-after-scroll')
-    & (Join-Path $repo 'tool\android_ui.ps1') -TapSemantic '网易CC' -Serial $Serial -CaptureOnFailure
-    if ($LASTEXITCODE -ne 0) { throw 'Selecting the CC platform failed.' }
+    & (Join-Path $repo 'tool\android_ui.ps1') -TapSemantic '虎牙' -Serial $Serial -CaptureOnFailure
+    if ($LASTEXITCODE -ne 0) { throw 'Selecting the Huya platform failed.' }
     Start-Sleep -Seconds 8
     & (Join-Path $repo 'tool\android_ui.ps1') -Tap home.first_left_room -Serial $Serial -CaptureOnFailure
-    if ($LASTEXITCODE -ne 0) { throw 'Entering the first CC room failed.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Entering the first Huya room failed.' }
     Start-Sleep -Seconds 12
     $room = Save-UiDump 'room-enabled'
     if (-not ($room.OuterXml.Contains('弹幕列表') -and $room.OuterXml.Contains('弹幕设置'))) {

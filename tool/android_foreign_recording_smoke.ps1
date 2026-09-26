@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$Serial = $env:PURELIVE_ADB_SERIAL,
-    [ValidateSet('twitch', 'soop')]
-    [string]$Platform = 'twitch',
+    [ValidateSet('douyu', 'huya')]
+    [string]$Platform = 'douyu',
     [ValidateRange(20, 300)]
     [int]$RecordSeconds = 20,
     [ValidateRange(10, 90)]

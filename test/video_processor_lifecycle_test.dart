@@ -30,7 +30,7 @@ void main() {
     directory = await Directory.systemTemp.createTemp('pure-live-finalization-');
     Get.testMode = true;
     cache = Get.put(CacheService(configuredPathResolver: () => null, defaultDirectoryResolver: () async => directory));
-    task = LiveRecordTask.fromRoom(LiveRoom(platform: 'acfun', roomId: '123', nick: 'fixture'))
+    task = LiveRecordTask.fromRoom(LiveRoom(platform: 'huya', roomId: '123', nick: 'fixture'))
       ..outputDir = directory.path;
     source = await File(p.join(directory.path, RecordingSegmentClock.segmentName(task.recordingFilePrefix, 0)))
         .writeAsBytes([1, 2, 3]);

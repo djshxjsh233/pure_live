@@ -63,20 +63,14 @@ void main() {
     test('selects a platform-specific gift and badge catalogue', () {
       final bilibili = LocalInteractionController.giftsForPlatform(Sites.bilibiliSite);
       final douyin = LocalInteractionController.giftsForPlatform(Sites.douyinSite);
-      final twitch = LocalInteractionController.giftsForPlatform(Sites.twitchSite);
-      final soop = LocalInteractionController.giftsForPlatform(Sites.soopSite);
 
       expect(bilibili.map((gift) => gift.id), contains('bili_voyage'));
       expect(douyin.map((gift) => gift.id), contains('douyin_carnival'));
       expect(bilibili.map((gift) => gift.id).toSet(), isNot(douyin.map((gift) => gift.id).toSet()));
       expect(LocalInteractionController.platformBadgeKey(Sites.huyaSite), 'local_badge_huya');
       expect(LocalInteractionController.platformBadgeKey(' HUYA '), 'local_badge_huya');
-      expect(LocalInteractionController.packForPlatform(' YY ').id, Sites.yySite);
+      expect(LocalInteractionController.packForPlatform(' KUAISHOU ').id, Sites.kuaishouSite);
       expect(LocalInteractionController.giftsForPlatform(' BILIBILI ').map((gift) => gift.id), contains('bili_voyage'));
-      expect(twitch.map((gift) => gift.id), contains('twitch_hype_train'));
-      expect(LocalInteractionController.platformBadgeKey(Sites.twitchSite), 'local_badge_twitch');
-      expect(soop.map((gift) => gift.id), contains('soop_signature_balloon'));
-      expect(LocalInteractionController.platformBadgeKey(Sites.soopSite), 'local_badge_soop');
     });
   });
 }

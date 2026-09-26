@@ -109,12 +109,12 @@ void main() {
   test('new recording file prefixes are collision-resistant within one second', () {
     final first = LiveRecordTask.fromJson(<String, dynamic>{
       'roomId': '1',
-      'platform': 'cc',
+      'platform': 'huya',
       'createTime': '2026-08-27T08:00:00.001',
     });
     final second = LiveRecordTask.fromJson(<String, dynamic>{
       'roomId': '1',
-      'platform': 'cc',
+      'platform': 'huya',
       'createTime': '2026-08-27T08:00:00.002',
     });
 
@@ -170,7 +170,7 @@ void main() {
   test('standalone platform signing fields are redacted before persistence', () {
     final task = LiveRecordTask.fromJson(<String, dynamic>{
       'roomId': '1',
-      'platform': 'soop',
+      'platform': 'kuaishou',
       'lastError': 'request failed token=secret wsSecret=also-secret',
       'lastErrorStage': 'stream',
     });

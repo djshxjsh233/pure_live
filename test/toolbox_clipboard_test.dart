@@ -183,8 +183,8 @@ void main() {
   });
   testWidgets('a supported overseas URL is detected without network access', (tester) async {
     await open(tester);
-    await reply(tester, 'Watch https://www.twitch.tv/fixture_channel');
-    expect(controller.roomJumpToController.text, 'Watch https://www.twitch.tv/fixture_channel');
+    await reply(tester, 'Watch https://www.huya.com/fixture_channel');
+    expect(controller.roomJumpToController.text, 'Watch https://www.huya.com/fixture_channel');
     expect(controller.getUrlController.text, controller.roomJumpToController.text);
   });
   testWidgets('one existing draft leaves the untouched field eligible', (tester) async {

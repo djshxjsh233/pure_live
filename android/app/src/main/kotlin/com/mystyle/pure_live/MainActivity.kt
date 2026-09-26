@@ -116,9 +116,6 @@ class MainActivity : AudioServiceActivity() {
         if (!flutterEngine.plugins.has(RecorderBackgroundPlugin::class.java)) {
             flutterEngine.plugins.add(RecorderBackgroundPlugin())
         }
-        if (!flutterEngine.plugins.has(NativeHttpPlugin::class.java)) {
-            flutterEngine.plugins.add(NativeHttpPlugin())
-        }
         displayModeChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             DISPLAY_MODE_CHANNEL,

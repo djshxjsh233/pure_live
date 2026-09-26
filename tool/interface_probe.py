@@ -22,8 +22,6 @@ USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
 )
-TWITCH_GQL_URL = "https://gql.twitch.tv/gql"
-TWITCH_CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko"
 
 
 def request_json(url: str, params: dict[str, object] | None = None, attempts: int = 3) -> object:
@@ -133,8 +131,6 @@ def post_form_json(
                     "User-Agent": USER_AGENT,
                     "Accept": "application/json,text/plain,*/*",
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "Origin": "https://www.sooplive.co.kr",
-                    "Referer": "https://www.sooplive.co.kr/",
                     **(headers or {}),
                 },
             )
@@ -307,175 +303,10 @@ def douyu_search_probe() -> None:
 _yy_room_cache: dict[str, object] | None = None
 
 
-def yy_live_room() -> dict[str, object]:
-    global _yy_room_cache
-    if _yy_room_cache is not None:
-        return _yy_room_cache
-    response = request_json(
-        "https://www.yy.com/more/page.action",
-        {"page": 1, "pageSize": 10, "biz": "other", "subBiz": "idx", "moduleId": -1},
-    )
-    rooms = response.get("data", {}).get("data", []) if isinstance(response, dict) else []
-    for room in rooms if isinstance(rooms, list) else []:
-        room_id = str(room.get("sid", "")).strip() if isinstance(room, dict) else ""
-        if not room_id:
-            continue
-        detail = request_json(f"https://www.yy.com/api/liveInfoDetail/{room_id}/{room_id}/0")
-        data = detail.get("data") if isinstance(detail, dict) and detail.get("resultCode") == 0 else None
-        if isinstance(data, dict) and str(data.get("sid", "")).strip():
-            _yy_room_cache = data
-            return data
-    raise ValueError("YY recommendation has no verifiable live room")
 
 
-def yy_room_probe() -> None:
-    room = yy_live_room()
-    for key in ("sid", "ssid", "uid", "name", "users"):
-        if room.get(key) in (None, ""):
-            raise ValueError(f"YY room field missing: {key}")
 
 
-def yy_search_probe() -> None:
-    room = yy_live_room()
-    keyword = str(room.get("name", "")).strip() or "YY"
-    response = request_json(
-        "https://www.yy.com/apiSearch/doSearch.json",
-        {"q": keyword, "t": 120, "n": 1},
-    )
-    search_result = response.get("data", {}).get("searchResult", {}) if isinstance(response, dict) else {}
-    docs = search_result.get("response", {}).get("120", {}).get("docs", {}) if isinstance(search_result, dict) else {}
-    if not isinstance(docs, list):
-        raise ValueError("YY live search docs missing")
-
-
-def yy_anchor_search_probe() -> None:
-    room = yy_live_room()
-    # YY's recommendation feed occasionally returns an already-mojibaked
-    # display name. Feeding that value back into anchor search produces an
-    # empty result even though the endpoint and room are healthy. The numeric
-    # room id is ASCII, is accepted by the same search contract and avoids
-    # making the public-interface gate depend on damaged presentation text.
-    keyword = str(room.get("sid", "")).strip() or str(room.get("name", "")).strip() or "YY"
-    response = request_json(
-        "https://www.yy.com/apiSearch/doSearch.json",
-        {"q": keyword, "t": 1, "n": 1},
-    )
-    search_result = response.get("data", {}).get("searchResult", {}) if isinstance(response, dict) else {}
-    docs = search_result.get("response", {}).get("1", {}).get("docs", []) if isinstance(search_result, dict) else []
-    if not isinstance(docs, list) or not docs or not isinstance(docs[0], dict):
-        raise ValueError("YY anchor search docs missing")
-    for key in ("sid", "name", "liveOn"):
-        if key not in docs[0]:
-            raise ValueError(f"YY anchor field missing: {key}")
-
-
-def yy_playback_probe() -> None:
-    room = yy_live_room()
-    room_id = str(room["sid"])
-    sequence = int(time.time() * 1000)
-    query = urllib.parse.urlencode(
-        {
-            "uid": 0,
-            "cid": room_id,
-            "sid": room_id,
-            "appid": 0,
-            "sequence": sequence,
-            "encode": "json",
-        }
-    )
-    response = post_json(
-        f"https://stream-manager.yy.com/v3/channel/streams?{query}",
-        {
-            "head": {
-                "seq": sequence,
-                "appidstr": "0",
-                "bidstr": "121",
-                "cidstr": room_id,
-                "sidstr": room_id,
-                "uid64": 0,
-                "client_type": 108,
-                "client_ver": "5.23.0-beta.2",
-                "stream_sys_ver": 1,
-                "app": "yylive_web",
-                "playersdk_ver": "5.23.0-beta.2",
-                "thundersdk_ver": "0",
-                "streamsdk_ver": "5.23.0-beta.2",
-            },
-            "client_attribute": {
-                "client": "web",
-                "model": "web0",
-                "cpu": "",
-                "graphics_card": "",
-                "os": "chrome",
-                "osversion": "128.0.0.0",
-                "width": "1366",
-                "height": "768",
-                "client_type": 8,
-                "h265": 0,
-            },
-            "avp_parameter": {
-                "version": 1,
-                "client_type": 8,
-                "service_type": 0,
-                "imsi": 0,
-                "send_time": int(time.time()),
-                "line_seq": -1,
-                "gear": 1,
-                "ssl": 1,
-                "stream_format": 0,
-            },
-        },
-        headers={
-            "Content-Type": "text/plain;charset=UTF-8",
-            "Origin": "https://www.yy.com",
-            "Referer": f"https://www.yy.com/{room_id}",
-        },
-    )
-    streams = response.get("channel_stream_info", {}).get("streams", []) if isinstance(response, dict) else []
-    lines = response.get("avp_info_res", {}).get("stream_line_addr", {}) if isinstance(response, dict) else {}
-    if not isinstance(streams, list) or not streams:
-        raise ValueError("YY quality list missing")
-    if not isinstance(lines, dict) or not any(
-        isinstance(value, dict) and str(value.get("cdn_info", {}).get("url", "")).startswith("https://")
-        for value in lines.values()
-    ):
-        raise ValueError("YY playback lines missing")
-
-
-def yy_restricted_room_fallback_probe() -> None:
-    """Exercise the anonymous HLS fallback for upstream issue #798."""
-    room_id = "1382736873"
-    response = urllib.request.urlopen(
-        urllib.request.Request(
-            f"https://interface.yy.com/hls/new/get/{room_id}/{room_id}/4000?source=wapyy&callback=",
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-                    "AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1"
-                ),
-                "Referer": f"https://wap.yy.com/mobileweb/{room_id}/{room_id}",
-                "Connection": "close",
-            },
-        ),
-        timeout=20,
-    )
-    payload = response.read().decode("utf-8", errors="replace").strip()
-    json_start = payload.find("{")
-    json_end = payload.rfind("}")
-    if json_start < 0 or json_end < json_start:
-        raise ValueError("YY fallback returned no JSON object")
-    data = json.loads(payload[json_start : json_end + 1])
-    stream_url = str(data.get("hls", "")).strip() if isinstance(data, dict) else ""
-    if data.get("code") != 0 or not stream_url.startswith("https://"):
-        raise ValueError("YY fallback stream URL missing")
-    stream_request = urllib.request.Request(
-        stream_url,
-        headers={"User-Agent": USER_AGENT, "Referer": "https://wap.yy.com/", "Connection": "close"},
-    )
-    with urllib.request.urlopen(stream_request, timeout=20) as stream_response:
-        prefix = stream_response.read(16)
-    if not prefix.startswith(b"#EXTM3U"):
-        raise ValueError(f"YY fallback returned a non-HLS prefix: {prefix!r}")
 
 
 def kuaishou_playback_probe() -> None:
@@ -929,337 +760,18 @@ def huya_playback_probe() -> None:
     raise ValueError("Huya playback response has no usable stream line")
 
 
-def cc_room_playback_probe() -> None:
-    """Validate the two-step CC room mapping and its playback descriptor."""
-    recommendation = request_json(
-        "https://cc.163.com/api/category/live/",
-        {"format": "json", "start": 0, "size": 10},
-    )
-    rooms = recommendation.get("lives", []) if isinstance(recommendation, dict) else []
-    room_id = str(rooms[0].get("ccid", "")).strip() if rooms and isinstance(rooms[0], dict) else ""
-    if not room_id:
-        raise ValueError("CC playback room id missing")
-    mapping = request_json(
-        "https://api.cc.163.com/v1/activitylives/anchor/lives",
-        {"anchor_ccid": room_id},
-    )
-    mapping_data = mapping.get("data", {}) if isinstance(mapping, dict) else {}
-    mapped = mapping_data.get(room_id, {}) if isinstance(mapping_data, dict) else {}
-    channel_id = mapped.get("channel_id") if isinstance(mapped, dict) else None
-    if not channel_id:
-        raise ValueError("CC channel mapping missing")
-    channel = request_json(
-        "https://cc.163.com/live/channel/",
-        {"channelids": channel_id, "anchor_ccid": room_id},
-    )
-    channel_rooms = channel.get("data", []) if isinstance(channel, dict) else []
-    room = channel_rooms[0] if isinstance(channel_rooms, list) and channel_rooms else None
-    if not isinstance(room, dict) or room.get("status") != 1:
-        raise ValueError("CC channel returned no live room")
-    if not room.get("quickplay") and not room.get("stream_list") and not room.get("m3u8"):
-        raise ValueError("CC playback descriptor missing")
 
 
-def twitch_persisted_request(operation: str, sha256_hash: str, variables: dict[str, object]) -> dict[str, object]:
-    return {
-        "operationName": operation,
-        "variables": variables,
-        "extensions": {"persistedQuery": {"version": 1, "sha256Hash": sha256_hash}},
-    }
 
 
-def twitch_gql(payload: object) -> object:
-    response = post_json(
-        TWITCH_GQL_URL,
-        payload,
-        # Twitch discovery occasionally isolates or returns empty results for
-        # a repeatedly reused synthetic device id. Mirror a fresh anonymous
-        # web session for every bounded probe run.
-        headers={"Client-Id": TWITCH_CLIENT_ID, "Device-Id": secrets.token_hex(16)},
-        attempts=5,
-    )
-    nodes = response if isinstance(response, list) else [response]
-    for node in nodes:
-        if not isinstance(node, dict):
-            raise ValueError("invalid Twitch GQL response")
-        if "data" not in node:
-            raise ValueError("Twitch GQL data missing")
-        # Twitch may return usable search data together with errors from an
-        # unrelated nested field (for example ``latestVideo``).  Match the
-        # client behaviour and only reject the response when no data survived.
-        if node.get("errors") and node.get("data") is None:
-            raise ValueError(f"Twitch GQL errors: {node['errors']}")
-    return response
 
 
-def twitch_categories_probe() -> None:
-    response = twitch_gql(
-        twitch_persisted_request(
-            "SearchCategoryTags",
-            "b4cb189d8d17aadf29c61e9d7c7e7dcfc932e93b77b3209af5661bffb484195f",
-            {"userQuery": "", "limit": 5},
-        )
-    )
-    require_path(response, "data", "searchCategoryTags")
 
 
-def twitch_directory_request(slug: str, *, limit: int = 5) -> dict[str, object]:
-    return twitch_persisted_request(
-        "DirectoryPage_Game",
-        "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f",
-        {
-            "imageWidth": 50,
-            "slug": slug,
-            "options": {
-                "sort": "VIEWER_COUNT",
-                "recommendationsContext": {"platform": "web"},
-                "requestID": "JIRA-VXP-2397",
-                "freeformTags": None,
-                "tags": [],
-                "broadcasterLanguages": [],
-                "systemFilters": [],
-            },
-            "sortTypeIsRecency": False,
-            "limit": limit,
-            "includeCostreaming": True,
-        },
-    )
 
 
-def twitch_directory_probe() -> None:
-    request = twitch_directory_request("just-chatting", limit=10)
-    # Match the application request exactly. Twitch currently returns a
-    # partial GraphQL response with ``game.streams = null`` for the combined
-    # EN/ZH/KO filter even though each language and the app's ZH/KO pair are
-    # healthy. The previous broader probe therefore failed while the product
-    # contract it was intended to verify still worked.
-    request["variables"]["options"]["broadcasterLanguages"] = ["ZH", "KO"]
-    response = twitch_gql([request])
-    if not isinstance(response, list) or not response:
-        raise ValueError("Twitch directory result missing")
-    edges = require_path(response[0], "data", "game", "streams", "edges")
-    if not isinstance(edges, list) or not edges:
-        raise ValueError("Twitch directory has no live channels")
-    nodes = [edge.get("node") for edge in edges if isinstance(edge, dict)]
-    if not any(isinstance(node, dict) and _audience_int(node.get("viewersCount")) is not None for node in nodes):
-        raise ValueError("Twitch directory viewersCount missing")
 
 
-def twitch_search_probe() -> None:
-    response = twitch_gql(
-        twitch_persisted_request(
-            "SearchResultsPage_SearchResults",
-            "7f3580f6ac6cd8aa1424cff7c974a07143827d6fa36bba1b54318fe7f0b68dc5",
-            {
-                "platform": "web",
-                "query": "twitch",
-                "options": {"targets": None, "shouldSkipDiscoveryControl": False},
-                "requestID": "808c9f2e-f52e-431c-8dc7-d2e3c1831d77",
-                "includeIsDJ": True,
-            },
-        )
-    )
-    require_path(response, "data", "searchFor", "channels", "edges")
-
-
-def twitch_room_probe() -> None:
-    payload = [
-        twitch_persisted_request(
-            "ChannelShell",
-            "fea4573a7bf2644f5b3f2cbbdcbee0d17312e48d2e55f080589d053aad353f11",
-            {"login": "twitch"},
-        ),
-        twitch_persisted_request(
-            "StreamMetadata",
-            "b57f9b910f8cd1a4659d894fe7550ccc81ec9052c01e438b290fd66a040b9b93",
-            {"channelLogin": "twitch", "includeIsDJ": True},
-        ),
-    ]
-    response = twitch_gql(payload)
-    if not isinstance(response, list) or len(response) < 2:
-        raise ValueError("Twitch room metadata incomplete")
-    require_path(response[0], "data", "userOrError", "login")
-    require_path(response[1], "data", "user")
-
-
-def twitch_playback_probe() -> None:
-    # A single category can legitimately be empty for a locale, maturity
-    # filter or transient directory rollout. Probe several high-traffic
-    # categories in one bounded GQL request and select the first actual live
-    # channel instead of treating one empty category as playback breakage.
-    slugs = ("just-chatting", "grand-theft-auto-v", "league-of-legends", "valorant", "music")
-    requests = [twitch_directory_request(slug, limit=10) for slug in slugs]
-    for request in requests:
-        # Validate the same public-language request as the application. Do not
-        # add EN here: Twitch currently rejects the combined EN/ZH/KO filter
-        # with a partial GraphQL service error.
-        request["variables"]["options"]["broadcasterLanguages"] = ["ZH", "KO"]
-    directory = twitch_gql(requests)
-    login = None
-    if isinstance(directory, list):
-        for result in directory:
-            try:
-                edges = result["data"]["game"]["streams"]["edges"]
-            except (KeyError, TypeError):
-                continue
-            if not isinstance(edges, list):
-                continue
-            for edge in edges:
-                node = edge.get("node") if isinstance(edge, dict) else None
-                if not isinstance(node, dict):
-                    continue
-                broadcaster = node.get("broadcaster")
-                candidate = broadcaster.get("login") if isinstance(broadcaster, dict) else None
-                if not candidate:
-                    # The monolith broadcaster subgraph can time out while the
-                    # stream edge and preview remain valid. Twitch embeds the
-                    # canonical login in its live preview URL, so retain that
-                    # public fallback rather than declaring playback broken.
-                    preview = str(node.get("previewImageURL") or "")
-                    match = re.search(r"/live_user_([A-Za-z0-9_]+)-\d+x\d+", preview)
-                    candidate = match.group(1) if match else None
-                if isinstance(candidate, str) and candidate.strip():
-                    login = candidate.strip()
-                    break
-            if login:
-                break
-    if not login:
-        raise ValueError("Twitch live channel missing across active categories")
-    response = twitch_gql(
-        twitch_persisted_request(
-            "PlaybackAccessToken",
-            "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
-            {
-                "isLive": True,
-                "login": login,
-                "isVod": False,
-                "vodID": "",
-                "playerType": "site",
-                "isClip": False,
-                "clipID": "",
-                "platform": "site",
-            },
-        )
-    )
-    require_path(response, "data", "streamPlaybackAccessToken", "value")
-    require_path(response, "data", "streamPlaybackAccessToken", "signature")
-
-
-_soop_channel_cache: dict[str, object] | None = None
-
-
-def soop_live_channel() -> dict[str, object]:
-    global _soop_channel_cache
-    if _soop_channel_cache is not None:
-        return _soop_channel_cache
-    recommendation = request_json(
-        "https://live.sooplive.co.kr/api/main_broad_list_api.php",
-        {"selectType": "action", "selectValue": "all", "orderType": "view_cnt", "pageNo": 1, "lang": "ko_KR"},
-    )
-    rooms = recommendation.get("broad", []) if isinstance(recommendation, dict) else []
-    if not rooms:
-        raise ValueError("SOOP recommendation returned no live rooms")
-
-    # The popularity feed may put an age-restricted or password-protected room
-    # first.  Such a room is live, but the anonymous player endpoint rejects it
-    # and used to make all SOOP probes fail spuriously.  Probe a bounded slice
-    # of current, public recommendations and cache the first playable channel.
-    attempted = 0
-    for room in rooms[:20]:
-        if not isinstance(room, dict):
-            continue
-        if str(room.get("is_password", "N")).upper() == "Y":
-            continue
-        if str(room.get("broad_grade", "0")) not in ("", "0"):
-            continue
-        room_id = str(room.get("user_id", "")).strip()
-        if not room_id:
-            continue
-        attempted += 1
-        try:
-            response = post_form_json(
-                "https://live.sooplive.co.kr/afreeca/player_live_api.php",
-                {
-                    "bid": room_id,
-                    "bno": str(room.get("broad_no", "")).strip(),
-                    "type": "live",
-                    "pwd": "",
-                    "player_type": "html5",
-                    "stream_type": "common",
-                    "quality": "HD",
-                    "mode": "landing",
-                    "from_api": "0",
-                    "is_revive": "false",
-                },
-                {"bjid": room_id},
-            )
-        except Exception:  # noqa: BLE001 - try another current recommendation
-            continue
-        channel = response.get("CHANNEL", {}) if isinstance(response, dict) else {}
-        if isinstance(channel, dict) and channel.get("RESULT") == 1:
-            _soop_channel_cache = channel
-            return channel
-    raise ValueError(f"SOOP found no anonymous playable channel in {attempted} candidates")
-
-
-def soop_search_probe() -> None:
-    room_id = str(soop_live_channel().get("BJID", "")).strip()
-    response = request_json(
-        "https://sch.sooplive.co.kr/api.php",
-        {
-            "l": "DF",
-            "m": "liveSearch",
-            "c": "UTF-8",
-            "w": "webk",
-            "isMobile": 0,
-            "onlyParent": 1,
-            "szType": "json",
-            "szOrder": "score",
-            "szKeyword": room_id,
-            "nPageNo": 1,
-            "nListCnt": 5,
-            "tab": "live",
-            "location": "total_search",
-            "isHashSearch": 0,
-            "v": "2.0",
-        },
-    )
-    if not isinstance(response, dict) or not isinstance(response.get("REAL_BROAD"), list):
-        raise ValueError("SOOP live search result missing")
-
-
-def soop_room_probe() -> None:
-    channel = soop_live_channel()
-    for key in ("BNO", "BJID", "CHATNO", "CHDOMAIN", "CHPT", "VIEWPRESET"):
-        if key not in channel or channel[key] in (None, "", []):
-            raise ValueError(f"SOOP player field missing: {key}")
-
-
-def soop_playback_probe() -> None:
-    channel = soop_live_channel()
-    room_id = str(channel["BJID"])
-    bno = str(channel["BNO"])
-    presets = channel["VIEWPRESET"]
-    if not isinstance(presets, list) or not presets or not isinstance(presets[0], dict):
-        raise ValueError("SOOP quality presets missing")
-    quality = str(presets[0].get("name", "")).strip()
-    aid_response = post_form_json(
-        "https://live.sooplive.co.kr/afreeca/player_live_api.php",
-        {
-            "bid": room_id,
-            "bno": bno,
-            "type": "aid",
-            "pwd": "",
-            "player_type": "html5",
-            "stream_type": "common",
-            "quality": quality,
-            "mode": "landing",
-            "from_api": "0",
-            "is_revive": "false",
-        },
-        {"bjid": room_id},
-    )
-    require_path(aid_response, "CHANNEL", "AID")
 
 
 def _audience_int(value: object) -> int | None:
@@ -1311,93 +823,7 @@ def kuaishou_home_probe() -> None:
         raise ValueError("Kuaishou watchingCount missing")
 
 
-def cc_recommend_probe() -> None:
-    rooms = require_path(
-        request_json("https://cc.163.com/api/category/live/", {"format": "json", "start": 0, "size": 30}),
-        "lives",
-    )
-    if not isinstance(rooms, list) or not rooms:
-        raise ValueError("CC recommendation returned no rooms")
-    has_heat = any(
-        isinstance(room, dict)
-        and any(_audience_int(room.get(key)) is not None for key in ("webcc_visitor", "hot_score", "visitor"))
-        for room in rooms
-    )
-    has_online = any(
-        isinstance(room, dict)
-        and any(_audience_int(room.get(key)) is not None for key in ("vision_visitor", "online_num"))
-        for room in rooms
-    )
-    if not has_heat or not has_online:
-        raise ValueError("CC heat/concurrent audience fields missing")
 
-
-def cc_category_rooms_probe() -> None:
-    """Check the current category feed, not a successful HTML migration page.
-
-    This probes room pagination only. The separate Dashen catalogue and native
-    navigation need their own evidence; this result must not stand in for them.
-    """
-    for start in (0, 2):
-        result = request_json(
-            "https://cc.163.com/api/category/3/",
-            {"format": "json", "tag_id": 0, "start": start, "size": 2},
-        )
-        if not isinstance(result, dict) or str(result.get("gametype")) != "3":
-            raise ValueError("CC category feed identity mismatch")
-        rooms = result.get("lives")
-        if not isinstance(rooms, list) or len(rooms) > 2:
-            raise ValueError("CC category feed rows invalid")
-        for room in rooms:
-            identity = room.get("cuteid") if isinstance(room, dict) else None
-            if (not isinstance(identity, (str, int))
-                    or isinstance(identity, bool)
-                    or (isinstance(identity, int) and identity > 9007199254740991)
-                    or not re.fullmatch(r"[1-9][0-9]{0,31}", str(identity))):
-                raise ValueError("CC category feed room identity invalid")
-
-def soop_recommend_probe() -> None:
-    rooms = require_path(
-        request_json(
-            "https://live.sooplive.co.kr/api/main_broad_list_api.php",
-            {
-                "selectType": "action",
-                "selectValue": "all",
-                "orderType": "view_cnt",
-                "pageNo": 1,
-                "lang": "ko_KR",
-            },
-        ),
-        "broad",
-    )
-    if not isinstance(rooms, list) or not rooms:
-        raise ValueError("SOOP recommendation returned no rooms")
-    for room in rooms:
-        if not isinstance(room, dict):
-            continue
-        total = _audience_int(room.get("total_view_cnt"))
-        pc = _audience_int(room.get("pc_view_cnt"))
-        mobile = _audience_int(room.get("mobile_view_cnt"))
-        if total is not None and pc is not None and mobile is not None:
-            if total != pc + mobile:
-                raise ValueError("SOOP total_view_cnt no longer equals PC + mobile viewers")
-            return
-    raise ValueError("SOOP total/PC/mobile viewer fields missing")
-
-
-def yy_recommend_probe() -> None:
-    rooms = require_path(
-        request_json(
-            "https://www.yy.com/more/page.action",
-            {"page": 1, "pageSize": 5, "biz": "other", "subBiz": "idx", "moduleId": -1},
-        ),
-        "data",
-        "data",
-    )
-    if not isinstance(rooms, list) or not rooms:
-        raise ValueError("YY recommendation returned no rooms")
-    if not any(isinstance(room, dict) and _audience_int(room.get("users")) is not None for room in rooms):
-        raise ValueError("YY users heat field missing")
 
 
 def main() -> int:
@@ -1434,14 +860,11 @@ def main() -> int:
         ),
         ("kuaishou.home", kuaishou_home_probe),
         ("kuaishou.playback", kuaishou_playback_probe),
-        ("cc.category_rooms", cc_category_rooms_probe),
-        ("cc.recommend", cc_recommend_probe),
         ("bilibili.popularity_rank", bilibili_recommend_probe),
         ("bilibili.playback", bilibili_playback_probe),
         ("bilibili.danmaku", bilibili_danmaku_probe),
         ("huya.danmaku_identity", huya_danmaku_identity_probe),
         ("huya.playback", huya_playback_probe),
-        ("cc.room_playback", cc_room_playback_probe),
         ("douyin.feed", douyin_feed_probe),
         ("douyin.search", douyin_search_probe),
         ("douyu.search", douyu_search_probe),
@@ -1465,52 +888,6 @@ def main() -> int:
                 "response",
             ),
         ),
-        (
-            "cc.search",
-            lambda: require_path(
-                request_json("https://cc.163.com/search/anchor", {"query": "ASMR", "size": 20, "page": 1}),
-                "webcc_anchor",
-                "result",
-            ),
-        ),
-        ("twitch.categories", twitch_categories_probe),
-        ("twitch.directory", twitch_directory_probe),
-        ("twitch.search", twitch_search_probe),
-        ("twitch.room", twitch_room_probe),
-        ("twitch.playback", twitch_playback_probe),
-        (
-            "soop.categories",
-            lambda: require_path(
-                request_json(
-                    "https://sch.sooplive.co.kr/api.php",
-                    {
-                        "m": "categoryList",
-                        "szKeyword": "",
-                        "szOrder": "view_cnt",
-                        "nPageNo": 1,
-                        "nListCnt": 5,
-                        "nOffset": 0,
-                        "szPlatform": "pc",
-                    },
-                ),
-                "data",
-                "list",
-            ),
-        ),
-        ("soop.recommend", soop_recommend_probe),
-        ("soop.search", soop_search_probe),
-        ("soop.room", soop_room_probe),
-        ("soop.playback_token", soop_playback_probe),
-        (
-            "yy.categories",
-            lambda: require_path(request_json("https://www.yy.com/yyweb/module/data/header"), "categoryTabs"),
-        ),
-        ("yy.recommend", yy_recommend_probe),
-        ("yy.search", yy_search_probe),
-        ("yy.anchor_search", yy_anchor_search_probe),
-        ("yy.room", yy_room_probe),
-        ("yy.playback", yy_playback_probe),
-        ("yy.restricted_room_fallback", yy_restricted_room_fallback_probe),
     ]
 
     failures: list[str] = []

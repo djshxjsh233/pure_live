@@ -96,13 +96,13 @@ void main() {
     });
 
     test('concurrent mode does not let platform heat overwhelm real viewers', () {
-      final online = LiveRoom(roomId: 'online', platform: 'soop', liveStatus: LiveStatus.live, onlineViewers: '120');
+      final online = LiveRoom(roomId: 'online', platform: 'kuaishou', liveStatus: LiveStatus.live, onlineViewers: '120');
       final heat = LiveRoom(roomId: 'heat', platform: 'bilibili', liveStatus: LiveStatus.live, popularity: '900万');
       final ranked = LiveSearchRanking.apply(
         rooms: [heat, online],
         mode: LiveSearchSortMode.audience,
         includeOffline: true,
-        platformOrder: const ['bilibili', 'soop'],
+        platformOrder: const ['bilibili', 'kuaishou'],
         audienceCompare: (left, right) =>
             LiveRoom.compareAudienceRanking(left, right, preferRealOnline: true, platformEnabled: (_) => true),
       );
@@ -113,9 +113,9 @@ void main() {
 
   test('declares native and web-only platform search coverage', () {
     expect(LiveSearchCapabilities.forPlatform('bilibili').mayIncludeOffline, isTrue);
-    expect(LiveSearchCapabilities.forPlatform('twitch').mayIncludeOffline, isTrue);
-    expect(LiveSearchCapabilities.forPlatform('soop').coverage, NativeSearchCoverage.liveOnly);
-    expect(LiveSearchCapabilities.forPlatform('yy').supportsNativeSearch, isTrue);
+    expect(LiveSearchCapabilities.forPlatform('douyu').mayIncludeOffline, isTrue);
+    expect(LiveSearchCapabilities.forPlatform('huya').coverage, NativeSearchCoverage.liveOnly);
+    expect(LiveSearchCapabilities.forPlatform('douyin').supportsNativeSearch, isTrue);
     expect(LiveSearchCapabilities.forPlatform('kuaishou').supportsNativeSearch, isFalse);
     expect(LiveSearchCapabilities.forPlatform('iptv').supportsPagination, isFalse);
     expect(LiveSearchCapabilities.forPlatform('iptv').supportsWebSearch, isFalse);

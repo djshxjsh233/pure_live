@@ -251,8 +251,6 @@ void main() {
   }
 
   for (final platform in [
-    Sites.huajiaoSite,
-    Sites.kilakilaSite,
     Sites.openrecSite,
     Sites.goodGameSite,
     Sites.fc2LiveSite,

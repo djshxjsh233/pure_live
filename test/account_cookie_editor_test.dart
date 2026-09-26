@@ -14,14 +14,11 @@ import 'package:pure_live/modules/account/douyin/douyin_cookie_controller.dart';
 import 'package:pure_live/modules/account/douyu/douyu_cookie_controller.dart';
 import 'package:pure_live/modules/account/huya/huya_cookie_controller.dart';
 import 'package:pure_live/modules/account/kuaishou/kuaishou_cookie_controller.dart';
-import 'package:pure_live/modules/account/soop/soop_cookie_controller.dart';
 import 'package:pure_live/modules/account/taobao/taobao_cookie_controller.dart';
-import 'package:pure_live/modules/account/twitch/twitch_cookie_controller.dart';
 import 'package:pure_live/modules/account/widgets/account_cookie_editor.dart';
 import 'package:pure_live/core/site/douyu/douyu_utils.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/recorder/services/ffmpeg_header_factory.dart';
-import 'package:pure_live/modules/account/yy/yy_cookie_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -86,18 +83,12 @@ void main() {
     final huya = HuyaCookieController();
     final douyu = DouyuCookieController();
     final kuaishou = KuaishouCookieController();
-    final soop = SoopCookieBindingCookieController();
-    final twitch = TwitchCookieBindingCookieController();
-    final yy = YyCookieBindingCookieController();
     final taobao = TaobaoCookieController();
     addTearDown(() {
       douyin.onClose();
       huya.onClose();
       douyu.onClose();
       kuaishou.onClose();
-      soop.onClose();
-      twitch.onClose();
-      yy.onClose();
       taobao.onClose();
     });
 
@@ -105,18 +96,12 @@ void main() {
     huya.setCookie(' \r\nhuya=value\u0000 ');
     douyu.setCookie(' \r\ndouyu=value\u0000 ');
     kuaishou.setCookie(' \r\nkuaishou=value\u0000 ');
-    soop.setCookie(' \r\nsoop=value\u0000 ');
-    twitch.setCookie(' \r\ntwitch=value\u0000 ');
-    yy.setCookie(' \r\nyy=value\u0000 ');
     taobao.setCookie(' \r\ntaobao=value\u0000 ');
 
     expect(cookies.douyinCookie.value, 'douyin=value');
     expect(cookies.huyaCookie.value, 'huya=value');
     expect(cookies.douyuCookie.value, 'douyu=value');
     expect(cookies.kuaishouCookie.value, 'kuaishou=value');
-    expect(cookies.soopCookie.value, 'soop=value');
-    expect(cookies.twitchCookie.value, 'twitch=value');
-    expect(cookies.yyCookie.value, 'yy=value');
     expect(cookies.taobaoCookie.value, 'taobao=value');
   });
 
@@ -188,9 +173,6 @@ void main() {
       'lib/modules/account/huya/huya_cookie_page.dart',
       'lib/modules/account/douyu/douyu_cookie_page.dart',
       'lib/modules/account/kuaishou/kuaishou_cookie_page.dart',
-      'lib/modules/account/soop/soop_cookie_page.dart',
-      'lib/modules/account/twitch/twitch_cookie_page.dart',
-      'lib/modules/account/yy/yy_cookie_page.dart',
     ];
 
     for (final path in paths) {

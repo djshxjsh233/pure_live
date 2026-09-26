@@ -86,14 +86,13 @@ void main() {
   testWidgets('a late platform pack can be selected and updates the preview identity', (tester) async {
     await _pumpPage(tester, english: english);
 
-    final yyChip = find.byKey(const ValueKey('local-platform-pack-yy'));
-    await _scrollUntilHitTestable(tester, yyChip);
-    await tester.tap(yyChip);
+    final packChip = find.byKey(const ValueKey('local-platform-pack-douyu'));
+    await _scrollUntilHitTestable(tester, packChip);
+    await tester.tap(packChip);
     await tester.pump();
 
-    expect(controller.previewPlatform.value, Sites.yySite);
-    expect(find.text('🎤 YY'), findsOneWidget);
-    expect(find.text('Local level Lv.1 · 1000 local coins'), findsOneWidget);
+    expect(controller.previewPlatform.value, Sites.douyuSite);
+    expect(find.text('🐟 Douyu'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

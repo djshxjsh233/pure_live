@@ -59,9 +59,6 @@ class MultiviewDanmakuSession {
       Sites.huyaSite,
       Sites.douyinSite,
       Sites.kuaishouSite,
-      Sites.twitchSite,
-      Sites.soopSite,
-      Sites.yySite,
       Sites.kickSite,
       Sites.goodGameSite,
     };

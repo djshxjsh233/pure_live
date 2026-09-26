@@ -6,8 +6,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/common/http_client.dart' as shared;
 import 'package:pure_live/core/common/request_scope.dart';
-import 'package:pure_live/core/site/huajiao/huajiao_api.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_api.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_share.dart';
 import 'package:pure_live/core/site/zhanqi/zhanqi_api.dart';
@@ -27,23 +25,9 @@ final _cases = <_Case>[
     body: '{"code":0,"data":{"cnt":0,"rooms":[]}}',
     cap: ZhanqiApi.responseLimit,
   ),
-  (
-    name: 'Kilakila',
-    read: (c) => KilakilaApi().recommendations(cancel: c),
-    body: '{"code":200,"data":{"body":{"h":{"code":200,"success":true}}}}',
-    cap: KilakilaApi.responseLimit,
-  ),
-  (
-    name: 'Huajiao',
-    read: (c) => HuajiaoApi().owner('100', cancel: c),
-    body: '{"errno":0,"data":{"base":{"uid":100,"nickname":"Fixture"},"living":0}}',
-    cap: HuajiaoApi.responseLimit,
-  ),
 ];
 
 String _kind(Object? error) => switch (error) {
-  KilakilaException e => e.kind.name,
-  HuajiaoException e => e.kind.name,
   ZhanqiException e => e.kind.name,
   XiaohongshuException e => e.kind.name,
   _ => '${error.runtimeType}',

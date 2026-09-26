@@ -5,9 +5,7 @@ import 'package:pure_live/core/site/openrec/openrec_api.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/danmaku/douyin_danmaku.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_site.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_link.dart';
@@ -95,15 +93,6 @@ class RoomExternalOpener {
         } on OpenrecException {
           return null;
         }
-      case Sites.huajiaoSite:
-        if (!HuajiaoLink.validId(id)) return null;
-        return RoomExternalTarget(web: HuajiaoLink.ownerUrl(id));
-      case Sites.kilakilaSite:
-        if (!RegExp(r'^[1-9][0-9]{0,31}$').hasMatch(id)) return null;
-        return RoomExternalTarget(web: KilakilaSite.ownerUrl(id));
-      case Sites.yySite:
-        if (!RegExp(r'^[0-9]+$').hasMatch(id)) return null;
-        return RoomExternalTarget(web: 'https://www.yy.com/$path');
       case Sites.bilibiliSite:
         return RoomExternalTarget(web: 'https://live.bilibili.com/$path', native: 'bilibili://live/$path');
       case Sites.douyinSite:
@@ -129,18 +118,6 @@ class RoomExternalOpener {
           web: 'https://www.douyu.com/$path',
           native: 'douyulink://?type=90001&schemeUrl=douyuapp%3A%2F%2Froom%3FliveType%3D0%26rid%3D$path',
         );
-      case Sites.ccSite:
-        final user = _id(room.userId);
-        return RoomExternalTarget(
-          web: 'https://cc.163.com/$path',
-          native: user == null ? null : 'cc://join-room/$path/${Uri.encodeComponent(user)}/',
-        );
-      case Sites.twitchSite:
-        return RoomExternalTarget(web: 'https://www.twitch.tv/$path');
-      case Sites.soopSite:
-        return RoomExternalTarget(web: 'https://play.sooplive.co.kr/$path');
-      case Sites.acfunSite:
-        return RoomExternalTarget(web: 'https://live.acfun.cn/live/$path');
       case Sites.kuaishouSite:
         final stream = room.link?.trim() ?? '';
         final encoded = Uri.encodeQueryComponent(stream);

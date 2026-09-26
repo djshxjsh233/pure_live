@@ -5,7 +5,6 @@ import 'package:pure_live/plugins/cache_manager.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/plugins/area_pic_mapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/core/site/cc/cc_catalog.dart';
 
 /// Keeps the fixed category grid tall enough for both one-line labels when
 /// accessibility text scaling is enabled.
@@ -77,7 +76,6 @@ class _AreaCardState extends State<AreaCard> {
   @override
   Widget build(BuildContext context) {
     final displayImageUrl = normalizeNetworkImageUrl(_getFinalUrl());
-    final officialEntry = CCCatalog.isOfficialEntry(widget.category);
     final rawName = widget.category.areaName?.trim() ?? '';
     final displayName = rawName.isEmpty ? i18n('unnamed_area') : rawName;
     final rawTypeName = widget.category.typeName?.trim() ?? '';
@@ -132,12 +130,11 @@ class _AreaCardState extends State<AreaCard> {
                 style: AppTextStyles.t12.copyWith(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                officialEntry ? i18n('open_in_system_browser') : displayTypeName,
+                displayTypeName,
                 style: AppTextStyles.t11.copyWith(fontWeight: FontWeight.w500),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              trailing: officialEntry ? const Icon(Icons.open_in_new_rounded, size: 16) : null,
             ),
           ],
         ),

@@ -133,7 +133,7 @@ void main() {
     final current = {
       'favoriteAreas': [
         jsonEncode(area('huya', name: '保留名称').toJson()),
-        jsonEncode(area('kilakila', id: 'k1', type: 'catalog').toJson()),
+        jsonEncode(area('showroom', id: 'k1', type: 'catalog').toJson()),
         jsonEncode(area('iptv', id: 'channel').toJson()),
       ],
     };
@@ -142,7 +142,7 @@ void main() {
         'list': [
           area('huya', type: 'parent', name: '替换名称').toJson(),
           area('douyu').toJson(),
-          area('kilakila', id: 'k2', type: 'tag').toJson(),
+          area('showroom', id: 'k2', type: 'tag').toJson(),
           area('iptv', id: 'channel', type: 'provider').toJson(),
         ],
       }),
@@ -150,7 +150,7 @@ void main() {
     final merged = SettingsUpgradeMigration.mergeRawSettings(current, [incoming]);
     final items = (jsonDecode(merged['favoriteAreas'] as String) as Map)['list'] as List;
     expect(items, hasLength(5));
-    expect(items.map((e) => e['platform']), ['huya', 'kilakila', 'iptv', 'douyu', 'kilakila']);
+    expect(items.map((e) => e['platform']), ['huya', 'showroom', 'iptv', 'douyu', 'showroom']);
     expect(items.first['areaName'], '保留名称');
     expect(items.first['areaType'], 'parent');
     expect(items[2]['areaType'], 'provider');
@@ -216,7 +216,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       // Another action while the confirmation is open must also survive.
-      final later = area('kilakila', type: 'tag');
+      final later = area('showroom', type: 'tag');
       settings.fav.favoriteAreas.value = [...settings.fav.favoriteAreas.value, later];
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();

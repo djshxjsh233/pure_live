@@ -73,13 +73,13 @@ void main() {
       settings.app.enableBackgroundPlay.value = false;
       settings.vol.roomVolumes = {};
       settings.tagManagement.tags.clear();
-      settings.cookieManager.twitchCookie.value = 'local-fixture-cookie';
+      settings.cookieManager.huyaCookie.value = 'local-fixture-cookie';
       settings.webdav.currentWebDavConfig.value = 'local-fixture-config';
       final file = File('${directory.path}/v$version.json')..writeAsStringSync(jsonEncode(source));
       expect(await backup.recover(file), isTrue);
       await Future<void>.delayed(const Duration(milliseconds: 600));
       expect(detached(backup.exportAllSettings()), expected);
-      expect(settings.cookieManager.twitchCookie.value, 'local-fixture-cookie');
+      expect(settings.cookieManager.huyaCookie.value, 'local-fixture-cookie');
       expect(settings.webdav.currentWebDavConfig.value, 'local-fixture-config');
       await Hive.box('app_settings').flush();
       expect(HivePrefUtil.getBool('enableBackgroundPlay'), isTrue);
@@ -113,16 +113,16 @@ void main() {
       }
     }
     legacy['enableBackgroundPlay'] = true;
-    legacy['twitchCookie'] = 'legacy-fixture-cookie';
+    legacy['huyaCookie'] = 'legacy-fixture-cookie';
     await backup.restoreAllSettings(legacy);
     await Future<void>.delayed(const Duration(milliseconds: 600));
     final expected = detached(backup.exportAllSettings(includeSensitiveData: true));
     settings.app.enableBackgroundPlay.value = false;
-    settings.cookieManager.twitchCookie.value = '';
+    settings.cookieManager.huyaCookie.value = '';
     await backup.restoreAllSettings(legacy);
     await Future<void>.delayed(const Duration(milliseconds: 600));
     expect(detached(backup.exportAllSettings(includeSensitiveData: true)), expected);
-    expect(settings.cookieManager.twitchCookie.value, 'legacy-fixture-cookie');
+    expect(settings.cookieManager.huyaCookie.value, 'legacy-fixture-cookie');
   });
 
   test('late invalid backup field preserves every registered section', () async {
@@ -269,7 +269,7 @@ void main() {
     settings.fav.favoriteRooms.value = [LiveRoom(roomId: '123', platform: 'bilibili')];
     settings.fav.favoriteAreas.value = [LiveArea(areaId: 'music', platform: 'douyu')];
     settings.app.enableBackgroundPlay.value = true;
-    settings.cookieManager.twitchCookie.value = 'local-cookie';
+    settings.cookieManager.huyaCookie.value = 'local-cookie';
     final file = File('${directory.path}/favorites-only.txt');
 
     expect(await settings.backup.backupFavorites(file), isTrue);
@@ -288,14 +288,14 @@ void main() {
     expect(settings.fav.favoriteRooms.value.single.identityKey, 'bilibili:123');
     expect(settings.fav.favoriteAreas.value.single.areaId, 'music');
     expect(settings.app.enableBackgroundPlay.value, isTrue);
-    expect(settings.cookieManager.twitchCookie.value, 'local-cookie');
+    expect(settings.cookieManager.huyaCookie.value, 'local-cookie');
   });
 
   test('favorites-only payload survives actual WebDAV upload, listing and restore without other settings', () async {
     final settings = await initialize();
     settings.fav.favoriteRooms.value = [LiveRoom(roomId: 'room-123', platform: 'bilibili')];
     settings.fav.favoriteAreas.value = [LiveArea(areaId: 'music', platform: 'douyu')];
-    settings.cookieManager.twitchCookie.value = 'sender-secret';
+    settings.cookieManager.huyaCookie.value = 'sender-secret';
     final payload = utf8.encode(jsonEncode(settings.backup.exportFavoriteSettings()));
     expect(utf8.decode(payload), isNot(contains('sender-secret')));
 
@@ -341,12 +341,12 @@ void main() {
         settings.fav.favoriteRooms.value = [];
         settings.fav.favoriteAreas.value = [];
         settings.app.enableBackgroundPlay.value = true;
-        settings.cookieManager.twitchCookie.value = 'receiver-secret';
+        settings.cookieManager.huyaCookie.value = 'receiver-secret';
         await settings.backup.restoreFavoriteSettings(downloaded);
         expect(settings.fav.favoriteRooms.value.single.identityKey, 'bilibili:room-123');
         expect(settings.fav.favoriteAreas.value.single.areaId, 'music');
         expect(settings.app.enableBackgroundPlay.value, isTrue);
-        expect(settings.cookieManager.twitchCookie.value, 'receiver-secret');
+        expect(settings.cookieManager.huyaCookie.value, 'receiver-secret');
         expect(stored['/dav/favorites.txt'], payload);
         expect(requests, containsAllInOrder(['PUT /dav/favorites.txt', 'PROPFIND /dav/', 'GET /dav/favorites.txt']));
       } finally {

@@ -36,13 +36,13 @@ void main() {
     expect(playback['cookie'], contains('acf_did='));
   });
 
-  test('YY gets browser origin headers and unknown platforms stay header-free', () async {
-    final yy = await PlaybackHeaderResolver.resolve(platform: 'yy', roomId: '1');
+  test('Openrec gets browser origin headers and unknown platforms stay header-free', () async {
+    final openrec = await PlaybackHeaderResolver.resolve(platform: 'openrec', roomId: '1');
     final unknown = await PlaybackHeaderResolver.resolve(platform: 'unknown', roomId: '1');
 
-    expect(yy['origin'], 'https://www.yy.com');
-    expect(yy['referer'], 'https://www.yy.com/');
-    expect(yy['user-agent'], isNotEmpty);
+    expect(openrec['origin'], 'https://www.mellow-fan.com');
+    expect(openrec['referer'], 'https://www.mellow-fan.com/');
+    expect(openrec['user-agent'], isNotEmpty);
     expect(unknown, isEmpty);
   });
 
@@ -53,11 +53,6 @@ void main() {
       'huya': 'https://www.huya.com',
       'douyin': 'https://live.douyin.com',
       'kuaishou': 'https://live.kuaishou.com',
-      'cc': 'https://cc.163.com',
-      'twitch': 'https://www.twitch.tv',
-      'soop': 'https://www.sooplive.co.kr',
-      'yy': 'https://www.yy.com',
-      'acfun': 'https://live.acfun.cn',
     };
 
     for (final entry in expectedOrigins.entries) {
@@ -68,14 +63,6 @@ void main() {
       expect(headers.keys, everyElement(matches(RegExp(r'^[a-z0-9-]+$'))), reason: entry.key);
       expect(headers.values, everyElement(isNot(contains('\n'))), reason: entry.key);
     }
-  });
-
-  test('AcFun uses anonymous media headers identically for playback and FFmpeg', () async {
-    final playback = await PlaybackHeaderResolver.resolve(platform: 'acfun', roomId: '42');
-    final recording = await FFmpegHeaderFactory.build(platform: 'acfun', roomId: '42');
-    expect(recording, playback);
-    expect(playback['referer'], 'https://live.acfun.cn/');
-    expect(playback.containsKey('cookie'), isFalse);
   });
 
   test('IPTV channel headers override the global profile identically for playback and recording', () async {

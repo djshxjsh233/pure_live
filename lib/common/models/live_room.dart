@@ -68,33 +68,6 @@ class LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
-    'cc': AudiencePlatformCapability(
-      hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // Twitch GraphQL exposes viewersCount as the concurrent viewer count in
-    // directory, search and room metadata responses.
-    'twitch': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // SOOP lists expose total_view_cnt/view_cnt as PC + mobile concurrent
-    // viewers. current_view_cnt alone is PC-only and must not be displayed as
-    // the total audience; player metadata may omit the count altogether.
-    'soop': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // YY's public `users` value follows the platform popularity scale. No
-    // separate concurrent audience field is exposed by the current web API.
-    'yy': AudiencePlatformCapability(
-      hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
     'openrec': AudiencePlatformCapability(
       hasPopularity: false,
       hasTotalViewers: false,
@@ -148,17 +121,6 @@ class LiveRoom {
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
     'ttinglive': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    'huajiao': AudiencePlatformCapability(
-      hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
-    // AcFun onlineCount is independent of likes/followers; author search omits it.
-    'acfun': AudiencePlatformCapability(
       hasPopularity: false,
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
@@ -550,8 +512,8 @@ class LiveRoom {
       return audienceMetricType!;
     }
     return switch (normalizedPlatformId) {
-      'bilibili' || 'douyu' || 'huya' || 'cc' || 'yy' => AudienceMetricType.popularity,
-      'kuaishou' || 'twitch' || 'soop' => AudienceMetricType.onlineViewers,
+      'bilibili' || 'douyu' || 'huya' => AudienceMetricType.popularity,
+      'kuaishou' => AudienceMetricType.onlineViewers,
       'douyin' => AudienceMetricType.totalViewers,
       _ => AudienceMetricType.unknown,
     };

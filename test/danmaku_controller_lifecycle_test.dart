@@ -15,7 +15,7 @@ void main() {
     final host = _TestDanmakuHost();
     final engine = _CountingEmptyDanmaku();
     final controller = DanmakuController(host, recoveryAllowed: (_) => true);
-    final room = LiveRoom(roomId: '42', platform: 'acfun');
+    final room = LiveRoom(roomId: '42', platform: 'huya');
     controller.initDanmaku(engine);
     await controller.connectRoom(room);
     await controller.connectRoom(room);
@@ -32,7 +32,7 @@ void main() {
     final host = _TestDanmakuHost();
     final controller = DanmakuController(host);
     controller.initDanmaku(EmptyDanmaku());
-    await controller.connectRoom(LiveRoom(roomId: '42', platform: 'acfun'));
+    await controller.connectRoom(LiveRoom(roomId: '42', platform: 'huya'));
     final engine = _CountingDanmaku();
     await controller.replaceDanmaku(engine);
     final room = LiveRoom(roomId: 'next', platform: 'test');

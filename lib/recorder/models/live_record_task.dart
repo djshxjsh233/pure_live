@@ -477,8 +477,8 @@ class LiveRecordTask {
 
   static AudienceMetricType _defaultAudienceMetricType(String platform) {
     return switch (platform.trim().toLowerCase()) {
-      'bilibili' || 'douyu' || 'huya' || 'cc' || 'yy' => AudienceMetricType.popularity,
-      'kuaishou' || 'twitch' || 'soop' => AudienceMetricType.onlineViewers,
+      'bilibili' || 'douyu' || 'huya' => AudienceMetricType.popularity,
+      'kuaishou' => AudienceMetricType.onlineViewers,
       'douyin' => AudienceMetricType.totalViewers,
       _ => AudienceMetricType.unknown,
     };

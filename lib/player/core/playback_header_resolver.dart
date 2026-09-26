@@ -6,11 +6,7 @@ import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 import 'package:pure_live/core/site/douyin/douyin_site.dart';
 import 'package:pure_live/core/site/douyu/douyu_utils.dart';
 import 'package:pure_live/core/site/huya/huya_site.dart';
-import 'package:pure_live/core/site/twitch/twitch_site.dart';
-import 'package:pure_live/core/site/acfun/acfun_api.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
-import 'package:pure_live/core/site/huajiao/huajiao_api.dart';
 import 'package:pure_live/core/site/showroom/showroom_api.dart';
 import 'package:pure_live/core/site/kick/kick_api.dart';
 import 'package:pure_live/core/site/bigo/bigo_api.dart';
@@ -98,42 +94,6 @@ class PlaybackHeaderResolver {
           if (cookie.isNotEmpty) 'cookie': cookie,
         };
         break;
-      case Sites.ccSite:
-        headers = <String, String>{
-          'user-agent': _desktopUserAgent,
-          'origin': 'https://cc.163.com',
-          'referer': normalizedRoomId.isEmpty ? 'https://cc.163.com/' : 'https://cc.163.com/$normalizedRoomId/',
-        };
-        break;
-      case Sites.twitchSite:
-        final cookie = _configuredCookie((settings) => settings.cookieManager.twitchCookie.value);
-        headers = <String, String>{
-          'user-agent': TwitchSite.defaultUa,
-          'origin': TwitchSite.baseUrl,
-          'referer': normalizedRoomId.isEmpty ? '${TwitchSite.baseUrl}/' : '${TwitchSite.baseUrl}/$normalizedRoomId',
-          if (cookie.isNotEmpty) 'cookie': cookie,
-        };
-        break;
-      case Sites.soopSite:
-        final cookie = _configuredCookie((settings) => settings.cookieManager.soopCookie.value);
-        headers = <String, String>{
-          'user-agent': _desktopUserAgent,
-          'origin': 'https://www.sooplive.co.kr',
-          'referer': normalizedRoomId.isEmpty
-              ? 'https://www.sooplive.co.kr/'
-              : 'https://play.sooplive.co.kr/$normalizedRoomId',
-          if (cookie.isNotEmpty) 'cookie': cookie,
-        };
-        break;
-      case Sites.yySite:
-        final cookie = _configuredCookie((settings) => settings.cookieManager.yyCookie.value);
-        headers = <String, String>{
-          'origin': 'https://www.yy.com',
-          'referer': 'https://www.yy.com/',
-          'user-agent': _desktopUserAgent,
-          if (cookie.isNotEmpty) 'cookie': cookie,
-        };
-        break;
       case Sites.iptvSite:
         final userAgent = _configuredValue((settings) => settings.iptv.customIptvUserAgent.value);
         headers = <String, String>{
@@ -149,15 +109,6 @@ class PlaybackHeaderResolver {
         break;
       case Sites.xiaohongshuSite:
         headers = XiaohongshuApi.headers;
-        break;
-      case Sites.huajiaoSite:
-        headers = HuajiaoApi.headers;
-        break;
-      case Sites.kilakilaSite:
-        headers = KilakilaApi.playHeaders;
-        break;
-      case Sites.acfunSite:
-        headers = {...AcfunApi.playHeaders, 'origin': AcfunApi.origin};
         break;
       case Sites.showroomSite:
         headers = ShowroomApi.mediaHeaders;

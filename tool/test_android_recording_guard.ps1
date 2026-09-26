@@ -218,7 +218,7 @@ try {
     function Reset-Navigation([string[]] $Frames) {
         Reset-Fake
         $script:frames = $Frames; $script:frameIndex = 0; $script:observations = 0
-        $script:platformLabels = @{acfun='AcFun 直播'; huya='虎牙'; twitch='Twitch'; soop='Soop'}
+        $script:platformLabels = @{douyu='斗鱼'; huya='虎牙'}
     }
     $backFrame = '<hierarchy><node content-desc="返回" clickable="true" enabled="true" bounds="[12,156][156,300]"/></hierarchy>'
     $homeFrame = '<hierarchy><node content-desc="热门" clickable="true" enabled="true" bounds="[300,2368][600,2608]"/><node content-desc="关注" clickable="true" enabled="true" bounds="[0,2368][300,2608]"/></hierarchy>'
@@ -239,38 +239,38 @@ try {
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input' }).Count 0 'no general MT exception'
     Write-Output 'PASS observed app Back navigation, already-home, unknown and other-app states (4 cases)'
 
-    $visible = '<hierarchy>' + (New-Tab '全部' 1 2 50) + (New-Tab 'AcFun 直播' 2 2 150) + '</hierarchy>'
+    $visible = '<hierarchy>' + (New-Tab '全部' 1 2 50) + (New-Tab '斗鱼' 2 2 150) + '</hierarchy>'
     $selected = $visible.Replace('selected="false" bounds="[150', 'selected="true" bounds="[150')
     Reset-Navigation @($visible,$selected)
-    Select-PlatformTab 'AcFun 直播'
+    Select-PlatformTab '斗鱼'
     Assert-Equal $script:observations 2 'selection verified from fresh frame'
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input tap 200 140$' }).Count 1 'two-tab hidden-other-sites case'
 
     $start = '<hierarchy>'+(New-Tab '全部' 1 4 50)+(New-Tab '虎牙' 2 4 150)+'</hierarchy>'
-    $end = '<hierarchy>'+(New-Tab 'Twitch' 3 4 50)+(New-Tab 'AcFun 直播' 4 4 150)+'</hierarchy>'
+    $end = '<hierarchy>'+(New-Tab '虎牙' 3 4 50)+(New-Tab '斗鱼' 4 4 150)+'</hierarchy>'
     $endSelected = $end.Replace('selected="false" bounds="[150','selected="true" bounds="[150')
     Reset-Navigation @($start,$end,$endSelected)
-    Select-PlatformTab 'AcFun 直播'
+    Select-PlatformTab '斗鱼'
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input swipe 238 140 62 140 240$' }).Count 1 'swipe stays in observed header'
     Assert-Equal $script:observations 3 'one fresh observation per action'
 
-    $reordered = '<hierarchy>'+(New-Tab 'AcFun 直播' 1 3 50 $true)+(New-Tab '全部' 2 3 150)+'</hierarchy>'
+    $reordered = '<hierarchy>'+(New-Tab '斗鱼' 1 3 50 $true)+(New-Tab '全部' 2 3 150)+'</hierarchy>'
     Reset-Navigation @($reordered)
-    Select-PlatformTab 'AcFun 直播'
+    Select-PlatformTab '斗鱼'
     Assert-Equal $script:calls.Count 0 'reordered already-selected tab needs no input'
 
-    $missingEnd = '<hierarchy>'+(New-Tab 'Twitch' 3 4 50)+(New-Tab 'Soop' 4 4 150)+'</hierarchy>'
+    $missingEnd = '<hierarchy>'+(New-Tab '虎牙' 3 4 50)+(New-Tab '斗鱼' 4 4 150)+'</hierarchy>'
     Reset-Navigation @($start,$missingEnd)
-    Assert-Throws { Select-PlatformTab 'AcFun 直播' } 'hidden or absent'
+    Assert-Throws { Select-PlatformTab '斗鱼' } 'hidden or absent'
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input' }).Count 1 'missing site stops at observed end'
 
-    $middle = '<hierarchy>'+(New-Tab '虎牙' 2 5 50)+(New-Tab 'Twitch' 3 5 150)+'</hierarchy>'
+    $middle = '<hierarchy>'+(New-Tab '虎牙' 2 5 50)+(New-Tab '斗鱼' 3 5 150)+'</hierarchy>'
     Reset-Navigation @($middle,$middle,$middle)
-    Assert-Throws { Select-PlatformTab 'AcFun 直播' } 'hidden or absent'
+    Assert-Throws { Select-PlatformTab '斗鱼' } 'hidden or absent'
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input swipe' }).Count 2 'stalled header tries each direction once'
 
     Reset-Navigation @($visible)
-    Assert-Throws { Select-PlatformTab 'AcFun 直播' } 'within 48 observed steps'
+    Assert-Throws { Select-PlatformTab '斗鱼' } 'within 48 observed steps'
     Assert-Equal $script:observations 48 'selection never commits has bounded observations'
     Assert-Equal @($script:calls | Where-Object { $_ -match 'shell input tap' }).Count 47 'last observation sends no unverified tap'
 
@@ -280,12 +280,12 @@ try {
     # into an unmatched quote before the test even starts.
     $english = '<hierarchy>' +
         '<node content-desc="All&#10;Tab 1 of 2" enabled="true" clickable="true" selected="false" bounds="[50,100][150,180]"/>' +
-        '<node content-desc="AcFun 直播&#10;Tab 2 of 2" enabled="true" clickable="true" selected="false" bounds="[150,100][250,180]"/>' +
+        '<node content-desc="斗鱼&#10;Tab 2 of 2" enabled="true" clickable="true" selected="false" bounds="[150,100][250,180]"/>' +
         '</hierarchy>'
-    Assert-Equal @(Get-RecordingPlatformTabs -Xml $english -KnownLabels @('All','AcFun 直播')).Count 2 'English ordinals'
-    $ambiguous = '<hierarchy>'+(New-Tab '全部' 1 2 50)+(New-Tab 'AcFun 直播' 2 2 150 $false 300)+'</hierarchy>'
-    Assert-Throws { Get-RecordingPlatformTabs -Xml $ambiguous -KnownLabels @('全部','AcFun 直播') } 'ambiguous'
-    Assert-Throws { Get-RecordingPlatformTabs -Xml '<hierarchy/>' -KnownLabels @('AcFun 直播') } 'No visible'
+    Assert-Equal @(Get-RecordingPlatformTabs -Xml $english -KnownLabels @('All','斗鱼')).Count 2 'English ordinals'
+    $ambiguous = '<hierarchy>'+(New-Tab '全部' 1 2 50)+(New-Tab '斗鱼' 2 2 150 $false 300)+'</hierarchy>'
+    Assert-Throws { Get-RecordingPlatformTabs -Xml $ambiguous -KnownLabels @('全部','斗鱼') } 'ambiguous'
+    Assert-Throws { Get-RecordingPlatformTabs -Xml '<hierarchy/>' -KnownLabels @('斗鱼') } 'No visible'
     Write-Output 'PASS semantic selection, reordered/hidden sites, bounded stalls and ambiguous rows (9 cases)'
 } finally {
     # Validate this one fixture path before recursive cleanup; no computed parent deletion.

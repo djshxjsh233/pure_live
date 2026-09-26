@@ -74,30 +74,6 @@ void main() {
     expect(find.byKey(const ValueKey('audience-platform-douyin')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    final acfun = find.byKey(const ValueKey('audience-platform-acfun'));
-    await tester.ensureVisible(acfun);
-    await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(acfun).value, isTrue);
-    await tester.tap(acfun);
-    await tester.pumpAndSettle();
-    expect(SettingsService.to.app.isRealOnlineEnabledFor('acfun'), isFalse);
-    expect(tester.widget<SwitchListTile>(acfun).value, isFalse);
-    final cc = find.byKey(const ValueKey('audience-platform-cc'));
-    await tester.ensureVisible(cc);
-    await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(cc).value, isTrue);
-    await tester.tap(cc);
-    await tester.pumpAndSettle();
-    expect(SettingsService.to.app.isRealOnlineEnabledFor('cc'), isFalse);
-    expect(tester.widget<SwitchListTile>(cc).value, isFalse);
-    final soop = find.byKey(const ValueKey('audience-platform-soop'));
-    await tester.ensureVisible(soop);
-    await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(soop).value, isTrue);
-    await tester.tap(soop);
-    await tester.pumpAndSettle();
-    expect(SettingsService.to.app.isRealOnlineEnabledFor('soop'), isFalse);
-    expect(tester.widget<SwitchListTile>(soop).value, isFalse);
     final openrec = find.byKey(const ValueKey('audience-platform-openrec'));
     await tester.ensureVisible(openrec);
     await tester.pumpAndSettle();
@@ -204,13 +180,6 @@ void main() {
       'huya': 'Huya',
       'douyin': 'Douyin',
       'kuaishou': 'Kuaishou',
-      'cc': 'NetEase CC',
-      'twitch': 'Twitch',
-      'soop': 'Soop',
-      'yy': 'YY',
-      'acfun': 'AcFun Live',
-      'kilakila': 'Kilakila',
-      'huajiao': 'Huajiao',
       'openrec': 'mellow-fan (OPENREC)',
       'ttinglive': 'FLEX TV (TTingLive)',
       'xiaohongshu': 'Xiaohongshu',
@@ -222,12 +191,6 @@ void main() {
       final detail = find.byKey(ValueKey('audience-platform-detail-${entry.key}'));
       expect(tester.getRect(detail).bottom, lessThanOrEqualTo(tester.getRect(tile).bottom));
       expect(tester.takeException(), isNull);
-      if (entry.key == 'acfun') {
-        expect(tester.widget<SwitchListTile>(tile).value, isTrue);
-        await tester.tap(tile.hitTestable());
-        await tester.pumpAndSettle();
-        expect(SettingsService.to.app.isRealOnlineEnabledFor('acfun'), isFalse);
-      }
     }
     expect(tester.takeException(), isNull);
   }, skip: !Platform.isWindows);
@@ -269,13 +232,6 @@ class _AudienceAssetLoader extends AssetLoader {
     'site_huya': '虎牙',
     'site_douyin': '抖音',
     'site_kuaishou': '快手',
-    'site_cc': '网易 CC',
-    'site_twitch': 'Twitch',
-    'site_soop': 'SOOP',
-    'site_yy': 'YY Live',
-    'site_acfun': 'AcFun',
-    'site_kilakila': '克拉克拉',
-    'site_huajiao': '花椒',
     'site_openrec': 'mellow-fan (OPENREC)',
     'site_ttinglive': 'FLEX TV (TTingLive)',
     'site_xiaohongshu': '小红书',
@@ -284,15 +240,8 @@ class _AudienceAssetLoader extends AssetLoader {
     'audience_huya_detail': '公开字段按热度显示',
     'audience_douyin_detail': '列表可提供在线值',
     'audience_kuaishou_detail': '列表可提供在线值',
-    'audience_cc_detail': '列表可提供在线值',
-    'audience_twitch_detail': '列表可提供在线值',
-    'audience_soop_detail': '列表可提供在线值',
-    'audience_yy_detail': '仅提供热度',
-    'audience_acfun_detail': '列表提供在线数，作者搜索没有在线数',
     'audience_openrec_detail': '公开在线人数与累计值分开，隐藏时保持未知',
     'audience_ttinglive_detail': '目录提供当前观看数，频道详情不提供',
-    'audience_kilakila_detail': 'watchNumber 不作为并发人数',
-    'audience_huajiao_detail': '目录 heat 是平台热度',
     'audience_xiaohongshu_detail': '展示文本不作为并发人数',
     'audience_metric_fallback_desc': '各平台字段口径会单独标注。',
   };
@@ -308,7 +257,7 @@ class _Translations extends AssetLoader {
 }
 
 // Widget tests own a fake clock. Keep their observable state in memory; the
-// actual Hive write/upgrade contract is covered in acfun_catalog_migration_test.
+// actual Hive write/upgrade contract is covered by the settings persistence tests.
 class _AudienceTestAppSettings extends AppSettingsController {
   final RxList<String> _onlinePlatforms = List<String>.from(AppSettingsController.defaultRealOnlinePlatforms).obs;
   @override

@@ -72,18 +72,18 @@ void main() {
     test('removes platforms whose public values are heat only', () {
       final config = AppSettingsController.extractConfig({
         'app': {
-          'realOnlinePlatforms': ['huya', 'douyin', 'kuaishou', 'cc'],
+          'realOnlinePlatforms': ['huya', 'douyin', 'kuaishou', 'showroom'],
         },
       });
 
-      expect(config['realOnlinePlatforms'], ['douyin', 'kuaishou', 'cc']);
+      expect(config['realOnlinePlatforms'], ['douyin', 'kuaishou']);
     });
 
-    test('normalizes concurrent platform ids and includes SOOP for new installs', () {
-      expect(AppSettingsController.defaultRealOnlinePlatforms, contains('soop'));
-      expect(AppSettingsController.normalizeRealOnlinePlatforms(['DOUYIN', ' soop ', 'YY', 'SOOP']), [
+    test('normalizes concurrent platform ids and includes OPENREC for new installs', () {
+      expect(AppSettingsController.defaultRealOnlinePlatforms, contains('openrec'));
+      expect(AppSettingsController.normalizeRealOnlinePlatforms(['DOUYIN', ' openrec ', 'SHOWROOM', 'OPENREC']), [
         'douyin',
-        'soop',
+        'openrec',
       ]);
     });
 

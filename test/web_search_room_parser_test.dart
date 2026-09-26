@@ -8,19 +8,11 @@ void main() {
   test('ignores search/navigation pages and lookalike domains', () {
     const urls = [
       'https://www.huya.com/search?hsk=test',
-      'https://www.twitch.tv/directory',
       'https://www.douyu.com/topic/something',
       'https://live.kuaishou.com/search?keyword=test',
       'https://live.bilibili.com/p/eden/area-tags',
-      'https://www.yy.com/search-test',
       'https://www.huya.com.evil.example/1234',
       'javascript:alert(1)',
-      'https://www.acfun.cn/u/42',
-      'https://www.acfun.cn/v/ac42',
-      'https://live.acfun.cn/live/0',
-      'https://live.acfun.cn/live/42/extra',
-      'https://live.acfun.cn.evil.example/live/42',
-      'https://secret@live.acfun.cn/live/42',
       'https://www.xiaohongshu.com/explore/1234567890123456789',
       'https://www.xiaohongshu.com/livestream/1234567890123456789/extra',
       'https://www.xiaohongshu.com.evil.example/livestream/1234567890123456789',
@@ -32,11 +24,6 @@ void main() {
     for (final url in urls) {
       expect(WebSearchRoomParser.parse(url), isNull, reason: url);
     }
-  });
-
-  test('AcFun shared room links resolve offline without treating author pages as streams', () async {
-    expect(await LiveUrlTool.parseLiveUrl('看看这个直播 https://live.acfun.cn/live/42?source=share'), ['42', 'acfun']);
-    expect(await LiveUrlTool.parseLiveUrl('https://live.acfun.cn/search?keyword=huya.com'), isEmpty);
   });
 
 

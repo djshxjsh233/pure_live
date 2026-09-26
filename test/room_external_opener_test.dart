@@ -53,18 +53,11 @@ void main() {
     }
   });
   final webTargets = {
-    'huajiao': 'https://h.huajiao.com/site/profile_12345.html',
-    'yy': 'https://www.yy.com/12345',
     'bilibili': 'https://live.bilibili.com/12345',
     'douyin': 'https://live.douyin.com/12345',
     'huya': 'https://www.huya.com/12345',
     'douyu': 'https://www.douyu.com/12345',
-    'cc': 'https://cc.163.com/12345',
-    'twitch': 'https://www.twitch.tv/12345',
-    'soop': 'https://play.sooplive.co.kr/12345',
-    'acfun': 'https://live.acfun.cn/live/12345',
     'kuaishou': 'https://live.kuaishou.com/u/12345',
-    'kilakila': 'https://live.hongrenshuo.com.cn/index/roomuser/uid/12345',
   };
 
   for (final entry in webTargets.entries) {
@@ -84,11 +77,11 @@ void main() {
     });
   }
 
-  test('YY Android uses the same official page, without an invented deep link', () async {
+  test('Douyin Android uses the same official page, without an invented deep link', () async {
     final calls = <String>[];
     expect(
       await RoomExternalOpener.open(
-        site: 'yy',
+        site: 'douyin',
         room: LiveRoom(roomId: '12345'),
         android: true,
         launch: (url) async {
@@ -98,7 +91,7 @@ void main() {
       ),
       RoomExternalOpenResult.opened,
     );
-    expect(calls, [webTargets['yy']]);
+    expect(calls, [webTargets['douyin']]);
   });
 
   for (final throws in [false, true]) {
@@ -165,7 +158,7 @@ void main() {
       var calls = 0;
       expect(
         await RoomExternalOpener.open(
-          site: 'yy',
+          site: 'douyin',
           room: LiveRoom(roomId: '12345'),
           android: android,
           onBrowserFallback: () => fail('same web target is not a native fallback'),
@@ -204,7 +197,7 @@ void main() {
   test('an already stale owner sends no OS request', () async {
     expect(
       await RoomExternalOpener.open(
-        site: 'yy',
+        site: 'douyin',
         room: LiveRoom(roomId: '12345'),
         android: true,
         isCurrent: () => false,
@@ -218,7 +211,7 @@ void main() {
     var current = true;
     expect(
       await RoomExternalOpener.open(
-        site: 'yy',
+        site: 'douyin',
         room: LiveRoom(roomId: '12345'),
         android: false,
         isCurrent: () => current,
@@ -247,11 +240,10 @@ void main() {
 
   test('invalid identities never become shell or guessed room targets', () {
     for (final id in <String?>[null, '', ' ', '.', '..', '../1', '1/2', '1?x=y', '1#x', '1%2f2', '1\n2', '1\\2']) {
-      for (final site in ['yy', 'twitch', 'bilibili']) {
+      for (final site in ['douyu', 'huya', 'bilibili']) {
         expect(RoomExternalOpener.resolve(site, LiveRoom(roomId: id)), isNull, reason: '$site/$id');
       }
     }
-    expect(RoomExternalOpener.resolve('yy', LiveRoom(roomId: 'abc')), isNull);
   });
 
   test('Douyin uses separate canonical web and native IDs without copying cookies', () {
@@ -273,19 +265,16 @@ void main() {
         expect(target.native, isNull);
       }
     }
-    expect(RoomExternalOpener.resolve('cc', LiveRoom(roomId: '12345'))!.native, isNull);
     expect(RoomExternalOpener.resolve('kuaishou', LiveRoom(roomId: '12345'))!.native, isNull);
   });
 
-  test('existing Huya and CC deep-link contracts stay available with their metadata', () {
+  test('existing Huya deep-link contract stays available with its metadata', () {
     final huya = RoomExternalOpener.resolve(
       'huya',
       LiveRoom(roomId: '12345', danmakuData: HuyaDanmakuArgs(uid: 11, topSid: 22, subSid: 33)),
     )!;
     expect(huya.native, startsWith('yykiwi://homepage/index.html?'));
     expect(huya.native, contains('subid%3D33'));
-    final cc = RoomExternalOpener.resolve('cc', LiveRoom(roomId: '12345', userId: '456'))!;
-    expect(cc.native, 'cc://join-room/12345/456/');
   });
 
   test('Kuaishou stream value stays in a single query field', () {
