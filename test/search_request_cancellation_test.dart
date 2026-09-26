@@ -53,17 +53,7 @@ Future<void> _flush() async {
   }
 }
 
-const _manyNativeIds = [
-  Sites.bilibiliSite,
-  Sites.douyuSite,
-  Sites.huyaSite,
-  Sites.douyinSite,
-  Sites.goodGameSite,
-  Sites.fc2LiveSite,
-  Sites.taobaoLiveSite,
-  Sites.lookLiveSite,
-  Sites.iptvSite,
-];
+const _manyNativeIds = [Sites.bilibiliSite, Sites.douyuSite, Sites.huyaSite, Sites.douyinSite, Sites.iptvSite];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

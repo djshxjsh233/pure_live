@@ -1,9 +1,4 @@
 import 'package:dio/dio.dart' as dio;
-import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
-import 'package:pure_live/core/site/fc2live/fc2_link.dart';
-import 'package:pure_live/core/site/looklive/look_live_link.dart';
-import 'package:pure_live/core/site/taobaolive/taobao_live_api.dart';
-import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/utils/live_short_link_session.dart';
@@ -56,10 +51,6 @@ class LiveUrlTool {
 
   static bool containsSupportedLink(String text) {
     return sharedHttpUrls(text).any((raw) {
-      if (GoodGameLink.parse(raw) != null) return true;
-      if (Fc2Link.parseChannelId(raw) != null) return true;
-      if (LookLiveLink.parseRoomId(raw) != null) return true;
-      if (TaobaoLiveLink.parse(raw) != null || TaobaoLiveLink.shortUri(raw) != null) return true;
       // Reuse the actual synchronous room-link contract. A platform's home,
       // category, search or archive URL is not enough to prefill a room input.
       if (WebSearchRoomParser.parse(raw) != null) return true;
@@ -91,14 +82,13 @@ class LiveUrlTool {
     String text, {
     dio.Dio Function()? clientFactory,
     dio.CancelToken? cancelToken,
-    TaobaoLiveApi? taobaoLiveApi,
     Duration timeout = const Duration(seconds: 12),
   }) async {
     if (cancelToken?.isCancelled ?? false) return [];
     final session = LiveShortLinkSession(timeout: timeout, clientFactory: clientFactory);
     final ownedCancel = dio.CancelToken();
     try {
-      final parsing = _parseLiveUrl(text, session, taobaoLiveApi ?? TaobaoLiveApi(), ownedCancel);
+      final parsing = _parseLiveUrl(text, session, ownedCancel);
       final result = cancelToken == null
           ? parsing
           : Future.any<List<String>>([parsing, cancelToken.whenCancel.then((_) => <String>[])]);
@@ -115,30 +105,12 @@ class LiveUrlTool {
     }
   }
 
-  static Future<List<String>> _parseLiveUrl(
-    String text,
-    LiveShortLinkSession session,
-    TaobaoLiveApi taobaoLiveApi,
-    dio.CancelToken cancel,
-  ) async {
+  static Future<List<String>> _parseLiveUrl(String text, LiveShortLinkSession session, dio.CancelToken cancel) async {
     for (final raw in sharedHttpUrls(text)) {
       final uri = Uri.parse(raw);
       if (session.isClosed) return [];
       final host = uri.host.toLowerCase();
       final realUrl = raw;
-      final goodGame = GoodGameLink.parse(raw);
-      if (goodGame != null) return [goodGame.storageKey, Sites.goodGameSite];
-      final fc2Live = Fc2Link.parseChannelId(raw);
-      if (fc2Live != null) return [fc2Live, Sites.fc2LiveSite];
-      final lookLive = LookLiveLink.parseRoomId(raw);
-      if (lookLive != null) return [lookLive, Sites.lookLiveSite];
-      final taobaoLive = TaobaoLiveLink.parse(raw);
-      if (taobaoLive != null) return [taobaoLive.storageKey, Sites.taobaoLiveSite];
-      if (TaobaoLiveLink.shortUri(raw) != null) {
-        final identity = await taobaoLiveApi.resolveReference(raw, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [identity.storageKey, Sites.taobaoLiveSite];
-      }
       late List<String> segments;
       try {
         segments = uri.pathSegments.where((part) => part.isNotEmpty).toList(growable: false);
@@ -150,7 +122,7 @@ class LiveUrlTool {
         final response = await session.get(uri);
         final location = LiveShortLinkSession.redirectTarget(uri, response);
         if (location == null) continue;
-        final target = await _parseLiveUrl(location.toString(), session, taobaoLiveApi, cancel);
+        final target = await _parseLiveUrl(location.toString(), session, cancel);
         if (target.isNotEmpty) return target;
         continue;
       }

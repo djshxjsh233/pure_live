@@ -14,7 +14,6 @@ import 'package:pure_live/modules/account/douyin/douyin_cookie_controller.dart';
 import 'package:pure_live/modules/account/douyu/douyu_cookie_controller.dart';
 import 'package:pure_live/modules/account/huya/huya_cookie_controller.dart';
 import 'package:pure_live/modules/account/kuaishou/kuaishou_cookie_controller.dart';
-import 'package:pure_live/modules/account/taobao/taobao_cookie_controller.dart';
 import 'package:pure_live/modules/account/widgets/account_cookie_editor.dart';
 import 'package:pure_live/core/site/douyu/douyu_utils.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
@@ -62,12 +61,10 @@ void main() {
       'huyaCookie': ' \r\nhuya=backup\u0000 ',
       'douyuCookie': ' \r\ndouyu=backup\u0000 ',
       'douyinCookie': 'douyin=backup',
-      'taobaoCookie': ' taobao=backup\r\n ',
     });
     expect(parsed['huyaCookie'], 'huya=backup');
     expect(parsed['douyuCookie'], 'douyu=backup');
     expect(parsed['douyinCookie'], 'douyin=backup');
-    expect(parsed['taobaoCookie'], 'taobao=backup');
   });
 
   test('all platform cookie controllers persist the normalized header value', () {
@@ -83,26 +80,22 @@ void main() {
     final huya = HuyaCookieController();
     final douyu = DouyuCookieController();
     final kuaishou = KuaishouCookieController();
-    final taobao = TaobaoCookieController();
     addTearDown(() {
       douyin.onClose();
       huya.onClose();
       douyu.onClose();
       kuaishou.onClose();
-      taobao.onClose();
     });
 
     douyin.setCookie(' \r\ndouyin=value\u0000 ');
     huya.setCookie(' \r\nhuya=value\u0000 ');
     douyu.setCookie(' \r\ndouyu=value\u0000 ');
     kuaishou.setCookie(' \r\nkuaishou=value\u0000 ');
-    taobao.setCookie(' \r\ntaobao=value\u0000 ');
 
     expect(cookies.douyinCookie.value, 'douyin=value');
     expect(cookies.huyaCookie.value, 'huya=value');
     expect(cookies.douyuCookie.value, 'douyu=value');
     expect(cookies.kuaishouCookie.value, 'kuaishou=value');
-    expect(cookies.taobaoCookie.value, 'taobao=value');
   });
 
   test('Douyu session reaches signing, playback and recorder headers consistently', () async {

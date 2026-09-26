@@ -2,10 +2,6 @@ import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/danmaku/douyin_danmaku.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
-import 'package:pure_live/core/site/fc2live/fc2_link.dart';
-import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
-import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 enum RoomExternalOpenResult { opened, unavailable, failed, cancelled }
@@ -20,14 +16,6 @@ class RoomExternalTarget {
 typedef RoomExternalLauncher = Future<bool> Function(String url);
 
 class RoomExternalOpener {
-  static RoomExternalTarget? _official(String Function() build) {
-    try {
-      return RoomExternalTarget(web: build());
-    } on FormatException {
-      return null;
-    }
-  }
-
   static String? _id(String? value) {
     final id = value?.trim();
     if (id == null || id.isEmpty || id == '.' || id == '..' || RegExp(r'[\s\x00-\x1f/\\?#%]').hasMatch(id)) {
@@ -41,20 +29,6 @@ class RoomExternalOpener {
     if (id == null) return null;
     final path = Uri.encodeComponent(id);
     switch (site) {
-      case Sites.goodGameSite:
-        final reference = GoodGameLink.parseReference(id);
-        if (reference == null) return null;
-        return _official(
-          () => reference.kind == GoodGameLinkKind.player
-              ? Uri.https('goodgame.ru', '/player', {'src': reference.value}).toString()
-              : GoodGameLink.channelUrl(reference.value),
-        );
-      case Sites.fc2LiveSite:
-        return _official(() => Fc2Link.channelUrl(id));
-      case Sites.taobaoLiveSite:
-        return _official(() => TaobaoLiveLink.watchUrl(id));
-      case Sites.lookLiveSite:
-        return _official(() => LookLiveLink.watchUrl(id));
       case Sites.bilibiliSite:
         return RoomExternalTarget(web: 'https://live.bilibili.com/$path', native: 'bilibili://live/$path');
       case Sites.douyinSite:

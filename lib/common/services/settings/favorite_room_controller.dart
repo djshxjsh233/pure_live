@@ -55,13 +55,8 @@ class FavoriteRoomController extends GetxController {
     _normalizePreferredPlatform();
   }
 
-  static const List<String> _catalogAdditions = [
-    Sites.goodGameSite, // v30
-    Sites.fc2LiveSite, // v31
-    Sites.taobaoLiveSite, // v34
-    Sites.lookLiveSite, // v38
-  ];
-  static const int currentSiteCatalogMigration = 6;
+  static const List<String> _catalogAdditions = [];
+  static const int currentSiteCatalogMigration = 2;
 
   void _migrateSiteCatalog() {
     assert(currentSiteCatalogMigration == 2 + _catalogAdditions.length);

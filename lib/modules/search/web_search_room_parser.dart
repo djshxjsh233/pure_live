@@ -1,8 +1,4 @@
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
-import 'package:pure_live/core/site/fc2live/fc2_link.dart';
-import 'package:pure_live/core/site/looklive/look_live_link.dart';
-import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 
 class WebSearchRoomTarget {
   const WebSearchRoomTarget({required this.platform, required this.roomId});
@@ -40,28 +36,12 @@ class WebSearchRoomParser {
   };
 
   static WebSearchRoomTarget? parse(String rawUrl) {
-    final taobaoLive = TaobaoLiveLink.parse(rawUrl);
-    if (taobaoLive != null) {
-      return WebSearchRoomTarget(platform: Sites.taobaoLiveSite, roomId: taobaoLive.storageKey);
-    }
     // Broadcast shares need asynchronous owner lookup in LiveUrlTool. Only
     // verified owner links can be mapped synchronously to a durable app ID.
     final uri = Uri.tryParse(rawUrl.trim());
     if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) return null;
     // Bare composite IDs belong to exact search, not web navigation. Preserve
     // the raw URL for the adapter's structural dot-segment checks.
-    final goodGame = GoodGameLink.parse(rawUrl);
-    if (goodGame != null) {
-      return WebSearchRoomTarget(platform: Sites.goodGameSite, roomId: goodGame.storageKey);
-    }
-    final fc2Live = Fc2Link.parseChannelId(rawUrl);
-    if (fc2Live != null) {
-      return WebSearchRoomTarget(platform: Sites.fc2LiveSite, roomId: fc2Live);
-    }
-    final lookLive = LookLiveLink.parseRoomId(rawUrl);
-    if (lookLive != null) {
-      return WebSearchRoomTarget(platform: Sites.lookLiveSite, roomId: lookLive);
-    }
     final host = uri.host.toLowerCase();
     final segments = uri.pathSegments.where((segment) => segment.trim().isNotEmpty).toList(growable: false);
 

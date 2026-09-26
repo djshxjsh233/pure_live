@@ -1,14 +1,9 @@
 import 'site/huya/huya_site.dart';
 import 'interface/live_site.dart';
-import 'site/fc2live/fc2_site.dart';
 import 'site/douyu/douyu_site.dart';
 import 'site/douyin/douyin_site.dart';
-import 'site/goodgame/goodgame_site.dart';
-import 'site/looklive/look_live_site.dart';
 
 import 'package:pure_live/common/index.dart';
-
-import 'site/taobaolive/taobao_live_site.dart';
 
 import 'package:pure_live/core/site/iptv/iptv_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
@@ -22,23 +17,8 @@ class Sites {
   static const String douyinSite = "douyin";
   static const String kuaishouSite = "kuaishou";
   static const String iptvSite = "iptv";
-  static const String goodGameSite = 'goodgame';
-  static const String fc2LiveSite = 'fc2live';
-  static const String taobaoLiveSite = 'taobaolive';
-  static const String lookLiveSite = 'looklive';
 
-  static const Set<String> supportedSiteIds = {
-    bilibiliSite,
-    douyuSite,
-    huyaSite,
-    douyinSite,
-    kuaishouSite,
-    goodGameSite,
-    fc2LiveSite,
-    taobaoLiveSite,
-    lookLiveSite,
-    iptvSite,
-  };
+  static const Set<String> supportedSiteIds = {bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite, iptvSite};
 
   /// Root directory for all platform artwork.
   static const String _assetRoot = 'assets/images';
@@ -55,10 +35,6 @@ class Sites {
     douyinSite: '$_assetRoot/douyin.png',
     kuaishouSite: '$_assetRoot/kuaishou.png',
     iptvSite: '$_assetRoot/iptv.png',
-    goodGameSite: '$_assetRoot/goodgame.png',
-    fc2LiveSite: '$_assetRoot/fc2.png',
-    taobaoLiveSite: '$_assetRoot/taobao.png',
-    lookLiveSite: '$_assetRoot/look.png',
   };
 
   static bool isSupported(String id) => supportedSiteIds.contains(id.trim().toLowerCase());
@@ -101,30 +77,6 @@ class Sites {
         liveSite: KuaishowSite(),
       ),
       iptvSite => Site(id: iptvSite, name: i18n("site_iptv"), logo: logoForId(iptvSite), liveSite: IptvSite()),
-      goodGameSite => Site(
-        id: goodGameSite,
-        name: i18n('site_goodgame'),
-        logo: logoForId(goodGameSite),
-        liveSite: GoodGameSite(),
-      ),
-      fc2LiveSite => Site(
-        id: fc2LiveSite,
-        name: i18n('site_fc2live'),
-        logo: logoForId(fc2LiveSite),
-        liveSite: Fc2Site(),
-      ),
-      taobaoLiveSite => Site(
-        id: taobaoLiveSite,
-        name: i18n('site_taobaolive'),
-        logo: logoForId(taobaoLiveSite),
-        liveSite: TaobaoLiveSite(),
-      ),
-      lookLiveSite => Site(
-        id: lookLiveSite,
-        name: i18n('site_looklive'),
-        logo: logoForId(lookLiveSite),
-        liveSite: LookLiveSite(),
-      ),
       _ => throw StateError('Unsupported live site: $normalizedId'),
     };
   }
@@ -135,19 +87,7 @@ class Sites {
   /// authentication or request-related state. Recreating them every time
   /// `supportSites` is accessed would unnecessarily discard that state.
   static final List<Site> _supportedSites = List<Site>.unmodifiable([
-    for (final id in [
-      bilibiliSite,
-      douyuSite,
-      huyaSite,
-      douyinSite,
-      kuaishouSite,
-      goodGameSite,
-      fc2LiveSite,
-      taobaoLiveSite,
-      lookLiveSite,
-      iptvSite,
-    ])
-      _createSite(id),
+    for (final id in [bilibiliSite, douyuSite, huyaSite, douyinSite, kuaishouSite, iptvSite]) _createSite(id),
   ]);
 
   static List<Site> get supportSites => _supportedSites;

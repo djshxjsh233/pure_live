@@ -39,12 +39,12 @@ void main() {
     });
     final extracted = AppSettingsController.extractConfig({
       'app': {
-        'realOnlinePlatforms': [' LOOKLIVE ', 'KUAISHOU', 'looklive', 'kuaishou'],
+        'realOnlinePlatforms': [' DOUYIN ', 'KUAISHOU', 'douyin', 'kuaishou'],
       },
     });
 
     expect(parsed['realOnlinePlatforms'], ['douyin', 'kuaishou']);
-    expect(extracted['realOnlinePlatforms'], ['looklive', 'kuaishou']);
+    expect(extracted['realOnlinePlatforms'], ['douyin', 'kuaishou']);
     expect(
       () => AppSettingsController.parseConfig({
         'realOnlinePlatforms': ['douyin', 7],

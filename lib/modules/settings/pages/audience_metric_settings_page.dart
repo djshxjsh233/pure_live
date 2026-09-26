@@ -10,7 +10,6 @@ class AudienceMetricSettingsPage extends StatelessWidget {
     (id: 'huya', labelKey: 'site_huya', detailKey: 'audience_huya_detail'),
     (id: 'douyin', labelKey: 'site_douyin', detailKey: 'audience_douyin_detail'),
     (id: 'kuaishou', labelKey: 'site_kuaishou', detailKey: 'audience_kuaishou_detail'),
-    (id: 'looklive', labelKey: 'site_looklive', detailKey: 'audience_looklive_detail'),
   ];
 
   @override

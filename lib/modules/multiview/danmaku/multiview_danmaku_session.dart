@@ -53,14 +53,7 @@ class MultiviewDanmakuSession {
   /// Empty/unsupported remote transports never create a multiview chat session.
   static bool isSupportedPlatform(String? platform) {
     // New platform registration must not silently advertise a chat transport.
-    const supported = {
-      Sites.bilibiliSite,
-      Sites.douyuSite,
-      Sites.huyaSite,
-      Sites.douyinSite,
-      Sites.kuaishouSite,
-      Sites.goodGameSite,
-    };
+    const supported = {Sites.bilibiliSite, Sites.douyuSite, Sites.huyaSite, Sites.douyinSite, Sites.kuaishouSite};
     return supported.contains(platform?.trim().toLowerCase());
   }
 

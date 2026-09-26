@@ -7,46 +7,6 @@ import 'package:pure_live/core/danmaku/huya_danmaku.dart';
 import 'package:pure_live/modules/live_play/services/room_external_opener.dart';
 
 void main() {
-  final newPlatformWebTargets = <String, (String, String)>{
-    'goodgame': ('fixture_channel', 'https://goodgame.ru/fixture_channel'),
-    'fc2live': ('12345', 'https://live.fc2.com/12345/'),
-    'taobaolive': ('live:12345', 'https://h5.m.taobao.com/taolive/video.html?id=12345'),
-    'looklive': ('12345', 'https://look.163.com/live?id=12345'),
-  };
-  for (final entry in newPlatformWebTargets.entries) {
-    test('${entry.key} opens its verified official room URL', () async {
-      final room = LiveRoom(platform: entry.key, roomId: entry.value.$1, link: 'https://untrusted.example/room');
-      final target = RoomExternalOpener.resolve(entry.key, room);
-      expect(target?.web, entry.value.$2);
-      expect(target?.native, isNull);
-      final launches = <String>[];
-      expect(
-        await RoomExternalOpener.open(
-          site: entry.key,
-          room: room,
-          android: false,
-          launch: (url) async {
-            launches.add(url);
-            return true;
-          },
-        ),
-        RoomExternalOpenResult.opened,
-      );
-      expect(launches, [entry.value.$2]);
-    });
-  }
-  test('GoodGame player identity retains its player URL', () {
-    expect(
-      RoomExternalOpener.resolve('goodgame', LiveRoom(roomId: 'id:12345'))?.web,
-      'https://goodgame.ru/player?src=12345',
-    );
-  });
-  test('new platform malformed identities never become shell targets', () {
-    final invalid = <String, String>{'goodgame': 'id:0', 'fc2live': 'abc', 'taobaolive': 'live:0', 'looklive': '1'};
-    for (final entry in invalid.entries) {
-      expect(RoomExternalOpener.resolve(entry.key, LiveRoom(roomId: entry.value)), isNull, reason: entry.key);
-    }
-  });
   final webTargets = {
     'bilibili': 'https://live.bilibili.com/12345',
     'douyin': 'https://live.douyin.com/12345',

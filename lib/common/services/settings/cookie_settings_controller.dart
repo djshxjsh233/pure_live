@@ -10,7 +10,6 @@ class CookieSettingsController extends GetxController {
   final RxString douyuCookie = hiveString('douyuCookie', '');
   final RxString douyinCookie = hiveString('douyinCookie', '');
   final RxString kuaishouCookie = hiveString('kuaishouCookie', '');
-  final RxString taobaoCookie = hiveString('taobaoCookie', '');
 
   @override
   void onInit() {
@@ -19,7 +18,7 @@ class CookieSettingsController extends GetxController {
   }
 
   void _normalizeStoredCookies() {
-    for (final cookie in [bilibiliCookie, huyaCookie, douyuCookie, douyinCookie, kuaishouCookie, taobaoCookie]) {
+    for (final cookie in [bilibiliCookie, huyaCookie, douyuCookie, douyinCookie, kuaishouCookie]) {
       final normalized = normalizeAccountCookie(cookie.v);
       if (normalized != cookie.v) cookie.v = normalized;
     }
@@ -31,7 +30,6 @@ class CookieSettingsController extends GetxController {
     douyuCookie.v = '';
     douyinCookie.v = '';
     kuaishouCookie.v = '';
-    taobaoCookie.v = '';
     bilibiliUid.v = 0;
   }
 
@@ -43,7 +41,6 @@ class CookieSettingsController extends GetxController {
       'douyinCookie': douyinCookie.v,
       'kuaishouCookie': kuaishouCookie.v,
       'bilibiliUid': bilibiliUid.v,
-      'taobaoCookie': taobaoCookie.v,
     };
   }
 
@@ -56,7 +53,6 @@ class CookieSettingsController extends GetxController {
       'douyinCookie': normalizeAccountCookie((json['douyinCookie'] ?? '') as String),
       'kuaishouCookie': normalizeAccountCookie((json['kuaishouCookie'] ?? '') as String),
       'bilibiliUid': (json['bilibiliUid'] ?? 0) as int,
-      'taobaoCookie': normalizeAccountCookie((json['taobaoCookie'] ?? '') as String),
     };
   }
 
@@ -68,7 +64,6 @@ class CookieSettingsController extends GetxController {
     douyinCookie.v = parsed['douyinCookie'];
     kuaishouCookie.v = parsed['kuaishouCookie'];
     bilibiliUid.v = parsed['bilibiliUid'];
-    taobaoCookie.v = parsed['taobaoCookie'];
 
     BiliBiliAccountService.instance.setCookie(bilibiliCookie.v);
     BiliBiliAccountService.instance.loadUserInfo();

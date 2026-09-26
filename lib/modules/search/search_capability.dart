@@ -32,26 +32,6 @@ class LiveSearchCapabilities {
   static const Map<String, LiveSearchCapability> _byPlatform = {
     // These registered adapters already implement native search. Keep their
     // UI capability in sync with the actual exact-ID, snapshot or paged API.
-    Sites.goodGameSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.fc2LiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.taobaoLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.roomLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.lookLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.roomLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.bilibiliSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.douyuSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.huyaSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),

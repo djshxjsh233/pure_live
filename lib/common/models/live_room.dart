@@ -68,34 +68,6 @@ class LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
-    // GoodGame's public directory and channel endpoint expose `viewers` as
-    // the live audience. Rating and premium counters are separate concepts.
-    'goodgame': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // FC2 exposes current `count` and cumulative `total` independently in
-    // both its public directory and member metadata.
-    'fc2live': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: true,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // Taobao's live-detail viewCount is cumulative session traffic. It is not
-    // a concurrent audience count; broadcaster fansNum remains separate.
-    'taobaolive': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: true,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
-    // LOOK keeps recommendation popularity and onlineNumber as independent
-    // values. The latter is the current audience shown on official web cards.
-    'looklive': AudiencePlatformCapability(
-      hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
   };
 
   static const AudiencePlatformCapability _unknownAudienceCapability = AudiencePlatformCapability(

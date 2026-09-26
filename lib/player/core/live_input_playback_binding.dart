@@ -1,14 +1,12 @@
 import 'package:pure_live/core/interface/live_input_recipe.dart';
-import 'package:pure_live/core/site/fc2live/fc2_input_recipe.dart';
 
-import 'fc2_playback_input.dart';
 import 'playback_source.dart';
 
 typedef LiveInputPlaybackBinder = OwnedPlaybackSource Function(LiveInputRecipe recipe);
 
 /// Binds public resolution data to a playback recipe without opening a seat.
 /// Every actual native open acquires independent resources inside the manager.
-OwnedPlaybackSource bindLiveInputForPlayback(LiveInputRecipe recipe) => switch (recipe) {
-  Fc2InputRecipe() => Fc2PlaybackInput(channelId: recipe.channelId).source,
-  _ => throw UnsupportedError('No playback binding for this input recipe'),
-};
+/// No bundled platform currently exposes an owned playback input; an adapter
+/// that needs one registers its own binder at the call site.
+OwnedPlaybackSource bindLiveInputForPlayback(LiveInputRecipe recipe) =>
+    throw UnsupportedError('No playback binding for ${recipe.identity}');

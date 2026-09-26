@@ -12,10 +12,6 @@ void main() {
         Sites.huyaSite,
         Sites.douyinSite,
         Sites.kuaishouSite,
-        Sites.goodGameSite,
-        Sites.fc2LiveSite,
-        Sites.taobaoLiveSite,
-        Sites.lookLiveSite,
         Sites.iptvSite,
       ]),
     );

@@ -85,8 +85,6 @@ class RoutePath {
 
   static const kDouyinCookie = "/douyin_cookie";
 
-  static const kTaobaoCookie = "/taobao_cookie";
-
   // WebDavPage
   static const kWebDavPage = "/web_dav_page";
 

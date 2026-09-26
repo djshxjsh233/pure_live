@@ -2,14 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/interface/live_input_recipe.dart';
-import 'package:pure_live/core/site/fc2live/fc2_input_recipe.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/modules/live_play/states/player_state.dart';
-import 'package:pure_live/player/core/live_input_playback_binding.dart';
+import 'package:pure_live/player/core/playback_source.dart';
 
 void main() {
   test('owned resolution normalization preserves public recipe and quality without media URLs', () async {
-    final input = Fc2InputRecipe('123');
+    final input = _FakeRecipe('fc2live:123');
     final site = _OwnedSite(input);
     final result = await site.resolvePlayUrls(
       detail: LiveRoom(roomId: '123'),
@@ -37,17 +36,22 @@ void main() {
     expect(result.inputRecipe, isNull);
   });
 
-  test('production fc2 binding is lazy and does not export the channel or local URI', () {
-    final recipe = Fc2InputRecipe('123');
-    final source = bindLiveInputForPlayback(recipe);
+  test('owned playback sources stay lazy and never export the channel or local URI', () {
+    final recipe = _FakeRecipe('fixture:123');
+    OwnedPlaybackSource build() =>
+        OwnedPlaybackSource(identity: recipe.identity, createInput: (_) async => throw UnimplementedError('fixture'));
+    final source = build();
     expect(source.identity, recipe.identity);
     expect(source.url, isNull);
-    expect(bindLiveInputForPlayback(recipe), isNot(same(source)));
+    expect(build(), isNot(same(source)));
   });
 
   test('owned UI state keeps one logical line but clears capability on ordinary replacement', () {
-    final recipe = Fc2InputRecipe('123');
-    final source = bindLiveInputForPlayback(recipe);
+    final recipe = _FakeRecipe('fixture:123');
+    final source = OwnedPlaybackSource(
+      identity: recipe.identity,
+      createInput: (_) async => throw UnimplementedError('fixture'),
+    );
     final state = const PlayerState().copyWith(playUrls: const [], ownedSource: source);
     expect(state.hasPlaybackSource, true);
     expect(state.lineCount, 1);
@@ -58,11 +62,26 @@ void main() {
     expect(state.copyWith(clearOwnedSource: true).ownedSource, isNull);
     expect(state.copyWith(), state);
     expect(state.copyWith().hashCode, state.hashCode);
-    expect(state.copyWith(ownedSource: bindLiveInputForPlayback(recipe)), isNot(state));
+    expect(
+      state.copyWith(
+        ownedSource: OwnedPlaybackSource(
+          identity: recipe.identity,
+          createInput: (_) async => throw UnimplementedError('fixture'),
+        ),
+      ),
+      isNot(state),
+    );
     expect(state.toString(), isNot(contains('fc2live:123')));
     // Even malformed presentation state must not export stale remote media.
     expect(PlayerState(ownedSource: source, playUrls: const ['https://fixture/stale']).playUrlSafe, isEmpty);
   });
+}
+
+class _FakeRecipe implements LiveInputRecipe {
+  _FakeRecipe(this.identity);
+
+  @override
+  final String identity;
 }
 
 class _OwnedSite extends LiveSite implements LivePlayUrlResolver {
