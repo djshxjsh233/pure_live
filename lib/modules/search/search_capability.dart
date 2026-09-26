@@ -35,7 +35,7 @@ class LiveSearchCapabilities {
     Sites.douyuSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.huyaSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.douyinSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
-    Sites.kuaishouSite: LiveSearchCapability(coverage: NativeSearchCoverage.webOnly, supportsPagination: false),
+    Sites.kuaishouSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
   };
 
   static const LiveSearchCapability _unknown = LiveSearchCapability(

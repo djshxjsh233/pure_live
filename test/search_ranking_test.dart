@@ -116,11 +116,11 @@ void main() {
     });
   });
 
-  test('declares native and web-only platform search coverage', () {
+  test('declares native platform search coverage', () {
     expect(LiveSearchCapabilities.forPlatform('bilibili').mayIncludeOffline, isTrue);
     expect(LiveSearchCapabilities.forPlatform('douyu').mayIncludeOffline, isTrue);
     expect(LiveSearchCapabilities.forPlatform('huya').coverage, NativeSearchCoverage.liveOnly);
     expect(LiveSearchCapabilities.forPlatform('douyin').supportsNativeSearch, isTrue);
-    expect(LiveSearchCapabilities.forPlatform('kuaishou').supportsNativeSearch, isFalse);
+    expect(LiveSearchCapabilities.forPlatform('kuaishou').coverage, NativeSearchCoverage.liveAndOffline);
   });
 }
