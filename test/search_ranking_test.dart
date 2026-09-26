@@ -127,7 +127,6 @@ void main() {
       Sites.shopeeLiveSite: (NativeSearchCoverage.liveAndOffline, false),
       Sites.vkVideoLiveSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.nimoTvSite: (NativeSearchCoverage.liveAndOffline, true),
-      Sites.dailymotionSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.rumbleSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.goodGameSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.fc2LiveSite: (NativeSearchCoverage.liveAndOffline, true),
@@ -135,7 +134,6 @@ void main() {
       Sites.jdLiveSite: (NativeSearchCoverage.liveAndOffline, true),
       Sites.taobaoLiveSite: (NativeSearchCoverage.roomLookup, false),
       Sites.kugouLiveSite: (NativeSearchCoverage.liveAndOffline, true),
-      Sites.baiduLiveSite: (NativeSearchCoverage.roomLookup, false),
       Sites.lookLiveSite: (NativeSearchCoverage.roomLookup, false),
     };
     expect(expected.keys, everyElement(isIn(Sites.supportedSiteIds)));

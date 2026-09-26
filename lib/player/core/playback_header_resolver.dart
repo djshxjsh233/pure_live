@@ -16,7 +16,6 @@ import 'package:pure_live/core/site/inke/inke_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
 import 'package:pure_live/core/site/huajiao/huajiao_api.dart';
 import 'package:pure_live/core/site/showroom/showroom_api.dart';
-import 'package:pure_live/core/site/chzzk/chzzk_api.dart';
 import 'package:pure_live/core/site/kick/kick_api.dart';
 import 'package:pure_live/core/site/liveme/liveme_api.dart';
 import 'package:pure_live/core/site/tiktok/tiktok_api.dart';
@@ -183,9 +182,6 @@ class PlaybackHeaderResolver {
         break;
       case Sites.showroomSite:
         headers = ShowroomApi.mediaHeaders;
-        break;
-      case Sites.chzzkSite:
-        headers = ChzzkApi.mediaHeaders;
         break;
       case Sites.kickSite:
         headers = KickApi.mediaHeaders(roomId);

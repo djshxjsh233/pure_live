@@ -41,11 +41,6 @@ class LiveSearchCapabilities {
       supportsPagination: true,
       supportsWebSearch: false,
     ),
-    Sites.chzzkSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
     Sites.kickSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: false,
@@ -98,11 +93,6 @@ class LiveSearchCapabilities {
       supportsPagination: true,
       supportsWebSearch: false,
     ),
-    Sites.dailymotionSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
     Sites.rumbleSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: true,
@@ -136,11 +126,6 @@ class LiveSearchCapabilities {
     Sites.kugouLiveSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.baiduLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.roomLookup,
-      supportsPagination: false,
       supportsWebSearch: false,
     ),
     Sites.lookLiveSite: LiveSearchCapability(

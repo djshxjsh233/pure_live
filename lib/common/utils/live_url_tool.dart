@@ -10,7 +10,6 @@ import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
-import 'package:pure_live/core/site/chzzk/chzzk_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/liveme/liveme_api.dart';
 import 'package:pure_live/core/site/liveme/liveme_link.dart';
@@ -24,14 +23,12 @@ import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
 import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
 import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
 import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
-import 'package:pure_live/core/site/dailymotion/dailymotion_link.dart';
 import 'package:pure_live/core/site/rumble/rumble_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
 import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
 import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
 import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
-import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_api.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
@@ -124,7 +121,6 @@ class LiveUrlTool {
         return true;
       }
       if (ShowroomLink.parse(raw) != null) return true;
-      if (ChzzkLink.parse(raw) != null) return true;
       if (KickLink.parse(raw) != null) return true;
       if (LiveMeLink.parse(raw) != null) return true;
       if (TikTokLink.parse(raw) != null) return true;
@@ -134,14 +130,12 @@ class LiveUrlTool {
       if (PopkonLink.parse(raw) != null) return true;
       if (ShopeeLiveLink.parse(raw) != null) return true;
       if (VkVideoLiveLink.parse(raw) != null) return true;
-      if (DailymotionLink.parseVideoId(raw) != null) return true;
       if (RumbleLink.parseVideoKey(raw) != null) return true;
       if (GoodGameLink.parse(raw) != null) return true;
       if (Fc2Link.parseChannelId(raw) != null) return true;
       if (SteamBroadcastLink.parseSteamId(raw) != null) return true;
       if (JdLiveLink.parseLiveId(raw) != null) return true;
       if (KugouLiveLink.parseRoomId(raw) != null) return true;
-      if (BaiduLiveLink.parseRoomId(raw) != null) return true;
       if (LookLiveLink.parseRoomId(raw) != null) return true;
       if (TaobaoLiveLink.parse(raw) != null || TaobaoLiveLink.shortUri(raw) != null) return true;
       // Reuse the actual synchronous room-link contract. A platform's home,
@@ -301,8 +295,6 @@ class LiveUrlTool {
       if (vkVideoLive != null) return [vkVideoLive.storageKey, Sites.vkVideoLiveSite];
       final nimoTv = NimoTvLink.parse(raw);
       if (nimoTv != null) return [nimoTv.storageKey, Sites.nimoTvSite];
-      final dailymotion = DailymotionLink.parseVideoId(raw);
-      if (dailymotion != null) return [dailymotion, Sites.dailymotionSite];
       final rumble = RumbleLink.parseVideoKey(raw);
       if (rumble != null) return [rumble, Sites.rumbleSite];
       final goodGame = GoodGameLink.parse(raw);
@@ -315,8 +307,6 @@ class LiveUrlTool {
       if (jdLive != null) return [jdLive, Sites.jdLiveSite];
       final kugouLive = KugouLiveLink.parseRoomId(raw);
       if (kugouLive != null) return [kugouLive, Sites.kugouLiveSite];
-      final baiduLive = BaiduLiveLink.parseRoomId(raw);
-      if (baiduLive != null) return [baiduLive, Sites.baiduLiveSite];
       final lookLive = LookLiveLink.parseRoomId(raw);
       if (lookLive != null) return [lookLive, Sites.lookLiveSite];
       final taobaoLive = TaobaoLiveLink.parse(raw);

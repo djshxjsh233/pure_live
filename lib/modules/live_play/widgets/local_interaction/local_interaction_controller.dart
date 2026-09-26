@@ -423,14 +423,6 @@ class LocalInteractionController extends GetxController {
       badge: '🎟️',
     ),
     LocalPlatformPack(
-      id: Sites.chzzkSite,
-      nameKey: 'site_chzzk',
-      currencyKey: 'local_currency_generic',
-      levelKey: 'local_level_generic',
-      accentColor: Color(0xFF00FFA3),
-      badge: '🎮',
-    ),
-    LocalPlatformPack(
       id: Sites.kickSite,
       nameKey: 'site_kick',
       currencyKey: 'local_currency_generic',
@@ -511,14 +503,6 @@ class LocalInteractionController extends GetxController {
       badge: 'NM',
     ),
     LocalPlatformPack(
-      id: Sites.dailymotionSite,
-      nameKey: 'site_dailymotion',
-      currencyKey: 'local_currency_generic',
-      levelKey: 'local_level_generic',
-      accentColor: Color(0xFF0A0A0A),
-      badge: 'DM',
-    ),
-    LocalPlatformPack(
       id: Sites.rumbleSite,
       nameKey: 'site_rumble',
       currencyKey: 'local_currency_generic',
@@ -573,14 +557,6 @@ class LocalInteractionController extends GetxController {
       levelKey: 'local_level_generic',
       accentColor: Color(0xFF19A7FF),
       badge: 'KG',
-    ),
-    LocalPlatformPack(
-      id: Sites.baiduLiveSite,
-      nameKey: 'site_baidulive',
-      currencyKey: 'local_currency_generic',
-      levelKey: 'local_level_generic',
-      accentColor: Color(0xFF2932E1),
-      badge: 'BD',
     ),
     LocalPlatformPack(
       id: Sites.lookLiveSite,

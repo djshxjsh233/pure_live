@@ -118,13 +118,6 @@ class LiveRoom {
       hasTotalViewers: true,
       onlineAvailability: AudienceOnlineAvailability.unsupported,
     ),
-    // CHZZK exposes concurrentUserCount and separately tells clients whether
-    // the value may be shown through cvExposure.
-    'chzzk': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
     'kick': AudiencePlatformCapability(
       hasPopularity: false,
       hasTotalViewers: false,
@@ -193,13 +186,6 @@ class LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
-    // The public API identifies live/offline state but exposes no verified
-    // concurrent audience value. Historical views are not reused here.
-    'dailymotion': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
     // Live directory cards expose a dedicated current-viewer badge. The
     // VideoObject interaction count is cumulative and stays in totalViewers.
     'rumble': AudiencePlatformCapability(
@@ -246,13 +232,6 @@ class LiveRoom {
     // broadcaster fansCount as three independent metrics.
     'kugoulive': AudiencePlatformCapability(
       hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // Baidu's PC feed audience_count and room online_users are live audience
-    // values. Fan counts stay in the independent follower field.
-    'baidulive': AudiencePlatformCapability(
-      hasPopularity: false,
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),

@@ -69,7 +69,6 @@ class FavoriteRoomController extends GetxController {
     Sites.niconicoSite, // v13
     Sites.weiboSite, // v14
     Sites.showroomSite, // v15
-    Sites.chzzkSite, // v16
     Sites.kickSite, // v17
     Sites.liveMeSite, // v19
     Sites.tiktokSite, // v20
@@ -80,7 +79,6 @@ class FavoriteRoomController extends GetxController {
     Sites.shopeeLiveSite, // v25
     Sites.vkVideoLiveSite, // v26
     Sites.nimoTvSite, // v27
-    Sites.dailymotionSite, // v28
     Sites.rumbleSite, // v29
     Sites.goodGameSite, // v30
     Sites.fc2LiveSite, // v31
@@ -88,10 +86,9 @@ class FavoriteRoomController extends GetxController {
     Sites.jdLiveSite, // v33
     Sites.taobaoLiveSite, // v34
     Sites.kugouLiveSite, // v35
-    Sites.baiduLiveSite, // v36
     Sites.lookLiveSite, // v38
   ];
-  static const int currentSiteCatalogMigration = 36;
+  static const int currentSiteCatalogMigration = 33;
 
   void _migrateSiteCatalog() {
     assert(currentSiteCatalogMigration == 2 + _catalogAdditions.length);

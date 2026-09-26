@@ -8,7 +8,6 @@ import 'package:pure_live/core/site/missevan/missevan_api.dart';
 import 'package:pure_live/core/site/inke/inke_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
-import 'package:pure_live/core/site/chzzk/chzzk_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/liveme/liveme_link.dart';
 import 'package:pure_live/core/site/tiktok/tiktok_link.dart';
@@ -19,14 +18,12 @@ import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
 import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
 import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
 import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
-import 'package:pure_live/core/site/dailymotion/dailymotion_link.dart';
 import 'package:pure_live/core/site/rumble/rumble_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
 import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
 import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
 import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
-import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 import 'package:pure_live/core/site/tting/tting_link.dart';
@@ -108,8 +105,6 @@ class WebSearchRoomParser {
     if (twitcasting != null) return WebSearchRoomTarget(platform: Sites.twitcastingSite, roomId: twitcasting);
     final showroom = ShowroomLink.parse(rawUrl);
     if (showroom != null) return WebSearchRoomTarget(platform: Sites.showroomSite, roomId: showroom);
-    final chzzk = ChzzkLink.parse(rawUrl);
-    if (chzzk != null) return WebSearchRoomTarget(platform: Sites.chzzkSite, roomId: chzzk);
     final kick = KickLink.parse(rawUrl);
     if (kick != null) return WebSearchRoomTarget(platform: Sites.kickSite, roomId: kick);
     final liveMe = LiveMeLink.parseDurableRoomId(rawUrl);
@@ -136,10 +131,6 @@ class WebSearchRoomParser {
     if (nimoTv != null) {
       return WebSearchRoomTarget(platform: Sites.nimoTvSite, roomId: nimoTv.storageKey);
     }
-    final dailymotion = DailymotionLink.parseVideoId(rawUrl);
-    if (dailymotion != null) {
-      return WebSearchRoomTarget(platform: Sites.dailymotionSite, roomId: dailymotion);
-    }
     final rumble = RumbleLink.parseVideoKey(rawUrl);
     if (rumble != null) {
       return WebSearchRoomTarget(platform: Sites.rumbleSite, roomId: rumble);
@@ -163,10 +154,6 @@ class WebSearchRoomParser {
     final kugouLive = KugouLiveLink.parseRoomId(rawUrl);
     if (kugouLive != null) {
       return WebSearchRoomTarget(platform: Sites.kugouLiveSite, roomId: kugouLive);
-    }
-    final baiduLive = BaiduLiveLink.parseRoomId(rawUrl);
-    if (baiduLive != null) {
-      return WebSearchRoomTarget(platform: Sites.baiduLiveSite, roomId: baiduLive);
     }
     final lookLive = LookLiveLink.parseRoomId(rawUrl);
     if (lookLive != null) {

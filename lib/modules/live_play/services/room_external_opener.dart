@@ -14,7 +14,6 @@ import 'package:pure_live/core/site/kilakila/kilakila_site.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
-import 'package:pure_live/core/site/chzzk/chzzk_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
 import 'package:pure_live/core/site/liveme/liveme_link.dart';
 import 'package:pure_live/core/site/tiktok/tiktok_link.dart';
@@ -26,7 +25,6 @@ import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
 import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
 import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
 import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
-import 'package:pure_live/core/site/dailymotion/dailymotion_link.dart';
 import 'package:pure_live/core/site/rumble/rumble_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
@@ -34,7 +32,6 @@ import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
 import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
-import 'package:pure_live/core/site/baidulive/baidu_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -93,12 +90,6 @@ class RoomExternalOpener {
         } on FormatException {
           return null;
         }
-      case Sites.chzzkSite:
-        try {
-          return RoomExternalTarget(web: ChzzkLink.url(id));
-        } on FormatException {
-          return null;
-        }
       case Sites.kickSite:
         try {
           return RoomExternalTarget(web: KickLink.url(id));
@@ -147,8 +138,6 @@ class RoomExternalOpener {
         return _official(() => VkVideoLiveLink.url(id));
       case Sites.nimoTvSite:
         return _official(() => NimoTvLink.url(id));
-      case Sites.dailymotionSite:
-        return _official(() => DailymotionLink.videoUrl(id));
       case Sites.rumbleSite:
         return _official(() => RumbleLink.videoUrl(id));
       case Sites.goodGameSite:
@@ -169,8 +158,6 @@ class RoomExternalOpener {
         return _official(() => TaobaoLiveLink.watchUrl(id));
       case Sites.kugouLiveSite:
         return _official(() => KugouLiveLink.watchUrl(id));
-      case Sites.baiduLiveSite:
-        return _official(() => BaiduLiveLink.watchUrl(id));
       case Sites.lookLiveSite:
         return _official(() => LookLiveLink.watchUrl(id));
       case Sites.xiaohongshuSite:

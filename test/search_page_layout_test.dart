@@ -261,7 +261,6 @@ void main() {
     Sites.shopeeLiveSite,
     Sites.vkVideoLiveSite,
     Sites.nimoTvSite,
-    Sites.dailymotionSite,
     Sites.rumbleSite,
     Sites.goodGameSite,
     Sites.fc2LiveSite,
@@ -269,7 +268,6 @@ void main() {
     Sites.jdLiveSite,
     Sites.taobaoLiveSite,
     Sites.kugouLiveSite,
-    Sites.baiduLiveSite,
     Sites.lookLiveSite,
   ]) {
     testWidgets('$platform native search is actionable and keeps its web capability', (tester) async {

@@ -5,7 +5,6 @@ import 'site/inke/inke_site.dart';
 import 'site/soop/soop_site.dart';
 import 'site/huya/huya_site.dart';
 import 'interface/live_site.dart';
-import 'site/chzzk/chzzk_site.dart';
 import 'site/fc2live/fc2_site.dart';
 import 'site/weibo/weibo_site.dart';
 import 'site/tting/tting_site.dart';
@@ -30,14 +29,12 @@ import 'site/kilakila/kilakila_site.dart';
 import 'site/looklive/look_live_site.dart';
 import 'site/pandalive/pandalive_site.dart';
 import 'site/kugoulive/kugou_live_site.dart';
-import 'site/baidulive/baidu_live_site.dart';
 
 import 'package:pure_live/common/index.dart';
 
 import 'site/shopeelive/shopeelive_site.dart';
 import 'site/taobaolive/taobao_live_site.dart';
 import 'site/vkvideolive/vkvideolive_site.dart';
-import 'site/dailymotion/dailymotion_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';
 import 'site/twitcasting/twitcasting_site.dart';
 
@@ -75,7 +72,6 @@ class Sites {
   static const String ttingSite = 'ttinglive';
   static const String xiaohongshuSite = 'xiaohongshu';
   static const String showroomSite = 'showroom';
-  static const String chzzkSite = 'chzzk';
   static const String kickSite = 'kick';
   static const String liveMeSite = 'liveme';
   static const String tiktokSite = 'tiktok';
@@ -86,7 +82,6 @@ class Sites {
   static const String shopeeLiveSite = 'shopeelive';
   static const String vkVideoLiveSite = 'vkvideolive';
   static const String nimoTvSite = 'nimotv';
-  static const String dailymotionSite = 'dailymotion';
   static const String rumbleSite = 'rumble';
   static const String goodGameSite = 'goodgame';
   static const String fc2LiveSite = 'fc2live';
@@ -94,7 +89,6 @@ class Sites {
   static const String jdLiveSite = 'jdlive';
   static const String taobaoLiveSite = 'taobaolive';
   static const String kugouLiveSite = 'kugoulive';
-  static const String baiduLiveSite = 'baidulive';
   static const String lookLiveSite = 'looklive';
 
   static const Set<String> supportedSiteIds = {
@@ -120,7 +114,6 @@ class Sites {
     ttingSite,
     xiaohongshuSite,
     showroomSite,
-    chzzkSite,
     kickSite,
     liveMeSite,
     tiktokSite,
@@ -131,7 +124,6 @@ class Sites {
     shopeeLiveSite,
     vkVideoLiveSite,
     nimoTvSite,
-    dailymotionSite,
     rumbleSite,
     goodGameSite,
     fc2LiveSite,
@@ -139,7 +131,6 @@ class Sites {
     jdLiveSite,
     taobaoLiveSite,
     kugouLiveSite,
-    baiduLiveSite,
     lookLiveSite,
     iptvSite,
   };
@@ -176,14 +167,12 @@ class Sites {
     niconicoSite: '$_assetRoot/niconico.png',
     weiboSite: '$_assetRoot/weibo.png',
     showroomSite: '$_assetRoot/showroom.png',
-    chzzkSite: '$_assetRoot/chzzk.png',
     kickSite: '$_assetRoot/kick.png',
     pandaLiveSite: '$_assetRoot/panda.png',
     popkonSite: '$_assetRoot/popkon.png',
     shopeeLiveSite: '$_assetRoot/shopee.png',
     vkVideoLiveSite: '$_assetRoot/vk.png',
     nimoTvSite: '$_assetRoot/nimo.png',
-    dailymotionSite: '$_assetRoot/dailymotion.png',
     rumbleSite: '$_assetRoot/rumble.png',
     goodGameSite: '$_assetRoot/goodgame.png',
     fc2LiveSite: '$_assetRoot/fc2.png',
@@ -191,7 +180,6 @@ class Sites {
     jdLiveSite: '$_assetRoot/jd.png',
     taobaoLiveSite: '$_assetRoot/taobao.png',
     kugouLiveSite: '$_assetRoot/kugou.png',
-    baiduLiveSite: '$_assetRoot/baidu.png',
     lookLiveSite: '$_assetRoot/look.png',
     youtubeSite: '$_assetRoot/youtube.png',
     bigoSite: '$_assetRoot/bigo.png',
@@ -296,7 +284,6 @@ class Sites {
         logo: logoForId(showroomSite),
         liveSite: ShowroomSite(),
       ),
-      chzzkSite => Site(id: chzzkSite, name: i18n('site_chzzk'), logo: logoForId(chzzkSite), liveSite: ChzzkSite()),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoForId(kickSite), liveSite: KickSite()),
       liveMeSite => Site(
         id: liveMeSite,
@@ -347,12 +334,6 @@ class Sites {
         logo: logoForId(nimoTvSite),
         liveSite: NimoTvSite(),
       ),
-      dailymotionSite => Site(
-        id: dailymotionSite,
-        name: i18n('site_dailymotion'),
-        logo: logoForId(dailymotionSite),
-        liveSite: DailymotionSite(),
-      ),
       rumbleSite => Site(
         id: rumbleSite,
         name: i18n('site_rumble'),
@@ -395,12 +376,6 @@ class Sites {
         logo: logoForId(kugouLiveSite),
         liveSite: KugouLiveSite(),
       ),
-      baiduLiveSite => Site(
-        id: baiduLiveSite,
-        name: i18n('site_baidulive'),
-        logo: logoForId(baiduLiveSite),
-        liveSite: BaiduLiveSite(),
-      ),
       lookLiveSite => Site(
         id: lookLiveSite,
         name: i18n('site_looklive'),
@@ -440,7 +415,6 @@ class Sites {
       niconicoSite,
       weiboSite,
       showroomSite,
-      chzzkSite,
       kickSite,
       liveMeSite,
       tiktokSite,
@@ -451,7 +425,6 @@ class Sites {
       shopeeLiveSite,
       vkVideoLiveSite,
       nimoTvSite,
-      dailymotionSite,
       rumbleSite,
       goodGameSite,
       fc2LiveSite,
@@ -459,7 +432,6 @@ class Sites {
       jdLiveSite,
       taobaoLiveSite,
       kugouLiveSite,
-      baiduLiveSite,
         lookLiveSite,
       iptvSite,
     ])
