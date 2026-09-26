@@ -1719,5 +1719,13 @@
   "gist_error_token": "令牌无效或权限不足（需要 Gists 读写权限）",
   "gist_error_not_found": "云端快照不存在或已被删除",
   "gist_error_network": "网络不可达，请检查网络或代理设置",
-  "gist_error_status": "GitHub 返回错误（HTTP {code}）"
+  "gist_error_status": "GitHub 返回错误（HTTP {code}）",
+  "platform_retired": "该平台已下线，无法再打开，可在关注列表中取消关注",
+  "douyu_cookie_cleared": "已清除斗鱼 Cookie",
+  "douyu_cookie_guest": "已保存，但 Cookie 里没有 acf_jwt_token：当前是游客身份，高清/超清不可用",
+  "douyu_cookie_valid": "登录态有效至 {time}",
+  "douyu_cookie_expired_refreshable": "登录态已过期（{time}）；已保存，下次播放会自动用 LTP0 续期",
+  "douyu_cookie_expired": "登录态已过期（{time}），且 Cookie 里没有 LTP0，需要重新获取",
+  "douyu_session_renewable": "登录态已过期，播放时自动续期",
+  "douyu_session_needs_cookie": "登录态已失效，点按重新粘贴 Cookie"
 }

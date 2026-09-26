@@ -1719,5 +1719,13 @@
   "gist_error_token": "Token is invalid or lacks permission (Gists: Read and write required)",
   "gist_error_not_found": "The snapshot does not exist or was deleted",
   "gist_error_network": "Network unreachable, check network or proxy settings",
-  "gist_error_status": "GitHub returned an error (HTTP {code})"
+  "gist_error_status": "GitHub returned an error (HTTP {code})",
+  "platform_retired": "This platform has been retired and can no longer be opened; you can unfollow it from your list",
+  "douyu_cookie_cleared": "Douyu cookie cleared",
+  "douyu_cookie_guest": "Saved, but there is no acf_jwt_token: this is a guest cookie, so HD/UHD are unavailable",
+  "douyu_cookie_valid": "Session valid until {time}",
+  "douyu_cookie_expired_refreshable": "Session expired at {time}; saved, and the next playback renews it with LTP0",
+  "douyu_cookie_expired": "Session expired at {time} and the cookie has no LTP0: paste a fresh one",
+  "douyu_session_renewable": "Session expired; renewed automatically on playback",
+  "douyu_session_needs_cookie": "Session is no longer valid; tap to paste a new cookie"
 }
