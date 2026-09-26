@@ -220,14 +220,3 @@ PowerShell -ExecutionPolicy Bypass -File .\tool\build_local_release.ps1 `
  </picture>
 </a>
 
----
-
-## ☕ 捐助支持
-
-如果您觉得本项目对您有帮助，欢迎扫码支持开发者一杯咖啡 ☕
-
-<p align="center">
-  <img src="https://github.com/liuchuancong/pure_live/blob/master/assets/images/wechat.png" width="350" alt="WeChat Donate">
-</p>
-
-> 您的支持是我持续维护的动力！感谢 ❤️
