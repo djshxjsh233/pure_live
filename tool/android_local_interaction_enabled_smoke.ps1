@@ -330,7 +330,7 @@ try {
     Set-LocalInteractionState -Enabled $true -EvidenceName 'local-settings-enabled'
 
     $room = Open-QuietRoom
-    $result.checks.fixturePlatform = 'cc'
+    $result.checks.fixturePlatform = 'huya'
     $portraitStyle = Find-UiNode -Document $room -Candidates @('本地弹幕样式', 'Local danmaku style') -Clickable
     $portraitSend = Find-UiNode -Document $room -Candidates @('发送本地弹幕', 'Send local danmaku') -Clickable
     $result.checks.portraitComposerVisible = $null -ne $portraitStyle -and $null -ne $portraitSend

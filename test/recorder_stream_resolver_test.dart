@@ -173,7 +173,7 @@ void main() {
   test('offline rooms and unknown platforms stop before FFmpeg', () async {
     final offline = StreamResolverService(siteResolver: (_) => _FakeSite(live: false));
     await expectLater(
-      offline.resolveStream(roomId: '1', platform: 'cc', preferredQuality: '原画'),
+      offline.resolveStream(roomId: '1', platform: 'huya', preferredQuality: '原画'),
       throwsA(
         isA<StreamException>()
             .having((error) => error.type, 'type', StreamErrorType.notLive)
