@@ -1108,7 +1108,7 @@ void main() {
     await controller.loadData();
     expect(controller.list, hasLength(2));
     expect(controller.list.every((room) => room.area == 'New'), isTrue);
-    final other = Site(id: Sites.twitcastingSite, name: 'TwitCasting', logo: '', liveSite: LiveSite());
+    final other = Site(id: Sites.douyuSite, name: 'Douyu', logo: '', liveSite: LiveSite());
     final legacy = AreaRoomsBinding.createController(other, tag);
     addTearDown(legacy.onClose);
     expect(legacy, isA<AreaServerFixedController>());

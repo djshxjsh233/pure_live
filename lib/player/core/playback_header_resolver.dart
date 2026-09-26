@@ -9,10 +9,6 @@ import 'package:pure_live/core/site/huya/huya_site.dart';
 import 'package:pure_live/core/site/twitch/twitch_site.dart';
 import 'package:pure_live/core/site/acfun/acfun_api.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/picarto/picarto_api.dart';
-import 'package:pure_live/core/site/twitcasting/twitcasting_api.dart';
-import 'package:pure_live/core/site/missevan/missevan_api.dart';
-import 'package:pure_live/core/site/inke/inke_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
 import 'package:pure_live/core/site/huajiao/huajiao_api.dart';
 import 'package:pure_live/core/site/showroom/showroom_api.dart';
@@ -145,15 +141,6 @@ class PlaybackHeaderResolver {
           ...HttpHeaderPolicy.normalize(roomHeaders),
         };
         break;
-      case Sites.picartoSite:
-        headers = {...PicartoApi.playHeaders, 'User-Agent': _desktopUserAgent};
-        break;
-      case Sites.twitcastingSite:
-        headers = TwitcastingApi.playHeaders;
-        break;
-      case Sites.missevanSite:
-        headers = MissevanApi.playHeaders;
-        break;
       case Sites.openrecSite:
         headers = OpenrecApi.headers;
         break;
@@ -168,9 +155,6 @@ class PlaybackHeaderResolver {
         break;
       case Sites.kilakilaSite:
         headers = KilakilaApi.playHeaders;
-        break;
-      case Sites.inkeSite:
-        headers = InkeApi.playHeaders;
         break;
       case Sites.acfunSite:
         headers = {...AcfunApi.playHeaders, 'origin': AcfunApi.origin};

@@ -46,9 +46,8 @@ class AreaServerFixedController extends ServerFixedPageController<LiveRoom> {
       final result = await site.liveSite.getCategoryRooms(
         subCategory,
         page: bigPage,
-        // Preserve older adapters' default contract; TwitCasting must fetch
-        // the full bounded window once before this controller slices it.
-        pageSize: site.id == Sites.twitcastingSite ? fixedSize : 30,
+        // Preserve older adapters' default contract.
+        pageSize: 30,
       );
       if (isClosed) return [];
       for (var element in result) {

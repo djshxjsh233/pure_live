@@ -15,17 +15,11 @@ class AudienceMetricSettingsPage extends StatelessWidget {
     (id: 'soop', labelKey: 'site_soop', detailKey: 'audience_soop_detail'),
     (id: 'yy', labelKey: 'site_yy', detailKey: 'audience_yy_detail'),
     (id: 'acfun', labelKey: 'site_acfun', detailKey: 'audience_acfun_detail'),
-    (id: 'picarto', labelKey: 'site_picarto', detailKey: 'audience_picarto_detail'),
-    (id: 'twitcasting', labelKey: 'site_twitcasting', detailKey: 'audience_twitcasting_detail'),
-    (id: 'missevan', labelKey: 'site_missevan', detailKey: 'audience_missevan_detail'),
-    (id: 'inke', labelKey: 'site_inke', detailKey: 'audience_inke_detail'),
     (id: 'kilakila', labelKey: 'site_kilakila', detailKey: 'audience_kilakila_detail'),
     (id: 'huajiao', labelKey: 'site_huajiao', detailKey: 'audience_huajiao_detail'),
     (id: 'openrec', labelKey: 'site_openrec', detailKey: 'audience_openrec_detail'),
     (id: 'ttinglive', labelKey: 'site_ttinglive', detailKey: 'audience_ttinglive_detail'),
     (id: 'xiaohongshu', labelKey: 'site_xiaohongshu', detailKey: 'audience_xiaohongshu_detail'),
-    (id: 'niconico', labelKey: 'site_niconico', detailKey: 'audience_niconico_detail'),
-    (id: 'weibo', labelKey: 'site_weibo', detailKey: 'audience_weibo_detail'),
     (id: 'looklive', labelKey: 'site_looklive', detailKey: 'audience_looklive_detail'),
   ];
 

@@ -1,11 +1,14 @@
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/common/base/base_page_scroll_bone.dart';
 import 'package:pure_live/common/base/live_directory_controller.dart';
+import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
+import 'package:pure_live/core/interface/live_directory.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/common/services/settings/room_card_settings_controller.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
@@ -13,7 +16,6 @@ import 'package:pure_live/common/widgets/room_card.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/popular/popular_grid_view.dart';
 
-import 'support/weibo_application_fixture.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -43,13 +45,12 @@ void main() {
           await tester.pumpWidget(const SizedBox.shrink());
           await tester.pump();
         });
-        final fixture = WeiboApplicationFixture();
-        final c = LiveDirectoryController(directory: fixture.adapter);
+        final c = LiveDirectoryController(directory: _FixturePager());
         c.list.assignAll(
           List.generate(
             101,
             (i) => LiveRoom(
-              platform: 'weibo',
+              platform: 'bilibili',
               roomId: 'fixture-$i',
               title: 'Title $i',
               nick: 'Owner $i',
@@ -58,28 +59,28 @@ void main() {
           ),
         );
         c.totalCount.value = 101;
-        Get.put<BasePageScrollAndStateBone<LiveRoom>>(c, tag: 'weibo');
+        Get.put<BasePageScrollAndStateBone<LiveRoom>>(c, tag: 'bilibili');
         await tester.pumpWidget(
           GetMaterialApp(
             builder: (context, child) => MediaQuery(
               data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
               child: child!,
             ),
-            home: const Scaffold(body: PopularGridView('weibo')),
+            home: const Scaffold(body: PopularGridView('bilibili')),
           ),
         );
         await tester.pumpAndSettle();
         final columns = width > 1280 ? 5 : (width > 960 ? 4 : (width > 640 ? 3 : 2));
-        final first = find.byKey(const ValueKey('weibo:fixture-0'));
-        final second = find.byKey(const ValueKey('weibo:fixture-1'));
-        final nextRow = find.byKey(ValueKey('weibo:fixture-$columns'));
+        final first = find.byKey(const ValueKey('bilibili:fixture-0'));
+        final second = find.byKey(const ValueKey('bilibili:fixture-1'));
+        final nextRow = find.byKey(ValueKey('bilibili:fixture-$columns'));
         expect(tester.getTopLeft(second).dy, tester.getTopLeft(first).dy);
         expect(tester.getTopLeft(second).dx, greaterThan(tester.getTopLeft(first).dx));
         expect(tester.getTopLeft(nextRow).dy, greaterThanOrEqualTo(tester.getBottomLeft(first).dy));
         expect(find.byType(RoomCard).evaluate().length, lessThan(101));
         final list = find.descendant(of: find.byType(PopularGridView), matching: find.byType(CustomScrollView));
         expect(tester.widget<CustomScrollView>(list).semanticChildCount, 101);
-        final last = find.byKey(const ValueKey('weibo:fixture-100'));
+        final last = find.byKey(const ValueKey('bilibili:fixture-100'));
         await tester.scrollUntilVisible(
           last,
           600,
@@ -90,7 +91,6 @@ void main() {
         expect(last.hitTestable(), findsOneWidget);
         expect(tester.widget<RoomCard>(last).room.roomId, 'fixture-100');
         expect(find.byType(RoomCard).evaluate().length, lessThan(101));
-        expect(fixture.requests, isEmpty);
         expect(tester.takeException(), isNull);
       });
     }
@@ -106,11 +106,10 @@ void main() {
       await tester.pump();
     });
     SettingsService.to.roomCard.applyPreset(RoomCardViewport.desktop, RoomCardPreset.compact);
-    final fixture = WeiboApplicationFixture();
-    final controller = LiveDirectoryController(directory: fixture.adapter);
+    final controller = LiveDirectoryController(directory: _FixturePager());
     controller.list.assignAll([
       LiveRoom(
-        platform: 'weibo',
+        platform: 'bilibili',
         roomId: 'compact-fixture',
         title: 'Compact title',
         nick: 'Compact owner',
@@ -118,12 +117,12 @@ void main() {
       ),
     ]);
     controller.totalCount.value = 1;
-    Get.put<BasePageScrollAndStateBone<LiveRoom>>(controller, tag: 'weibo');
+    Get.put<BasePageScrollAndStateBone<LiveRoom>>(controller, tag: 'bilibili');
 
-    await tester.pumpWidget(const GetMaterialApp(home: Scaffold(body: PopularGridView('weibo'))));
+    await tester.pumpWidget(const GetMaterialApp(home: Scaffold(body: PopularGridView('bilibili'))));
     await tester.pumpAndSettle();
 
-    final card = find.byKey(const ValueKey('weibo:compact-fixture'));
+    final card = find.byKey(const ValueKey('bilibili:compact-fixture'));
     expect(find.descendant(of: card, matching: find.byKey(const ValueKey('room-card-compact-layout'))), findsOneWidget);
     expect(find.descendant(of: card, matching: find.byKey(const ValueKey('room-card-cover-layout'))), findsNothing);
     expect(tester.getSize(card).height, lessThan(100));
@@ -131,4 +130,11 @@ void main() {
     expect(find.descendant(of: card, matching: find.byKey(const ValueKey('room-card-anchor-name'))), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+/// The grid only drives a preloaded list; any directory fetch is a bug.
+final class _FixturePager implements LiveSiteDirectoryPager {
+  @override
+  Future<LiveDirectoryPage> getDirectoryPage({int page = 1, LiveArea? category, CancelToken? cancel}) =>
+      throw StateError('unexpected directory fetch');
 }

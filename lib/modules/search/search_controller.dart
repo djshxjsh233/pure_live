@@ -100,10 +100,6 @@ class SearchController extends GetxController {
   String buildSearchUrl(String platform, String keyword) {
     final q = Uri.encodeComponent(keyword);
     switch (platform) {
-      case Sites.weiboSite:
-        throw StateError('Weibo supports exact broadcast lookup, not web keyword search');
-      case Sites.niconicoSite:
-        return 'https://live.nicovideo.jp/search?keyword=$q&status=onair';
       case Sites.showroomSite:
         throw StateError('SHOWROOM web keyword search is not exposed');
       case Sites.xiaohongshuSite:
@@ -116,10 +112,6 @@ class SearchController extends GetxController {
         throw StateError('Huajiao search is not integrated');
       case Sites.kilakilaSite:
         return 'https://live.kilakila.cn/aboutus/serach/kw/$q';
-      case Sites.inkeSite:
-        throw StateError('Inke supports exact UID lookup, not web keyword search');
-      case Sites.missevanSite:
-        throw StateError('Missevan uses native keyword search, not web search');
       case Sites.ccSite:
         return "https://cc.163.com/search/all/?query=$q&only=all";
       case Sites.kuaishouSite:
@@ -138,10 +130,6 @@ class SearchController extends GetxController {
         return "https://www.sooplive.co.kr/?szKeyword=$q";
       case Sites.yySite:
         return "https://www.yy.com/search-$q";
-      case Sites.picartoSite:
-        return 'https://picarto.tv/search?q=$q';
-      case Sites.twitcastingSite:
-        return 'https://twitcasting.tv/search/text/?tw_search_query=$q';
       case Sites.acfunSite:
         return 'https://www.acfun.cn/search?keyword=$q&type=user';
       default:
@@ -448,8 +436,7 @@ class SearchController extends GetxController {
       final site = sites[index.v - 1];
       final capability = LiveSearchCapabilities.forPlatform(site.id);
       if (site.id == Sites.acfunSite) return i18n('search_coverage_acfun');
-      if (site.id == Sites.weiboSite) return i18n('search_coverage_weibo');
-      if (site.id == Sites.huajiaoSite) return i18n('search_coverage_huajiao');
+        if (site.id == Sites.huajiaoSite) return i18n('search_coverage_huajiao');
       if (site.id == Sites.kilakilaSite) return i18n('search_coverage_kilakila');
       if (site.id == Sites.openrecSite) return i18n('search_coverage_openrec');
       return switch (capability.coverage) {
@@ -484,11 +471,7 @@ class SearchController extends GetxController {
         .map((site) => site.name)
         .join('、');
     final roomLookupSites = sites
-        .where(
-          (site) =>
-              site.id != Sites.weiboSite &&
-              LiveSearchCapabilities.forPlatform(site.id).coverage == NativeSearchCoverage.roomLookup,
-        )
+        .where((site) => LiveSearchCapabilities.forPlatform(site.id).coverage == NativeSearchCoverage.roomLookup)
         .map((site) => site.name)
         .join('、');
     final snapshotSites = sites
@@ -500,7 +483,6 @@ class SearchController extends GetxController {
       if (unavailableSites.isNotEmpty) i18n('search_coverage_unavailable', args: {'site': unavailableSites}),
       if (lookupSites.isNotEmpty) i18n('search_coverage_channel_lookup', args: {'site': lookupSites}),
       if (roomLookupSites.isNotEmpty) i18n('search_coverage_room_lookup', args: {'site': roomLookupSites}),
-      if (sites.any((site) => site.id == Sites.weiboSite)) i18n('search_coverage_weibo'),
       if (snapshotSites.isNotEmpty) i18n('search_coverage_showcase_snapshot', args: {'site': snapshotSites}),
     ].join(' ');
   }

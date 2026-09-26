@@ -39,12 +39,12 @@ void main() {
     });
     final extracted = AppSettingsController.extractConfig({
       'app': {
-        'realOnlinePlatforms': [' PICARTO ', 'TWITCH', 'picarto', 'yy'],
+        'realOnlinePlatforms': [' LOOKLIVE ', 'TWITCH', 'looklive', 'showroom'],
       },
     });
 
     expect(parsed['realOnlinePlatforms'], ['douyin', 'soop']);
-    expect(extracted['realOnlinePlatforms'], ['picarto', 'twitch']);
+    expect(extracted['realOnlinePlatforms'], ['looklive', 'twitch']);
     expect(
       () => AppSettingsController.parseConfig({
         'realOnlinePlatforms': ['douyin', 7],

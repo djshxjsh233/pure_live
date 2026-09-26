@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/site/niconico/niconico_input_recipe.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/modules/toolbox/toolbox_action_scope.dart';
 import 'package:pure_live/modules/toolbox/toolbox_direct_link_flow.dart';
+import 'package:pure_live/core/interface/live_input_recipe.dart';
 
 import 'support/toolbox_test_site.dart';
 
@@ -55,7 +55,7 @@ void main() {
     test('owned input reports session requirement without exporting for cast=$cast', () async {
       final resolved = resolvedSite();
       resolved.resolution = LivePlayUrlResolution.owned(
-        input: NiconicoInputRecipe(programId: 'lv123', resolution: null),
+        input: const _FixtureRecipe('owned:lv123:auto'),
       );
       var choices = 0;
       final exports = <String>[];
@@ -125,7 +125,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       if (!timeout) scope.cancel();
       await observed;
-      pending.complete(LivePlayUrlResolution.owned(input: NiconicoInputRecipe(programId: 'lv123', resolution: null)));
+      pending.complete(LivePlayUrlResolution.owned(input: const _FixtureRecipe('owned:lv123:auto')));
       await Future<void>.delayed(Duration.zero);
       expect(copies, isEmpty);
       expect(notices, isEmpty);
@@ -265,4 +265,10 @@ void main() {
       expect(notices, isEmpty);
     });
   }
+}
+
+final class _FixtureRecipe implements LiveInputRecipe {
+  const _FixtureRecipe(this.identity);
+  @override
+  final String identity;
 }

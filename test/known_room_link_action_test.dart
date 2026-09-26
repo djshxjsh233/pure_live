@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/site/niconico/niconico_input_recipe.dart';
 
 import 'dart:convert';
 import 'dart:io';
@@ -16,6 +15,7 @@ import 'package:pure_live/common/utils/live_url_tool.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pure_live/core/interface/live_input_recipe.dart';
 
 import 'support/toolbox_test_site.dart';
 
@@ -145,7 +145,7 @@ void main() {
     for (final cast in [false, true]) {
       testWidgets('$locale session-only ${cast ? 'cast' : 'copy'} closes with a capability notice', (tester) async {
         final resolved = ToolBoxResolvedTestSite()
-          ..resolution = LivePlayUrlResolution.owned(input: NiconicoInputRecipe(programId: 'lv123', resolution: null));
+          ..resolution = LivePlayUrlResolution.owned(input: const _FixtureRecipe('owned:lv123:auto'));
         site = resolved;
         await open(tester, locale: locale, narrow: true);
         var done = false;
@@ -422,4 +422,10 @@ class _Loader extends AssetLoader {
   final Map<String, dynamic> data;
   @override
   Future<Map<String, dynamic>> load(String path, Locale locale) async => data;
+}
+
+final class _FixtureRecipe implements LiveInputRecipe {
+  const _FixtureRecipe(this.identity);
+  @override
+  final String identity;
 }

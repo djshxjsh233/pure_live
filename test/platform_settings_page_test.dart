@@ -106,12 +106,12 @@ void main() {
 
     final filter = find.byKey(const ValueKey('prefer-platform-filter'));
     expect(filter, findsOneWidget);
-    await tester.enterText(filter, 'weibo');
+    await tester.enterText(filter, 'douyu');
     await tester.pumpAndSettle();
     final dialog = find.byType(Dialog);
     final choices = find.descendant(of: dialog, matching: find.byType(RadioListTile<String>));
     expect(choices, findsOneWidget);
-    expect(tester.widget<RadioListTile<String>>(choices).value, Sites.weiboSite);
+    expect(tester.widget<RadioListTile<String>>(choices).value, Sites.douyuSite);
 
     await tester.enterText(filter, 'no-such-platform');
     await tester.pumpAndSettle();
@@ -132,10 +132,10 @@ void main() {
     final dialog = find.byType(Dialog);
     final choices = find.descendant(of: dialog, matching: find.byType(RadioListTile<String>));
     expect(choices, findsNWidgets(2));
-    favorites.hotAreasList.value = [Sites.weiboSite, Sites.bilibiliSite, Sites.weiboSite];
+    favorites.hotAreasList.value = [Sites.douyuSite, Sites.bilibiliSite, Sites.douyuSite];
     await tester.pumpAndSettle();
     expect(choices, findsNWidgets(2));
-    expect(tester.widget<RadioListTile<String>>(choices.first).value, Sites.weiboSite);
+    expect(tester.widget<RadioListTile<String>>(choices.first).value, Sites.douyuSite);
     expect(tester.widget<RadioListTile<String>>(choices.last).value, Sites.bilibiliSite);
   });
 

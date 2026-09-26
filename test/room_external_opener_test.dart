@@ -62,12 +62,8 @@ void main() {
     'cc': 'https://cc.163.com/12345',
     'twitch': 'https://www.twitch.tv/12345',
     'soop': 'https://play.sooplive.co.kr/12345',
-    'picarto': 'https://picarto.tv/12345',
-    'twitcasting': 'https://twitcasting.tv/12345',
-    'missevan': 'https://fm.missevan.com/live/12345',
     'acfun': 'https://live.acfun.cn/live/12345',
     'kuaishou': 'https://live.kuaishou.com/u/12345',
-    'inke': 'https://www.inke.cn/',
     'kilakila': 'https://live.hongrenshuo.com.cn/index/roomuser/uid/12345',
   };
 
@@ -256,10 +252,6 @@ void main() {
       }
     }
     expect(RoomExternalOpener.resolve('yy', LiveRoom(roomId: 'abc')), isNull);
-    expect(
-      RoomExternalOpener.resolve('twitcasting', LiveRoom(roomId: 'c:fixture'))!.web,
-      'https://twitcasting.tv/c%3Afixture',
-    );
   });
 
   test('Douyin uses separate canonical web and native IDs without copying cookies', () {

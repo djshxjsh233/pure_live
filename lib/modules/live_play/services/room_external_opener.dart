@@ -1,7 +1,3 @@
-import 'package:pure_live/core/site/niconico/niconico_link.dart';
-import 'package:pure_live/core/site/weibo/weibo_api.dart';
-import 'package:pure_live/core/site/weibo/weibo_link.dart';
-import 'package:pure_live/core/site/niconico/niconico_watch.dart';
 import 'package:pure_live/core/site/tting/tting_link.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
 import 'package:pure_live/core/site/openrec/openrec_link.dart';
@@ -9,7 +5,6 @@ import 'package:pure_live/core/site/openrec/openrec_api.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/danmaku/douyin_danmaku.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
-import 'package:pure_live/core/site/inke/inke_site.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_site.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
@@ -52,26 +47,10 @@ class RoomExternalOpener {
   }
 
   static RoomExternalTarget? resolve(String site, LiveRoom room) {
-    if (site == Sites.inkeSite) {
-      // Preserve Inke's verified UID/broadcast link and official-home fallback.
-      return RoomExternalTarget(web: InkeSite.externalRoomUrl(room));
-    }
     final id = _id(room.roomId);
     if (id == null) return null;
     final path = Uri.encodeComponent(id);
     switch (site) {
-      case Sites.weiboSite:
-        try {
-          return RoomExternalTarget(web: WeiboLink.url(id));
-        } on WeiboException {
-          return null;
-        }
-      case Sites.niconicoSite:
-        try {
-          return RoomExternalTarget(web: NiconicoLink.url(id));
-        } on NiconicoException {
-          return null;
-        }
       case Sites.showroomSite:
         try {
           return RoomExternalTarget(web: ShowroomLink.roomUrl(id));
@@ -160,12 +139,6 @@ class RoomExternalOpener {
         return RoomExternalTarget(web: 'https://www.twitch.tv/$path');
       case Sites.soopSite:
         return RoomExternalTarget(web: 'https://play.sooplive.co.kr/$path');
-      case Sites.picartoSite:
-        return RoomExternalTarget(web: 'https://picarto.tv/$path');
-      case Sites.twitcastingSite:
-        return RoomExternalTarget(web: 'https://twitcasting.tv/$path');
-      case Sites.missevanSite:
-        return RoomExternalTarget(web: 'https://fm.missevan.com/live/$path');
       case Sites.acfunSite:
         return RoomExternalTarget(web: 'https://live.acfun.cn/live/$path');
       case Sites.kuaishouSite:

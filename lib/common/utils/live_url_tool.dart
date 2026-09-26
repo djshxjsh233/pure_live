@@ -1,5 +1,3 @@
-import 'package:pure_live/core/site/niconico/niconico_link.dart';
-import 'package:pure_live/core/site/weibo/weibo_link.dart';
 import 'package:pure_live/core/site/tting/tting_link.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
 import 'package:pure_live/core/site/openrec/openrec_api.dart';
@@ -44,14 +42,12 @@ class LiveUrlTool {
     for (final match in urls.allMatches(text)) {
       var candidate = match.group(0)!;
       if (candidate.toLowerCase().startsWith('www.')) candidate = 'https://$candidate';
-      // XHS and Weibo shares append Chinese prose without whitespace.
+      // XHS shares append Chinese prose without whitespace.
       // Keep percent-encoded punctuation and other platforms' URL spelling.
       if ({
         'xhslink.com',
         'www.xiaohongshu.com',
         'xiaohongshu.com',
-        'weibo.com',
-        'www.weibo.com',
       }.contains(Uri.tryParse(candidate)?.host)) {
         candidate = candidate.split(RegExp(r'[，。！？、；：）》」』”’]')).first;
         candidate = candidate.replaceFirst(RegExp(r'''[,!?;:)\]}"']+$'''), '');
@@ -95,9 +91,7 @@ class LiveUrlTool {
   static bool containsSupportedLink(String text) {
     if (_sharedXhsDeepLinks(text).any((raw) => XiaohongshuLink.deepLinkRoomId(raw) != null)) return true;
     return sharedHttpUrls(text).any((raw) {
-      if (WeiboLink.parse(raw) != null ||
-          NiconicoLink.parse(raw) != null ||
-          XiaohongshuLink.parse(raw) != null ||
+      if (XiaohongshuLink.parse(raw) != null ||
           XiaohongshuLink.shortUri(raw) != null ||
           TtingLink.parse(raw) != null ||
           OpenrecLink.parse(raw) != null ||

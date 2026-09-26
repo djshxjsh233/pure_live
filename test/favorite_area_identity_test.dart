@@ -72,15 +72,6 @@ void main() {
     expect(controller.removeArea(area('bilibili', type: '20')), isTrue);
   });
 
-  test('Missevan catalog and tag namespaces remain independent', () {
-    final controller = Get.put(FavoriteRoomController());
-    expect(controller.addArea(area('missevan', type: 'catalog')), isTrue);
-    expect(controller.isFavoriteArea(area('missevan', type: 'tag')), isFalse);
-    expect(controller.addArea(area('missevan', type: 'tag')), isTrue);
-    expect(controller.removeArea(area('missevan', type: 'catalog')), isTrue);
-    expect(controller.favoriteAreas.value.single.areaType, 'tag');
-  });
-
   test('identity normalizes platform whitespace but preserves case-sensitive IDs', () {
     final controller = Get.put(FavoriteRoomController());
     controller.favoriteAreas.value = [area(' HUYA ', id: ' Game ')];
@@ -108,21 +99,21 @@ void main() {
 
   test('unfollow clears only duplicate copies of the selected identity', () {
     final controller = Get.put(FavoriteRoomController());
-    final tag = area('missevan', type: 'tag');
-    controller.favoriteAreas.value = [area('missevan', type: 'catalog'), tag, area('missevan', type: 'catalog')];
-    expect(controller.removeArea(area('missevan', type: 'catalog')), isTrue);
-    expect(controller.favoriteAreas.value, [tag]);
+    final second = area('huya', id: '2');
+    controller.favoriteAreas.value = [area('huya', id: '1'), second, area('huya', id: '1')];
+    expect(controller.removeArea(area('huya', id: '1')), isTrue);
+    expect(controller.favoriteAreas.value, [second]);
   });
 
-  test('missing namespace is not a wildcard and encoded keys resist separators', () {
-    expect(area('missevan').hasSameIdentity(area('missevan', type: 'tag')), isFalse);
-    expect(area('missevan', type: ' TAG ').hasSameIdentity(area('MISSEVAN', type: 'tag')), isTrue);
+  test('areaType is not part of the identity and encoded keys resist separators', () {
+    expect(area('huya').hasSameIdentity(area('huya', type: 'tag')), isTrue);
+    expect(area('huya', type: ' TAG ').hasSameIdentity(area('HUYA', type: 'tag')), isTrue);
     expect(area('a|b', id: 'c').hasSameIdentity(area('a', id: 'b|c')), isFalse);
-    expect(area('missevan', type: 'a|b', id: 'c').hasSameIdentity(area('missevan', type: 'a', id: 'b|c')), isFalse);
+    expect(area('huya', type: 'a|b', id: 'c').hasSameIdentity(area('huya', type: 'a', id: 'b|c')), isFalse);
   });
 
   test('Hive and backup round trips preserve old fields and namespaced records', () async {
-    final originals = [area('huya'), area('douyu'), area('missevan', type: 'catalog'), area('missevan', type: 'tag')];
+    final originals = [area('huya'), area('douyu'), area('huya', id: '2'), area('douyu', id: '2')];
     final controller = Get.put(FavoriteRoomController());
     controller.favoriteAreas.value = originals;
     final backup = controller.toJson();
@@ -134,15 +125,15 @@ void main() {
     restored.fromJson(backup);
     expect(restored.toJson()['favoriteAreas'], backup['favoriteAreas']);
     expect(restored.isFavoriteArea(area('huya', type: 'new-parent')), isTrue);
-    expect(restored.removeArea(area('missevan', type: 'catalog')), isTrue);
-    expect(restored.isFavoriteArea(area('missevan', type: 'tag')), isTrue);
+    expect(restored.removeArea(area('huya', id: '2')), isTrue);
+    expect(restored.isFavoriteArea(area('douyu', id: '2')), isTrue);
   });
 
   test('raw upgrade merge preserves namespaces, order and legacy parent enrichment', () {
     final current = {
       'favoriteAreas': [
         jsonEncode(area('huya', name: '保留名称').toJson()),
-        jsonEncode(area('missevan', type: 'catalog').toJson()),
+        jsonEncode(area('kilakila', id: 'k1', type: 'catalog').toJson()),
         jsonEncode(area('iptv', id: 'channel').toJson()),
       ],
     };
@@ -151,7 +142,7 @@ void main() {
         'list': [
           area('huya', type: 'parent', name: '替换名称').toJson(),
           area('douyu').toJson(),
-          area('missevan', type: 'tag').toJson(),
+          area('kilakila', id: 'k2', type: 'tag').toJson(),
           area('iptv', id: 'channel', type: 'provider').toJson(),
         ],
       }),
@@ -159,7 +150,7 @@ void main() {
     final merged = SettingsUpgradeMigration.mergeRawSettings(current, [incoming]);
     final items = (jsonDecode(merged['favoriteAreas'] as String) as Map)['list'] as List;
     expect(items, hasLength(5));
-    expect(items.map((e) => e['platform']), ['huya', 'missevan', 'iptv', 'douyu', 'missevan']);
+    expect(items.map((e) => e['platform']), ['huya', 'kilakila', 'iptv', 'douyu', 'kilakila']);
     expect(items.first['areaName'], '保留名称');
     expect(items.first['areaType'], 'parent');
     expect(items[2]['areaType'], 'provider');
@@ -225,7 +216,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       // Another action while the confirmation is open must also survive.
-      final later = area('missevan', type: 'tag');
+      final later = area('kilakila', type: 'tag');
       settings.fav.favoriteAreas.value = [...settings.fav.favoriteAreas.value, later];
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();

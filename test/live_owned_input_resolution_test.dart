@@ -1,14 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/site/niconico/niconico_input_recipe.dart';
+import 'package:pure_live/core/interface/live_input_recipe.dart';
+import 'package:pure_live/core/site/fc2live/fc2_input_recipe.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/modules/live_play/states/player_state.dart';
 import 'package:pure_live/player/core/live_input_playback_binding.dart';
 
 void main() {
   test('owned resolution normalization preserves public recipe and quality without media URLs', () async {
-    final input = NiconicoInputRecipe(programId: 'lv123', resolution: '800x450', bandwidth: 1080800);
+    final input = Fc2InputRecipe('123');
     final site = _OwnedSite(input);
     final result = await site.resolvePlayUrls(
       detail: LiveRoom(roomId: '123'),
@@ -36,25 +37,16 @@ void main() {
     expect(result.inputRecipe, isNull);
   });
 
-  test('production niconico binding is lazy and does not export the watch or local URI', () {
-    final recipe = NiconicoInputRecipe(programId: 'lv123', resolution: '800x450', bandwidth: 1080800);
+  test('production fc2 binding is lazy and does not export the channel or local URI', () {
+    final recipe = Fc2InputRecipe('123');
     final source = bindLiveInputForPlayback(recipe);
     expect(source.identity, recipe.identity);
     expect(source.url, isNull);
     expect(bindLiveInputForPlayback(recipe), isNot(same(source)));
   });
 
-  for (final args in [(null, 1), ('800x450', 0), ('800x450', -1)]) {
-    test('recipe rejects invalid quality selector $args', () {
-      expect(
-        () => NiconicoInputRecipe(programId: 'lv123', resolution: args.$1, bandwidth: args.$2),
-        throwsArgumentError,
-      );
-    });
-  }
-
   test('owned UI state keeps one logical line but clears capability on ordinary replacement', () {
-    final recipe = NiconicoInputRecipe(programId: 'lv123', resolution: null);
+    final recipe = Fc2InputRecipe('123');
     final source = bindLiveInputForPlayback(recipe);
     final state = const PlayerState().copyWith(playUrls: const [], ownedSource: source);
     expect(state.hasPlaybackSource, true);
@@ -67,7 +59,7 @@ void main() {
     expect(state.copyWith(), state);
     expect(state.copyWith().hashCode, state.hashCode);
     expect(state.copyWith(ownedSource: bindLiveInputForPlayback(recipe)), isNot(state));
-    expect(state.toString(), isNot(contains('lv123')));
+    expect(state.toString(), isNot(contains('fc2live:123')));
     // Even malformed presentation state must not export stale remote media.
     expect(PlayerState(ownedSource: source, playUrls: const ['https://fixture/stale']).playUrlSafe, isEmpty);
   });
@@ -75,7 +67,7 @@ void main() {
 
 class _OwnedSite extends LiveSite implements LivePlayUrlResolver {
   _OwnedSite(this.input);
-  final NiconicoInputRecipe input;
+  final LiveInputRecipe input;
   @override
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({
     required LiveRoom detail,

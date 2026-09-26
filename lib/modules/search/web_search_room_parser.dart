@@ -1,11 +1,5 @@
-import 'package:pure_live/core/site/niconico/niconico_link.dart';
-import 'package:pure_live/core/site/weibo/weibo_link.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/site/huajiao/huajiao_link.dart';
-import 'package:pure_live/core/site/picarto/picarto_api.dart';
-import 'package:pure_live/core/site/twitcasting/twitcasting_api.dart';
-import 'package:pure_live/core/site/missevan/missevan_api.dart';
-import 'package:pure_live/core/site/inke/inke_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
@@ -53,8 +47,6 @@ class WebSearchRoomParser {
   };
 
   static WebSearchRoomTarget? parse(String rawUrl) {
-    final niconico = NiconicoLink.parse(rawUrl);
-    if (niconico != null) return WebSearchRoomTarget(platform: Sites.niconicoSite, roomId: niconico);
     final taobaoLive = TaobaoLiveLink.parse(rawUrl);
     if (taobaoLive != null) {
       return WebSearchRoomTarget(platform: Sites.taobaoLiveSite, roomId: taobaoLive.storageKey);
@@ -81,16 +73,6 @@ class WebSearchRoomParser {
     if (tting != null) {
       return WebSearchRoomTarget(platform: Sites.ttingSite, roomId: '$tting');
     }
-    final weibo = WeiboLink.parse(rawUrl);
-    if (weibo != null) return WebSearchRoomTarget(platform: Sites.weiboSite, roomId: weibo);
-    final missevan = MissevanApi.roomFromUri(uri);
-    final inke = InkeApi.roomFromUri(uri);
-    if (inke != null) return WebSearchRoomTarget(platform: Sites.inkeSite, roomId: inke);
-    if (missevan != null) return WebSearchRoomTarget(platform: Sites.missevanSite, roomId: missevan);
-    final picarto = PicartoApi.channelFromUri(uri);
-    if (picarto != null) return WebSearchRoomTarget(platform: Sites.picartoSite, roomId: picarto);
-    final twitcasting = TwitcastingApi.channelFromUri(uri);
-    if (twitcasting != null) return WebSearchRoomTarget(platform: Sites.twitcastingSite, roomId: twitcasting);
     final showroom = ShowroomLink.parse(rawUrl);
     if (showroom != null) return WebSearchRoomTarget(platform: Sites.showroomSite, roomId: showroom);
     final kick = KickLink.parse(rawUrl);

@@ -30,12 +30,6 @@ class LiveSearchCapabilities {
   const LiveSearchCapabilities._();
 
   static const Map<String, LiveSearchCapability> _byPlatform = {
-    Sites.weiboSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.roomLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.niconicoSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.showroomSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveOnly,
       supportsPagination: true,
@@ -93,16 +87,6 @@ class LiveSearchCapabilities {
     Sites.soopSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.yySite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.acfunSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
-    Sites.picartoSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
-    Sites.twitcastingSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-    ),
-    Sites.missevanSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
     Sites.openrecSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.channelLookup,
       supportsPagination: false,
@@ -117,11 +101,6 @@ class LiveSearchCapabilities {
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: true,
       supportsWebSearch: true,
-    ),
-    Sites.inkeSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.showcaseSnapshot,
-      supportsPagination: true,
-      supportsWebSearch: false,
     ),
     Sites.iptvSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.localChannels,

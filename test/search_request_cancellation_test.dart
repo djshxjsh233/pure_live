@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -10,13 +9,10 @@ import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/interface/live_search.dart';
-import 'package:pure_live/core/site/niconico/niconico_api.dart';
-import 'package:pure_live/core/site/niconico/niconico_site.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/search/search_controller.dart' as search;
 
-import 'niconico_directory_test.dart' as fixture;
 
 typedef _Search = Future<List<LiveRoom>> Function(String keyword, int page);
 typedef _OwnedSearch = Future<List<LiveRoom>> Function(String keyword, int page, CancelToken token);
@@ -42,8 +38,8 @@ class _Owned extends _Legacy implements LiveCancellableSearch {
   }) => owned(keyword, page, cancel!);
 }
 
-Site _site(LiveSite adapter, [String id = 'niconico']) => Site(id: id, name: id, logo: '', liveSite: adapter);
-LiveRoom _room(String id, [String platform = 'niconico']) =>
+Site _site(LiveSite adapter, [String id = Sites.huyaSite]) => Site(id: id, name: id, logo: '', liveSite: adapter);
+LiveRoom _room(String id, [String platform = Sites.huyaSite]) =>
     LiveRoom(roomId: id, platform: platform, title: id, nick: id, liveStatus: LiveStatus.live);
 search.SearchController _controller(List<Site> sites, {Duration timeout = const Duration(seconds: 12)}) {
   final c = search.SearchController(searchSites: sites, requestTimeout: timeout);
@@ -68,11 +64,13 @@ const _manyNativeIds = [
   Sites.soopSite,
   Sites.yySite,
   Sites.acfunSite,
-  Sites.picartoSite,
-  Sites.twitcastingSite,
-  Sites.niconicoSite,
-  Sites.missevanSite,
-  Sites.inkeSite,
+  Sites.showroomSite,
+  Sites.kickSite,
+  Sites.bigoSite,
+  Sites.goodGameSite,
+  Sites.fc2LiveSite,
+  Sites.taobaoLiveSite,
+  Sites.lookLiveSite,
 ];
 
 void main() {
@@ -109,23 +107,16 @@ void main() {
   });
 
   for (final action in ['close', 'replace', 'switch']) {
-    test('actual Nico search transport cancels on $action without stale results', () async {
+    test('actual owned search transport cancels on $action without stale results', () async {
       final started = Completer<CancelToken>();
-      final api = NiconicoApi(
-        request: (uri, token) async {
-          if (uri.queryParameters['keyword'] != 'old') {
-            return (status: 200, body: jsonEncode(fixture.envelope(search: true)));
-          }
-          started.complete(token);
-          await token.whenCancel;
-          // A successful but late transport completion is still fenced.
-          return (
-            status: 200,
-            body: jsonEncode(fixture.envelope(search: true, rows: [fixture.row(search: true, id: 999)])),
-          );
-        },
-      );
-      final c = _controller([_site(NiconicoSite(api: api)), _site(_Legacy((_, _) async => []), 'bilibili')]);
+      final owned = _Owned((keyword, page, token) async {
+        if (keyword != 'old') return [_room('lv100')];
+        started.complete(token);
+        await token.whenCancel;
+        // A successful but late transport completion is still fenced.
+        return [_room('lv999')];
+      });
+      final c = _controller([_site(owned), _site(_Legacy((_, _) async => []), 'bilibili')]);
       c.index.value = 1;
       final old = c.doSearch();
       final token = await started.future;

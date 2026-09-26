@@ -95,17 +95,6 @@ class LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.unsupported,
     ),
-    // Picarto viewers and total_views have separate concurrent/cumulative meanings.
-    'picarto': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: true,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    'twitcasting': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
     'openrec': AudiencePlatformCapability(
       hasPopularity: false,
       hasTotalViewers: false,
@@ -164,11 +153,6 @@ class LiveRoom {
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
     'huajiao': AudiencePlatformCapability(
-      hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
-    'missevan': AudiencePlatformCapability(
       hasPopularity: true,
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.unsupported,
@@ -566,7 +550,7 @@ class LiveRoom {
       return audienceMetricType!;
     }
     return switch (normalizedPlatformId) {
-      'bilibili' || 'douyu' || 'huya' || 'cc' || 'yy' || 'missevan' => AudienceMetricType.popularity,
+      'bilibili' || 'douyu' || 'huya' || 'cc' || 'yy' => AudienceMetricType.popularity,
       'kuaishou' || 'twitch' || 'soop' => AudienceMetricType.onlineViewers,
       'douyin' => AudienceMetricType.totalViewers,
       _ => AudienceMetricType.unknown,

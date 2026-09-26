@@ -15,8 +15,6 @@ class AppSettingsController extends GetxController {
     Sites.twitchSite,
     Sites.soopSite,
     Sites.acfunSite,
-    Sites.picartoSite,
-    Sites.twitcastingSite,
     Sites.openrecSite,
     Sites.ttingSite,
   ];
@@ -88,20 +86,12 @@ class AppSettingsController extends GetxController {
       audienceMetricMigration.v = 3;
     }
     if (audienceMetricMigration.v < 4) {
-      if (!realOnlinePlatforms.contains(Sites.picartoSite)) realOnlinePlatforms.add(Sites.picartoSite);
+      if (!realOnlinePlatforms.contains(Sites.openrecSite)) realOnlinePlatforms.add(Sites.openrecSite);
       audienceMetricMigration.v = 4;
     }
     if (audienceMetricMigration.v < 5) {
-      if (!realOnlinePlatforms.contains(Sites.twitcastingSite)) realOnlinePlatforms.add(Sites.twitcastingSite);
-      audienceMetricMigration.v = 5;
-    }
-    if (audienceMetricMigration.v < 6) {
-      if (!realOnlinePlatforms.contains(Sites.openrecSite)) realOnlinePlatforms.add(Sites.openrecSite);
-      audienceMetricMigration.v = 6;
-    }
-    if (audienceMetricMigration.v < 7) {
       if (!realOnlinePlatforms.contains(Sites.ttingSite)) realOnlinePlatforms.add(Sites.ttingSite);
-      audienceMetricMigration.v = 7;
+      audienceMetricMigration.v = 5;
     }
     _repairRealOnlinePlatforms();
     _realOnlinePlatformsWorker = ever<List<String>>(realOnlinePlatforms, (_) => _repairRealOnlinePlatforms());

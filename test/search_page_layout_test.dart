@@ -251,10 +251,6 @@ void main() {
   }
 
   for (final platform in [
-    Sites.picartoSite,
-    Sites.inkeSite,
-    Sites.missevanSite,
-    Sites.twitcastingSite,
     Sites.huajiaoSite,
     Sites.kilakilaSite,
     Sites.openrecSite,

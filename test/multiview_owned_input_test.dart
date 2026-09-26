@@ -7,7 +7,6 @@ import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/hls_source_query_policy.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/site/niconico/niconico_input_recipe.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/modules/multiview/cells/multiview_cell_player.dart';
@@ -15,9 +14,10 @@ import 'package:pure_live/modules/multiview/models/multiview_models.dart';
 import 'package:pure_live/modules/multiview/multiview_controller.dart';
 import 'package:pure_live/player/core/playback_source.dart';
 import 'package:pure_live/player/core/playback_source_transport.dart';
+import 'package:pure_live/core/interface/live_input_recipe.dart';
 
 Future<void> tick() => Future<void>.delayed(Duration.zero);
-LiveRoom room([String id = 'lv123']) =>
+LiveRoom room([String id = '123456']) =>
     LiveRoom(roomId: id, platform: 'bilibili', status: true, liveStatus: LiveStatus.live);
 
 class _Lease {
@@ -157,7 +157,7 @@ class _Site extends LiveSite implements LivePlayUrlResolver, LiveSiteRecordRoomR
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality}) async {
     requested.add(quality.selectionId.toString());
     return LivePlayUrlResolution.owned(
-      input: NiconicoInputRecipe(programId: detail.roomId!, resolution: applied ?? quality.selectionId.toString()),
+      input: _FixtureRecipe('owned:${detail.roomId!}:${applied ?? quality.selectionId}:auto'),
       appliedQualityData: applied ?? quality.selectionId,
     );
   }
@@ -194,12 +194,14 @@ class _Harness {
 void main() {
   test('production resolver accepts an owned source with no URL or eager seat creation', () async {
     final site = _Site();
+    final pool = _Pool();
     final source = await MultiviewController.resolveStreamForSite(
       room(),
       site: Site(id: 'bilibili', name: 'Fixture', logo: '', liveSite: site),
       preferLowest: false,
+      bindOwnedInput: (recipe) => pool.source(recipe.identity),
     );
-    expect(source.ownedSource!.identity, 'niconico:lv123:800x450:auto');
+    expect(source.ownedSource!.identity, 'owned:123456:800x450:auto');
     expect(source.url, isEmpty);
     expect(source.headers, isEmpty);
     expect(source.lines, isEmpty);
@@ -647,4 +649,10 @@ void main() {
     expect(h.backends.single.disposes, 1);
     expect(h.controller.cells[0].status, MultiviewCellStatus.empty);
   });
+}
+
+final class _FixtureRecipe implements LiveInputRecipe {
+  const _FixtureRecipe(this.identity);
+  @override
+  final String identity;
 }

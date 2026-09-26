@@ -1,23 +1,18 @@
 import 'site/yy/yy_site.dart';
 import 'site/kick/kick_site.dart';
 import 'site/bigo/bigo_site.dart';
-import 'site/inke/inke_site.dart';
 import 'site/soop/soop_site.dart';
 import 'site/huya/huya_site.dart';
 import 'interface/live_site.dart';
 import 'site/fc2live/fc2_site.dart';
-import 'site/weibo/weibo_site.dart';
 import 'site/tting/tting_site.dart';
 import 'site/acfun/acfun_site.dart';
 import 'site/douyu/douyu_site.dart';
 import 'site/douyin/douyin_site.dart';
 import 'site/openrec/openrec_site.dart';
-import 'site/picarto/picarto_site.dart';
 import 'site/huajiao/huajiao_site.dart';
-import 'site/niconico/niconico_site.dart';
 import 'site/goodgame/goodgame_site.dart';
 import 'site/showroom/showroom_site.dart';
-import 'site/missevan/missevan_site.dart';
 import 'site/kilakila/kilakila_site.dart';
 import 'site/looklive/look_live_site.dart';
 
@@ -25,7 +20,6 @@ import 'package:pure_live/common/index.dart';
 
 import 'site/taobaolive/taobao_live_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';
-import 'site/twitcasting/twitcasting_site.dart';
 
 import 'package:pure_live/core/site/cc/cc_site.dart';
 
@@ -36,8 +30,6 @@ import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
 import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 
 class Sites {
-  static const String weiboSite = 'weibo';
-  static const String niconicoSite = 'niconico';
   static const String allSite = "all";
   static const String bilibiliSite = "bilibili";
   static const String douyuSite = "douyu";
@@ -50,10 +42,6 @@ class Sites {
   static const String soopSite = 'soop';
   static const String yySite = 'yy';
   static const String acfunSite = 'acfun';
-  static const String picartoSite = 'picarto';
-  static const String twitcastingSite = 'twitcasting';
-  static const String missevanSite = 'missevan';
-  static const String inkeSite = 'inke';
   static const String kilakilaSite = 'kilakila';
   static const String huajiaoSite = 'huajiao';
   static const String openrecSite = 'openrec';
@@ -68,8 +56,6 @@ class Sites {
   static const String lookLiveSite = 'looklive';
 
   static const Set<String> supportedSiteIds = {
-    weiboSite,
-    niconicoSite,
     bilibiliSite,
     douyuSite,
     huyaSite,
@@ -80,10 +66,6 @@ class Sites {
     soopSite,
     yySite,
     acfunSite,
-    picartoSite,
-    twitcastingSite,
-    missevanSite,
-    inkeSite,
     kilakilaSite,
     huajiaoSite,
     openrecSite,
@@ -119,17 +101,11 @@ class Sites {
     soopSite: '$_assetRoot/soop.png',
     yySite: '$_assetRoot/yy.png',
     acfunSite: '$_assetRoot/acfun.png',
-    picartoSite: '$_assetRoot/picarto.png',
-    twitcastingSite: '$_assetRoot/twitcasting.png',
-    missevanSite: '$_assetRoot/missevan.png',
-    inkeSite: '$_assetRoot/inke.png',
     kilakilaSite: '$_assetRoot/kilakila.png',
     huajiaoSite: '$_assetRoot/huajiao.png',
     openrecSite: '$_assetRoot/openrec.png',
     ttingSite: '$_assetRoot/ttinglive.png',
     xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
-    niconicoSite: '$_assetRoot/niconico.png',
-    weiboSite: '$_assetRoot/weibo.png',
     showroomSite: '$_assetRoot/showroom.png',
     kickSite: '$_assetRoot/kick.png',
     goodGameSite: '$_assetRoot/goodgame.png',
@@ -158,8 +134,6 @@ class Sites {
   static Site _createSite(String id) {
     final normalizedId = id.trim().toLowerCase();
     return switch (normalizedId) {
-      weiboSite => Site(id: weiboSite, name: i18n('site_weibo'), logo: logoForId(weiboSite), liveSite: WeiboSite()),
-      niconicoSite => Site(id: niconicoSite, name: 'niconico', logo: logoForId(niconicoSite), liveSite: NiconicoSite()),
       bilibiliSite => Site(
         id: bilibiliSite,
         name: i18n("site_bilibili"),
@@ -190,21 +164,7 @@ class Sites {
       soopSite => Site(id: soopSite, name: i18n("site_soop"), logo: logoForId(soopSite), liveSite: SoopSite()),
       yySite => Site(id: yySite, name: i18n("site_yy"), logo: logoForId(yySite), liveSite: YYSite()),
       acfunSite => Site(id: acfunSite, name: i18n('site_acfun'), logo: logoForId(acfunSite), liveSite: AcfunSite()),
-      picartoSite => Site(id: picartoSite, name: 'Picarto', logo: logoForId(picartoSite), liveSite: PicartoSite()),
-      twitcastingSite => Site(
-        id: twitcastingSite,
-        name: 'TwitCasting',
-        logo: logoForId(twitcastingSite),
-        liveSite: TwitcastingSite(),
-      ),
-      missevanSite => Site(
-        id: missevanSite,
-        name: i18n('site_missevan'),
-        logo: logoForId(missevanSite),
-        liveSite: MissevanSite(),
-      ),
       iptvSite => Site(id: iptvSite, name: i18n("site_iptv"), logo: logoForId(iptvSite), liveSite: IptvSite()),
-      inkeSite => Site(id: inkeSite, name: i18n('site_inke'), logo: logoForId(inkeSite), liveSite: InkeSite()),
       kilakilaSite => Site(
         id: kilakilaSite,
         name: i18n('site_kilakila'),
@@ -283,17 +243,11 @@ class Sites {
       soopSite,
       yySite,
       acfunSite,
-      picartoSite,
-      twitcastingSite,
-      missevanSite,
-      inkeSite,
       kilakilaSite,
       huajiaoSite,
       openrecSite,
       ttingSite,
       xiaohongshuSite,
-      niconicoSite,
-      weiboSite,
       showroomSite,
       kickSite,
       bigoSite,

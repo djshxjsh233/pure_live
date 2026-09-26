@@ -57,17 +57,11 @@ class FavoriteRoomController extends GetxController {
 
   static const List<String> _catalogAdditions = [
     Sites.acfunSite, // v3
-    Sites.picartoSite, // v4
-    Sites.twitcastingSite, // v5
-    Sites.missevanSite, // v6
-    Sites.inkeSite, // v7
     Sites.kilakilaSite, // v8
     Sites.huajiaoSite, // v9
     Sites.openrecSite, // v10
     Sites.ttingSite, // v11
     Sites.xiaohongshuSite, // v12
-    Sites.niconicoSite, // v13
-    Sites.weiboSite, // v14
     Sites.showroomSite, // v15
     Sites.kickSite, // v17
     Sites.bigoSite, // v22
@@ -76,7 +70,7 @@ class FavoriteRoomController extends GetxController {
     Sites.taobaoLiveSite, // v34
     Sites.lookLiveSite, // v38
   ];
-  static const int currentSiteCatalogMigration = 21;
+  static const int currentSiteCatalogMigration = 15;
 
   void _migrateSiteCatalog() {
     assert(currentSiteCatalogMigration == 2 + _catalogAdditions.length);
