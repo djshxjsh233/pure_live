@@ -78,6 +78,13 @@ abstract interface class MultiviewOwnedInputHandle {
   Future<void> openOwned(OwnedPlaybackSource source);
 }
 
+/// Optional end-of-stream signal. A live source that the server closes (for
+/// example Douyu's anonymous original-quality links, which end after 300 s)
+/// leaves the player idle rather than stalled, so frame watching never fires.
+abstract interface class MultiviewSourceEndHandle {
+  Stream<void> get sourceEnded;
+}
+
 /// Optional Windows presentation progress; a playing transport alone does not
 /// prove that the visible texture is still advancing.
 abstract interface class MultiviewFrameProgressHandle {
@@ -98,7 +105,7 @@ typedef MultiviewCellPlayerFactory = MultiviewCellPlayerHandle Function({
 /// PlayerManager/GlobalPlayerService/PlayerPool。每格在构造时使用控制器按
 /// 当前布局计算的初始分辨率，Windows 挂载后由视图按实际 cell viewport
 /// 继续协商，避免共享渲染线程下多实例争抢全分辨率输出或大格沿用小纹理。
-class _MediaKitCellPlayer implements MultiviewCellPlayerHandle, MultiviewNativeInputRouting {
+class _MediaKitCellPlayer implements MultiviewCellPlayerHandle, MultiviewNativeInputRouting, MultiviewSourceEndHandle {
   _MediaKitCellPlayer({required this.renderWidth, required this.renderHeight});
   bool _disposed = false;
   bool _privateInput = false;
@@ -152,6 +159,13 @@ class _MediaKitCellPlayer implements MultiviewCellPlayerHandle, MultiviewNativeI
     final player = _player;
     if (player == null) return const Stream.empty();
     return player.stream.playing;
+  }
+
+  @override
+  Stream<void> get sourceEnded {
+    final player = _player;
+    if (player == null) return const Stream.empty();
+    return player.stream.completed.where((completed) => completed);
   }
 
   @override
@@ -270,7 +284,11 @@ abstract interface class MultiviewNativeInputRouting {
 /// Per-cell input ownership, shared with the main player's transport contract.
 /// The backend retains sole ownership of its video-controller release hook.
 class MultiviewCellPlayer
-    implements MultiviewCellPlayerHandle, MultiviewOwnedInputHandle, MultiviewFrameProgressHandle {
+    implements
+        MultiviewCellPlayerHandle,
+        MultiviewOwnedInputHandle,
+        MultiviewFrameProgressHandle,
+        MultiviewSourceEndHandle {
   MultiviewCellPlayer({
     required int renderWidth,
     required int renderHeight,
@@ -302,6 +320,12 @@ class MultiviewCellPlayer
   double get volume => _backend.volume;
   @override
   Stream<bool> get playingStream => _backend.playingStream;
+  @override
+  Stream<void> get sourceEnded {
+    final backend = _backend;
+    if (_closed || backend is! MultiviewSourceEndHandle) return const Stream.empty();
+    return (backend as MultiviewSourceEndHandle).sourceEnded;
+  }
 
   Future<void> _open({
     required bool start,
