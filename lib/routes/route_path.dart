@@ -21,6 +21,9 @@ class RoutePath {
   /// 分类房间
   static const kAreaRooms = "/area_rooms";
 
+  /// 分类房间（多级目录下钻）路由名前缀，每级拼上分区 id 以保证可叠加
+  static const kAreaSubRoomsPrefix = "/area_sub_rooms";
+
   /// 播放页面
   static const kLivePlay = "/live_play";
 

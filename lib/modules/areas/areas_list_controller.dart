@@ -40,7 +40,23 @@ class AreasListController extends ServerAllPageController<LiveArea> {
     _serverRawBackup.clear();
 
     if (isFlatten) {
-      _flattenRawAllData = channels.expand((e) => e.children).toList();
+      // Flatten platforms render the top-level partitions themselves. Douyin's
+      // game partition owns a deeper subtree (游戏 > 竞技游戏 > 英雄联盟), so a
+      // row keeps its children for the drill-down page instead of expanding
+      // them into this grid — expanding them dropped the third level entirely.
+      _flattenRawAllData = channels
+          .map(
+            (category) => LiveArea(
+              platform: site.id,
+              areaId: category.id,
+              areaType: category.id,
+              typeName: category.name,
+              areaName: category.name,
+              areaPic: "",
+              children: category.children.isEmpty ? null : List<LiveArea>.of(category.children),
+            ),
+          )
+          .toList();
       categories.assignAll(channels);
       return _flattenRawAllData;
     } else {

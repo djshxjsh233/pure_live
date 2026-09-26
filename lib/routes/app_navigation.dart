@@ -4,6 +4,8 @@ import 'dart:developer';
 
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/utils.dart';
+import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
+import 'package:pure_live/modules/area_rooms/area_rooms_page.dart';
 
 /// APP页面跳转封装
 /// * 需要参数的页面都应使用此类
@@ -14,6 +16,22 @@ class AppNavigator {
   /// 跳转至分类详情
   static Future<void> toCategoryDetail({required Site site, required LiveArea category}) async {
     Get.toNamed(RoutePath.kAreaRooms, arguments: [site, category]);
+  }
+
+  /// 跳转至下一级分类（多级目录，如抖音 游戏 > 竞技游戏 > 英雄联盟）。
+  ///
+  /// Each level gets its own route name: GetX keys routes by name, so pushing
+  /// the same name again reorders the existing page instead of stacking a
+  /// deeper one — the directory would never leave its first level.
+  static Future<void> toSubCategoryDetail({required Site site, required LiveArea category}) async {
+    Get.to(
+      () => AreasRoomPage(
+        site: site,
+        subCategory: category,
+        createController: () => AreaRoomsBinding.createController(site, category),
+      ),
+      routeName: '${RoutePath.kAreaSubRoomsPrefix}/${category.areaId}',
+    );
   }
 
   /// 跳转至直播间

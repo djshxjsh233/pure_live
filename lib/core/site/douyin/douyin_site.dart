@@ -8,7 +8,6 @@ import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/common/convert_helper.dart';
 import 'package:pure_live/core/danmaku/douyin_danmaku.dart';
 import 'package:pure_live/core/site/douyin/douyin_audience.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
@@ -129,9 +128,88 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return '';
   }
 
+  /// Douyin encodes a partition as `<id_str>,<type>`. Both halves are required
+  /// by the room endpoint (`partition` + `partition_type`), and they stay
+  /// concatenated in [LiveArea.areaId] so a single string survives persistence.
+  static String partitionKey(Map<String, dynamic> partition) => '${partition["id_str"]},${partition["type"]}';
+
+  static LiveArea _areaFrom({
+    required Map<String, dynamic> partition,
+    required String parentId,
+    required String parentTitle,
+    List<LiveArea>? children,
+  }) {
+    return LiveArea(
+      areaId: partitionKey(partition),
+      areaType: parentId,
+      typeName: parentTitle,
+      areaName: partition["title"]?.toString() ?? '',
+      areaPic: "",
+      platform: Sites.douyinSite,
+      children: children,
+    );
+  }
+
+  /// Builds the directory tree from the page's embedded `categoryData`.
+  ///
+  /// Only the game partition is three levels deep (游戏 > 竞技游戏 > 英雄联盟).
+  /// Every other top-level partition has no children, so its own id already
+  /// addresses the complete room list. The previous flat grid mixed level one
+  /// and level two into one page and dropped level three entirely, which left
+  /// the individual game titles unreachable.
+  @visibleForTesting
+  static List<LiveCategory> parseCategories(dynamic categoryData) {
+    if (categoryData is! List) return const <LiveCategory>[];
+    final categories = <LiveCategory>[];
+    for (final rawItem in categoryData) {
+      final item = _asStringMap(rawItem);
+      if (item == null) continue;
+      final parent = _asStringMap(item["partition"]);
+      if (parent == null) continue;
+      final parentId = partitionKey(parent);
+      final parentTitle = parent["title"]?.toString() ?? '';
+
+      final subs = <LiveArea>[];
+      final rawSubs = item["sub_partition"];
+      if (rawSubs is List) {
+        for (final rawSub in rawSubs) {
+          final sub = _asStringMap(rawSub);
+          if (sub == null) continue;
+          final subPartition = _asStringMap(sub["partition"]);
+          if (subPartition == null) continue;
+          final subId = partitionKey(subPartition);
+          final subTitle = subPartition["title"]?.toString() ?? '';
+
+          final leaves = <LiveArea>[];
+          final rawLeaves = sub["sub_partition"];
+          if (rawLeaves is List) {
+            for (final rawLeaf in rawLeaves) {
+              final leaf = _asStringMap(rawLeaf);
+              if (leaf == null) continue;
+              final leafPartition = _asStringMap(leaf["partition"]);
+              if (leafPartition == null) continue;
+              leaves.add(_areaFrom(partition: leafPartition, parentId: subId, parentTitle: subTitle));
+            }
+          }
+
+          subs.add(
+            _areaFrom(
+              partition: subPartition,
+              parentId: parentId,
+              parentTitle: parentTitle,
+              children: leaves.isEmpty ? null : leaves,
+            ),
+          );
+        }
+      }
+
+      categories.add(LiveCategory(children: subs, id: parentId, name: parentTitle));
+    }
+    return categories;
+  }
+
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
-    List<LiveCategory> categories = [];
     var result = await HttpClient.instance.getText(
       "https://live.douyin.com/",
       queryParameters: {"from_nav": "1"},
@@ -139,38 +217,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     );
 
     String extracted = extractCategoryDataJson(result);
+    if (extracted.isEmpty) return const <LiveCategory>[];
     var renderDataJson = json.decode(extracted);
-    var data = renderDataJson["categoryData"];
-    for (var item in data) {
-      List<LiveArea> subs = [];
-      var id = '${item["partition"]["id_str"]},${item["partition"]["type"]}';
-      for (var subItem in item["sub_partition"]) {
-        var subCategory = LiveArea(
-          areaId: '${subItem["partition"]["id_str"]},${subItem["partition"]["type"]}',
-          typeName: item["partition"]["title"] ?? '',
-          areaType: id,
-          areaName: subItem["partition"]["title"] ?? '',
-          areaPic: "",
-          platform: Sites.douyinSite,
-        );
-        subs.add(subCategory);
-      }
-
-      var category = LiveCategory(children: subs, id: id, name: asT<String?>(item["partition"]["title"]) ?? "");
-      subs.insert(
-        0,
-        LiveArea(
-          areaId: category.id,
-          typeName: category.name,
-          areaType: category.id,
-          areaPic: "",
-          areaName: category.name,
-          platform: Sites.douyinSite,
-        ),
-      );
-      categories.add(category);
-    }
-    return categories;
+    return parseCategories(renderDataJson is Map ? renderDataJson["categoryData"] : null);
   }
 
   @override

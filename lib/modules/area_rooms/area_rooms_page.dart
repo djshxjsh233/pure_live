@@ -1,5 +1,7 @@
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_controller.dart';
+import 'package:pure_live/modules/area_rooms/widgets/area_sub_category_strip.dart';
+import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/plugins/cache_manager.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,15 +11,31 @@ class AreasRoomPage extends StatefulWidget {
   final Site site;
   final LiveArea subCategory;
 
-  const AreasRoomPage({super.key, required this.site, required this.subCategory});
+  /// Builds this page's controller for directory drill-down pushes, which have
+  /// no route binding.
+  ///
+  /// GetX resolves a pushed route's bindings before that route becomes the
+  /// current configuration, so a binding reading [Get.arguments] would build
+  /// the controller of the level it was opened from. The factory runs only when
+  /// this page is actually built (a repeat push of a node already on the stack
+  /// is reordered, not rebuilt) and the page closes what it created; `null`
+  /// keeps the binding-created controller for the ordinary category route.
+  final BasePageScrollAndStateBone<LiveRoom> Function()? createController;
+
+  const AreasRoomPage({super.key, required this.site, required this.subCategory, this.createController});
 
   @override
   State<AreasRoomPage> createState() => _AreasRoomPageState();
 }
 
 class _AreasRoomPageState extends State<AreasRoomPage> {
-  BasePageScrollAndStateBone<LiveRoom> get controller =>
-      Get.find<BasePageScrollAndStateBone<LiveRoom>>(tag: areaRoomsControllerTag(widget.site, widget.subCategory));
+  BasePageScrollAndStateBone<LiveRoom>? _ownedController;
+
+  BasePageScrollAndStateBone<LiveRoom> get controller {
+    final factory = widget.createController;
+    if (factory != null) return _ownedController ??= factory();
+    return Get.find<BasePageScrollAndStateBone<LiveRoom>>(tag: areaRoomsControllerTag(widget.site, widget.subCategory));
+  }
 
   @override
   void initState() {
@@ -26,59 +44,79 @@ class _AreasRoomPageState extends State<AreasRoomPage> {
   }
 
   @override
+  void dispose() {
+    _ownedController?.onClose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final rawAreaName = widget.subCategory.areaName?.trim() ?? '';
     final areaName = rawAreaName.isEmpty ? i18n('unnamed_area') : rawAreaName;
+    final subCategories = widget.subCategory.children ?? const <LiveArea>[];
     return KeepAliveWrapper(
       child: Scaffold(
         appBar: AppBar(title: Text(areaName)),
-        body: BasePageView<BasePageScrollAndStateBone<LiveRoom>, LiveRoom>(
-          controller: controller,
-          enableRefresh: true,
-          enableLoadMore: true,
-          customMobileBottomPadding: 85,
-          customDesktopBottomPadding: 135,
-          showScrollToTopBtn: SettingsService.to.page.showScrollToTopBtn.v,
-          showPageSizeSelector: SettingsService.to.page.showPageSizeSelector.v,
-          pageSizeOptions: SettingsService.to.page.pageSizeOptions,
-          emptyBuilder: (context) => EmptyView(icon: Icons.live_tv_rounded, title: i18n('no_data'), subtitle: ''),
-          contentBuilder: (context, list, scrollController) {
-            return Obx(() {
-              final roomCardAppearance = SettingsService.to.roomCard.resolve();
-              return LayoutBuilder(
-                builder: (context, constraint) {
-                  final width = constraint.maxWidth;
-                  final crossAxisCount = width > 1280 ? 5 : (width > 960 ? 4 : (width > 640 ? 3 : 2));
-                  final spacing = SettingsService.to.theme.crossAxisSpacing.v;
-                  final itemWidth = (width - 12 - spacing * (crossAxisCount - 1)) / crossAxisCount;
-                  return GridView.builder(
-                    scrollCacheExtent: ScrollCacheExtent.pixels(width > 680 ? 480 : 320),
-                    addAutomaticKeepAlives: false,
-                    addRepaintBoundaries: true,
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: spacing,
-                      mainAxisSpacing: SettingsService.to.theme.mainAxisSpacing.v,
-                      mainAxisExtent: RoomCardLayoutMetrics.gridMainAxisExtent(
-                        itemWidth: itemWidth,
-                        appearance: roomCardAppearance,
-                        dense: true,
-                        textScaler: MediaQuery.textScalerOf(context),
-                      ),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(6, 6, 6, 80),
-                    controller: scrollController,
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      final room = list[index];
-                      return RoomCard(key: ValueKey('${room.platform}:${room.roomId}'), room: room, dense: true);
-                    },
-                  );
+        body: Column(
+          children: [
+            // A node with children is both a room list and a directory entry:
+            // the body lists this node's rooms, the strip opens the next level.
+            if (subCategories.isNotEmpty)
+              AreaSubCategoryStrip(
+                children: subCategories,
+                onSelected: (child) => AppNavigator.toSubCategoryDetail(site: widget.site, category: child),
+              ),
+            Expanded(
+              child: BasePageView<BasePageScrollAndStateBone<LiveRoom>, LiveRoom>(
+                controller: controller,
+                enableRefresh: true,
+                enableLoadMore: true,
+                customMobileBottomPadding: 85,
+                customDesktopBottomPadding: 135,
+                showScrollToTopBtn: SettingsService.to.page.showScrollToTopBtn.v,
+                showPageSizeSelector: SettingsService.to.page.showPageSizeSelector.v,
+                pageSizeOptions: SettingsService.to.page.pageSizeOptions,
+                emptyBuilder: (context) => EmptyView(icon: Icons.live_tv_rounded, title: i18n('no_data'), subtitle: ''),
+                contentBuilder: (context, list, scrollController) {
+                  return Obx(() {
+                    final roomCardAppearance = SettingsService.to.roomCard.resolve();
+                    return LayoutBuilder(
+                      builder: (context, constraint) {
+                        final width = constraint.maxWidth;
+                        final crossAxisCount = width > 1280 ? 5 : (width > 960 ? 4 : (width > 640 ? 3 : 2));
+                        final spacing = SettingsService.to.theme.crossAxisSpacing.v;
+                        final itemWidth = (width - 12 - spacing * (crossAxisCount - 1)) / crossAxisCount;
+                        return GridView.builder(
+                          scrollCacheExtent: ScrollCacheExtent.pixels(width > 680 ? 480 : 320),
+                          addAutomaticKeepAlives: false,
+                          addRepaintBoundaries: true,
+                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: SettingsService.to.theme.mainAxisSpacing.v,
+                            mainAxisExtent: RoomCardLayoutMetrics.gridMainAxisExtent(
+                              itemWidth: itemWidth,
+                              appearance: roomCardAppearance,
+                              dense: true,
+                              textScaler: MediaQuery.textScalerOf(context),
+                            ),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(6, 6, 6, 80),
+                          controller: scrollController,
+                          itemCount: list.length,
+                          itemBuilder: (context, index) {
+                            final room = list[index];
+                            return RoomCard(key: ValueKey('${room.platform}:${room.roomId}'), room: room, dense: true);
+                          },
+                        );
+                      },
+                    );
+                  });
                 },
-              );
-            });
-          },
+              ),
+            ),
+          ],
         ),
         floatingActionButton: FavoriteAreaFloatingButton(area: widget.subCategory),
       ),
