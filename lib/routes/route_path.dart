@@ -38,6 +38,7 @@ class RoutePath {
 
   /// 本地恢复
   static const kBackup = "/backup";
+  static const kRemoteSync = "/remote_sync";
 
   /// Gist 云备份
   static const kGistBackup = "/gist_backup";
@@ -111,5 +112,4 @@ class RoutePath {
 
   static const kSettingsTags = '/settingTags';
 
-  static const kRemoteSync = '/remote_sync';
 }
