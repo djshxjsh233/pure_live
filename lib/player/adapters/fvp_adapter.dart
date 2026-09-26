@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/services/settings_service.dart';
+import 'package:pure_live/player/core/playback_proxy_policy.dart';
 import 'package:pure_live/player/core/player_error_classifier.dart';
 import 'package:pure_live/player/interface/unified_player_interface.dart';
 import 'package:pure_live/player/models/player_engine.dart';
@@ -27,6 +28,9 @@ class FvpAdapter
   bool _audioOnly = false;
   bool _audioOutputSuppressed = false;
   bool _acceptSourceEvents = false;
+  bool _privateInput = false;
+  bool _hardwareDecoding = true;
+  String? _currentUrl;
   double _volume = 1.0;
   BoxFit _fit = BoxFit.contain;
   int _generation = 0;
@@ -54,6 +58,12 @@ class FvpAdapter
     return const ['VAAPI', 'VDPAU', 'FFmpeg', 'dav1d'];
   }
 
+  /// Android: OpenSL first. mdk's AAudio output crashes on dispose ("pure
+  /// virtual function called", fvp#376), stutters on coarse-clock devices
+  /// (fvp#384) and dies on output routing changes (fvp#386); OpenSL does not.
+  static List<String>? audioBackends({bool? android}) =>
+      (android ?? Platform.isAndroid) ? const ['OpenSL', 'AudioTrack', 'AAudio'] : null;
+
   /// `avio.headers` takes CRLF-terminated lines; reject values that would
   /// inject extra header lines.
   static String encodeHeaders(Map<String, String> headers) {
@@ -75,7 +85,10 @@ class FvpAdapter
     try {
       hardware = SettingsService.to.player.enableCodec.value;
     } catch (_) {}
+    _hardwareDecoding = hardware;
     player.videoDecoders = videoDecoders(hardware: hardware);
+    final backends = audioBackends();
+    if (backends != null) player.audioBackends = backends;
     // Live-stream defaults mirroring fvp's own video_player backend.
     player.setProperty('avformat.strict', 'experimental');
     player.setProperty('avformat.safe', '0');
@@ -179,10 +192,12 @@ class FvpAdapter
     beginSourceTransition();
     _audioOnly = audioOnly;
     player.state = mdk.PlaybackState.stopped;
+    player.videoDecoders = videoDecoders(hardware: _hardwareDecoding);
     player.setProperty('avio.headers', encodeHeaders(headers));
     player.setActiveTracks(mdk.MediaType.video, audioOnly ? const [] : const [0]);
     player.volume = _audioOutputSuppressed ? 0.0 : _volume;
     player.media = url;
+    _currentUrl = url;
     _acceptSourceEvents = true;
     _stateSubject.add(PlayerState.preparing);
     final result = await player.prepare();
@@ -201,9 +216,22 @@ class FvpAdapter
     if (!audioOnly) unawaited(_attachTexture(player, generation));
   }
 
-  Future<void> _attachTexture(mdk.Player player, int generation) async {
+  Future<void> _attachTexture(mdk.Player player, int generation, {bool retried = false}) async {
     final size = await player.textureSize;
-    if (generation != _generation || _disposed || size == null) return;
+    if (generation != _generation || _disposed) return;
+    if (size == null) {
+      // fvp settles the video size as null when a live stream stalls or reports
+      // invalid while still loading, and never revisits it, so no texture is
+      // created and decoded frames are dropped (audio only). Re-prepare once.
+      final url = _currentUrl;
+      if (retried || url == null || _audioOnly) return;
+      player.state = mdk.PlaybackState.stopped;
+      player.media = url;
+      final result = await player.prepare();
+      if (generation != _generation || _disposed || result < 0) return;
+      player.state = mdk.PlaybackState.playing;
+      return _attachTexture(player, generation, retried: true);
+    }
     _widthSubject.add(size.width.toInt());
     _heightSubject.add(size.height.toInt());
     _sizeNotifier.value = size;
