@@ -4,15 +4,15 @@
 
 ## 当前平台能力
 
-2026-09-22 按 `lib/core/sites.dart` 核对：当前源码注册 **45 个直播站点 + IPTV，共 46 个适配器**。这是源码注册数量，不是已发布包或完整验收数量。小红书、niconico、微博、SHOWROOM、CHZZK、Kick、17LIVE、LiveMe、TikTok LIVE、YouTube Live、Bigo Live、PandaTV、PopkonTV、Shopee Live、VK Video Live、NimoTV、Dailymotion、Rumble、GoodGame、FC2 Live、Steam Broadcasts、京东直播、淘宝直播、酷狗直播、百度直播、六间房直播和 LOOK 直播已接入应用入口；原生整体验收继续，当前候选与完整剩余范围以[验收状态](ACCEPTANCE_STATUS_3_2_0.md)为准。
+2026-09-26 按 `lib/core/sites.dart` 核对：当前源码注册 **22 个直播站点 + IPTV，共 23 个适配器**。这是源码注册数量，不是已发布包或完整验收数量。小红书、SHOWROOM、Kick、Bigo Live、GoodGame、FC2 Live、淘宝直播和 LOOK 直播已接入应用入口；原生整体验收继续，当前候选与完整剩余范围以[验收状态](ACCEPTANCE_STATUS_3_2_0.md)为准。
 
-2026-09-23 房间页“外部打开”也已与注册表对齐：此前 14 个新增站点缺少官方房间 URL 映射，操作会落到 `unavailable`；现在 45 个直播站点均有按稳定房间身份重建的官方目标，IPTV 不存在远端官方房间页。构造、无效 ID 与启动动作的定向证据见[外部打开覆盖审计](ROOM_EXTERNAL_OPEN_COVERAGE_AUDIT_2026_09_23.md)；这只是源码动作合同，外部浏览器/客户端实际落地仍待当前候选双端验证。
+2026-09-23 房间页“外部打开”也已与注册表对齐：此前 14 个新增站点缺少官方房间 URL 映射，操作会落到 `unavailable`；现在 22 个直播站点均有按稳定房间身份重建的官方目标，IPTV 不存在远端官方房间页。构造、无效 ID 与启动动作的定向证据见[外部打开覆盖审计](ROOM_EXTERNAL_OPEN_COVERAGE_AUDIT_2026_09_23.md)；这只是源码动作合同，外部浏览器/客户端实际落地仍待当前候选双端验证。
 
 内置网页搜索打开小红书直播间或 TTing/FLEX 频道直播页时，现也能识别稳定房间身份并提示回到应用播放；普通内容与仿冒链接仍被排除，见[链接回流审计](WEB_SEARCH_XHS_TTING_LINK_AUDIT_2026_09_23.md)。
 
 小红书录制所用的共用 HLS 保留窗口现识别旧版 `EXT-X-ALLOW-CACHE:YES`，使该标签不再单独阻断预取；`NO` 仍走原始 relay。此为确定性源码回归，当前现网清单和新候选原生录制仍待复核，见[旧缓存标签审计](XIAOHONGSHU_HLS_ALLOW_CACHE_AUDIT_2026_09_24.md)。
 
-2026-09-23 搜索页能力表已与这 46 个已注册适配器核对：此前 14 个新平台虽有原生查询实现，UI 却因缺少能力登记而落到通用网页搜索；现已逐一标注搜索范围与分页，45 个平台提供原生搜索入口，快手保持已有网页入口。范围与回归见[搜索能力登记审计](SEARCH_REGISTRY_COVERAGE_AUDIT_2026_09_23.md)。该数量是源码入口，不等于 45 个平台的生产可达或双端原生验收通过。
+2026-09-23 搜索页能力表已与这 23 个已注册适配器核对：此前 14 个新平台虽有原生查询实现，UI 却因缺少能力登记而落到通用网页搜索；现已逐一标注搜索范围与分页，22 个平台提供原生搜索入口，快手保持已有网页入口。范围与回归见[搜索能力登记审计](SEARCH_REGISTRY_COVERAGE_AUDIT_2026_09_23.md)。该数量是源码入口，不等于 22 个平台的生产可达或双端原生验收通过。
 
 ### 09-09 及更早阶段的取证快照
 
@@ -44,40 +44,16 @@ TwitCasting 新增公开目录、顶栏分类、详情/HLS三档、录制输入�
 | SOOP Live | 官方分类与推荐接口 | 原生搜索当前直播间 | SOOP WebSocket；账号 Cookie 可选 | 推荐/搜索以 `total_view_cnt`（PC + 移动端）为并发人数；分类使用 `view_cnt`；`current_view_cnt` 仅是 PC 端分量 |
 | YY Live | 动态读取头部与分类元数据 | 原生直播间/主播搜索，可返回未开播结果 | YY WebSocket | `users` 为平台热度值 |
 | AcFun | 官网直播分类与目录 | 原生作者搜索，含未开播作者；稀疏分页 | 当前未接入，页面明确说明 | `onlineCount` 为在线；点赞、粉丝分列 |
-| Picarto | 官网动态直播分类、公开目录与分类原生分页；每次读取当期分类元数据 | 官网原生主播档案关键词分页，含未开播结果；网页搜索和分享链接回流保留 | 当前未接入，页面明确说明 | `viewers` 为在线，详情 `total_views` 为累计观看；搜索 `follower_count` 为粉丝，搜索缺在线人数时保持未知 |
-| TwitCasting | 官网顶栏分类与最多60条公开热门窗口；页面缓存后本地分页 | 官网当前直播关键词搜索，最多50条公开窗口本地分页；精确频道根链接可返回未开播频道；网页搜索保留，movie/archive不映射当前直播 | 当前未接入，页面明确说明 | 目录 `current_viewer_count` 为在线；搜索页未给并发人数时保持未知 |
-| 猫耳 FM | 官网 catalog/tag 分类与原生推荐分页 | 官网直播间关键词原生分页，含未开播；精确房间号与 `fm.missevan.com/live/{id}` 官网链接保留 | 当前未接入 | `score` 为热度，详情粉丝分列；不以零值冒充当前在线 |
-| 映客 | 官网有限精选及服务端频道，页面持续说明非全站列表 | 精确映客 UID 或官网房间链接，含未开播；当前公开精选可按昵称本地筛选及分页，不代表全站搜索；无网页搜索入口 | 当前未接入 | 未取得人数，保持未知；主播等级不作观众数 |
 | 克拉克拉 | 官方热门/萌星，type 0/107 原生分页 | 官网用户关键词原生分页，含无当前场次的主播；精确主播 UID、官方主播主页与 `/zhubo/{uid}` 搜索链接回流；搜索卡缺直播状态时保持未知，详情再查询 | 当前未接入 | `watchNumber` 未证实为并发人数，保持未知 |
 | 花椒 | 官方 H5 公开视频推荐，保留原生游标 | 精确花椒号或官方主播主页，含未开播主播；昵称/标题可筛选最多 3 页当前公开推荐并本地分页，不宣称全站搜索或网页搜索入口 | 当前未接入 | `current_heat` 为热度，不作在线人数；主播资料缺观看人数时保持未知 |
 | OPENREC / mellow-fan | 公开广播列表，频道聚合与多场歧义提示 | 精确频道 ID/官方频道根链接，含未开播；昵称/关键词尚未接入，当前生产接口 403 待复核 | 当前未接入 | 公开并发人数；隐藏或多场歧义时保持未知 |
 | TTingLive / FLEX TV | 有限首页公开直播快照，不宣称全站分类 | 精确频道号或频道直播链接，含未开播；不支持昵称/关键词 | 当前未接入 | 主目录 `playerCount`；详情和收藏刷新缺值时保持未知 |
 | 小红书 | 公开目录/分类尚未取得，展示范围说明 | 精确直播房间/已核验分享链接；不宣称昵称搜索 | 当前未接入 | 缺少明确并发人数时保持未知 |
-| niconico | 公开原生目录与分类分页 | 当前直播关键词分页及官方网页搜索 | 当前未接入 | 平台累计观看不冒充并发在线人数 |
-| 微博直播 | 有限公开推荐快照，目录直播状态保持未知 | 精确场次 ID/官方观看 URL，含回放元数据；当前公开推荐快照可按昵称筛选，不宣称全站主播搜索或分页查询 | 当前未接入 | 未取得人数，保持未知；不把 UID/互动数当观众数 |
 | SHOWROOM | 官网公开 onlives 快照与原生分类 | 同一直播快照内的直播关键词分页；直播间链接可查询未开播状态 | 当前未接入 | `view_num` 作为本场累计观看，不当作并发在线人数 |
-| CHZZK | 官方公开热门直播游标目录 | 原生频道搜索，包含开播和未开播频道 | 当前未接入 | `cvExposure=true` 时展示 `concurrentUserCount` 并发人数，否则保持未知 |
 | Kick | 官方公开直播分页 | 原生有界搜索，直播匹配和未开播频道合并去重 | [公开 Pusher 聊天](KICK_PUBLIC_CHAT_AUDIT_2026_09_23.md)；解析独立 chatroom ID，确认订阅后接收聊天，双端原生消息验收待执行 | `show_view_count=false` 时保持未知，其他公开 `viewer_count` 作为并发人数 |
-| 17LIVE | 官网日本区公开推荐 sections，保留原生游标；只展示已核验当前直播，不宣称全站目录 | 官网当前直播关键词有限窗口，不含未开播昵称；精确房间号及官方直播间/主播主页链接仍可返回未开播状态 | 当前未接入 | `liveViewerCount` 为当前观看，`viewerCount` 为本场累计观看，分别展示 |
-| LiveMe | 官网公开热门目录，保留原生分页 | 原生主播关键词分页，包含未开播主播；直播间、主播主页和旧场次链接可回流为稳定短号 | 当前未接入 | `heat` 为平台热度、`playnumber` 为当前观看、`watchnumber` 为本场累计观看，三者分列 |
-| TikTok LIVE | 游客推荐目录依赖网页会话，当前页面保留明确范围说明 | 精确账号、@账号、官方主页/直播间/直播分享链接；可返回未开播账号 | 当前未接入 | `liveRoomStats.userCount` 为当前观看，`enterCount` 为累计进房，分别展示 |
-| YouTube Live | 首阶段保持范围说明；公开推荐目录依赖动态网页会话 | 精确视频 ID、观看/直播/短链/嵌入链接，以及频道或 `@handle` 的当前直播发现 | 当前未接入 | 仅使用直播页专用并发观看字段；普通 `viewCount` 不作当前在线人数 |
-| Bigo Live | 官网有限公开推荐快照，本地分页且不宣称全站目录 | 当前推荐快照内按昵称/标题筛选；精确 Bigo ID 与官方房间链接可返回未开播或访问受限状态。官网公开搜索接口本轮返回空数据，关键词范围不宣称全站；见 [Bigo 公开快照搜索审计](BIGO_PUBLIC_SNAPSHOT_SEARCH_AUDIT_2026_09_23.md) | 当前未接入 | 目录 `user_count` 为当前直播在线；房间详情缺少并发字段时保持未知 |
-| PandaTV（韩国） | 官方公开直播目录，原生 offset/limit 分页 | 官网 LIVE 当前直播标题/主播搜索与 BJ 主播搜索合并，含未开播主播；两源各自按原生 offset/limit 分页；精确频道 ID 与官方直播间/频道链接保留 | 当前未接入 | `user` 为当前在线；`playCnt` 为本场播放计数，两者分列，BJ 排名分数不作观看人数 |
-| PopkonTV | 官网公开直播目录，热门/最新/新人/热榜四种原生排序与分页 | 原生频道 ID、昵称关键词与官方直播链接搜索，包含未开播主播 | 当前未接入 | `watchCnt` 为当前在线；`totalWatchCnt` 为本场累计观看；`bookmark` 为收藏/关注，分列展示 |
-| Shopee Live（印尼） | 官网首页有限公开直播推荐快照，不宣称全站目录 | 当前快照标题关键词、精确场次 ID 与官方分享链接 | 当前未接入 | 目录 `view_count` 与详情 `viewer_count` 为当前观看；`member_cnt` 不作并发人数 |
-| VK Video Live | 官网公开分类与在线直播目录，保留服务端 offset 游标 | 原生频道搜索，保留 after 游标并包含未开播频道；当前与旧版官方频道链接均可回流 | 当前未接入 | `count.viewers` 为当前观看；`count.views` 为累计场次观看；频道 `subscribers` 为关注数，分列展示 |
-| NimoTV | 官网首页公开推荐有限快照 | 当前快照关键词、精确频道号、频道别名与官方房间链接，包含未开播状态 | 当前未接入 | 官网卡片与直播页 `viewerNum` 为当前观看；下播或缺值时保持未知 |
-| Dailymotion | 官网公开 API 的原生直播目录，保留 `page/limit/has_more` | 直播节目关键词、精确视频 ID、官方视频链接；精确频道名可返回当前直播，已结束的直播视频 ID 可返回离线 | 当前未接入 | 公开 API 未返回已核验的并发人数，保持未知；不以累计播放量替代 |
-| Rumble | 官网公开直播目录，保留原生 `page` 与 `rel=next` | 当前直播目录内按标题、频道、分类匹配；精确直播页和频道链接 | 当前未接入 | 直播卡片及直播页动态字段为当前观看；VideoObject `userInteractionCount` 为累计观看，分列展示；HLS master 保留换行解析 |
 | GoodGame | 官网 API 的 GoodGame 原生直播目录，保留每页 50 条和服务端总量 | 精确频道/播放器链接；关键词扫描当前直播目录最多 10 个原生页、按 30 秒快照本地分页，包含前页无匹配而后页有匹配的结果；超出 10 页的范围不宣称全站搜索 | [官网 Chat v2 游客只读 WebSocket](GOODGAME_PUBLIC_CHAT_AUDIT_2026_09_23.md)，按数字频道 ID 加入并接收当前消息；双端原生消息验收待执行 | `viewers` 为当前观看；`rating`、premium 计数与粉丝分别处理 |
 | FC2 Live | 官网普通内容有限快照；公开分类在同一快照内筛选 | 精确频道号/官网房间链接，含未开播；关键词在当前快照内匹配 | 当前未接入 | `count` 为当前观看，`total` 为本场累计观看；付费/登录/门票房间保持受限状态 |
-| Steam Broadcasts | 官网热门社区直播原生分页，每页 10 条 | 当前目录页内按游戏、主播和标题匹配；精确 SteamID64/官方观看链接查询 | 当前未接入 | 目录和观看接口分别返回当前并发观看数；受限账号保持未知状态 |
-| 京东直播 | 官网精选原生分页，每页最多 30 个直播卡片 | 当前目录页内按场次、作者、主播和标题匹配；精确场次 ID/官方房间链接查询 | 当前未接入 | 官网 `pv` 只标为观看，按累计观看展示，不冒充当前并发人数 |
 | 淘宝直播 | 当前公开门户尚未取得经核验的消费者目录，页面持续说明范围 | 精确场次 ID、主播账号 ID、官方房间链接与 `m.tb.cn` 分享短链；保留未开播、回放和受限状态 | 当前未接入 | `viewCount` 为场次累计观看，不作并发人数；`fansNum` 为主播粉丝，分列展示 |
-| 酷狗直播 | 官网推荐及完整分类原生分页；分类从当前官网导航读取 | 官网主播搜索可返回开播与未开播主播；精确房间号和官方房间链接查询 | 当前未接入，页面明确说明 | `viewerNum/getViewerNum` 为当前观看，`hot` 为平台热度，`fansCount` 为粉丝，三者分列 |
-| 百度直播 | 官网推荐与购物、财经、健康、教育、新闻、休闲分类，按官方 `session_id/refresh_index` 连续分页 | 精确房间号、`/m/room/` 房间链接与 PC/H5 官方分享链接；昵称关键词网页合同待核验 | 当前未接入，页面明确说明 | 目录 `audience_count` 与房间 `online_users` 为当前观看；主播粉丝数独立展示 |
-| 六间房直播 | 官网大厅服务端当前直播快照；全部、歌区、舞区、脱口秀、星颜、派对按同一快照本地分页 | 官网昵称搜索可返回开播和未开播主播；精确房间号、`v.6.cn` / `m.6.cn` 房间及主播链接 | 当前未接入，页面明确说明 | 大厅 `count` 保留为平台热度，不冒充唯一并发人数；详情 `fans_num` 为粉丝数 |
 | LOOK 直播 | 官网视频推荐与语音推荐分别使用原生 offset/limit 分页；综合入口合并两类结果 | 精确房间号或 `look.163.com/live?id=...` 官方链接；关键词仅筛选当前官网推荐页 | 当前未接入，页面明确说明 | `onlineNumber` 为当前观看；`popularity` 为平台热度，两者分列；详情缺值保持未知 |
 | IPTV | 本地导入频道分组 | 本地频道查询 | 无远端弹幕服务 | 不虚构观看人数 |
 
@@ -87,16 +63,14 @@ TwitCasting 新增公开目录、顶栏分类、详情/HLS三档、录制输入�
 
 工具箱剪贴板预填与房间链接解析共用已核验的房间 URL 合同；官网首页、搜索/分类页与录像链接不会仅凭平台域名触发自动填入。抖音 `www.douyin.com/video/{id}` 是作品链接，不以尾部视频号冒充当前直播房间号；既有精确房间根链接和官方直播分享链接继续解析，见[链接预检审计](TOOLBOX_ROOM_LINK_PREFILTER_AUDIT_2026_09_23.md)。
 
-“全部”搜索并发请求各原生平台，但按单个平台完成顺序渐进显示，某个平台超过 12 秒会被标记为本轮部分失败，不再阻塞其他结果。搜索页生命周期内复用同一组适配器，Twitch 等游标分页状态不会因每次读取平台列表而丢失。网页继续搜索可从 Bilibili、斗鱼、虎牙、抖音、快手、网易 CC、Twitch、SOOP、YY、AcFun、Picarto、TwitCasting、SHOWROOM、CHZZK、Kick、17LIVE、LiveMe、TikTok LIVE、YouTube Live、Bigo Live、PandaTV、PopkonTV、Shopee Live、VK Video Live、NimoTV、Dailymotion、Rumble、GoodGame、FC2 Live、Steam Broadcasts、京东直播、淘宝直播、酷狗直播、百度直播、六间房直播和 LOOK 直播的已支持直播间链接识别“平台 + 房间号”；搜索/分类页和相似伪装域名会被忽略。
+“全部”搜索并发请求各原生平台，但按单个平台完成顺序渐进显示，某个平台超过 12 秒会被标记为本轮部分失败，不再阻塞其他结果。搜索页生命周期内复用同一组适配器，Twitch 等游标分页状态不会因每次读取平台列表而丢失。网页继续搜索可从 Bilibili、斗鱼、虎牙、抖音、快手、网易 CC、Twitch、SOOP、YY、AcFun、克拉克拉、花椒、SHOWROOM、Kick、Bigo Live、GoodGame、FC2 Live、淘宝直播和 LOOK 直播的已支持直播间链接识别“平台 + 房间号”；搜索/分类页和相似伪装域名会被忽略。
 
 “设置 → 通用 → 观看数据与排行口径”提供两个全局模式和分平台开关：
 
 - **平台热度优先**：按平台列表提供的热度或累计观看显示、降序排序；快手等只公开当前观看人数的平台继续保留“在线”标签。热门页、收藏、搜索与房间选择器共用同一个数值解析和稳定排序器。
-- **真实在线人数优先**：抖音、快手、网易 CC、Twitch、SOOP Live、CHZZK、Kick、17LIVE、LiveMe、TikTok LIVE、YouTube Live、Bigo Live、PandaTV、PopkonTV、Shopee Live、VK Video Live、NimoTV、Rumble、GoodGame、FC2 Live、Steam Broadcasts、酷狗直播、百度直播、LOOK 直播仅在拿到明确并发人数时按在线显示、排序；支持平台尚未取得列表值或房间消息时明确显示“待刷新”，不再回退为一个被误标或参与在线排行的热度值。
+- **真实在线人数优先**：抖音、快手、网易 CC、Twitch、SOOP Live、Kick、Bigo Live、GoodGame、FC2 Live、LOOK 直播仅在拿到明确并发人数时按在线显示、排序；支持平台尚未取得列表值或房间消息时明确显示“待刷新”，不再回退为一个被误标或参与在线排行的热度值。
 - 哔哩哔哩的列表 `online` 与弹幕心跳、斗鱼公开 `ol/hot`、虎牙 `totalCount/userCount/iAttendeeCount` 都是热度，均不换写成真实人数。由此避免把几百万热度显示为几百万人同时在线。
 - 切换全局口径或分平台开关后，收藏与搜索现有结果会立即重新排序，热门页会刷新当前平台的候选池后重排；在线模式把已启用且支持并发人数的平台排在仅提供热度/累计值的平台之前。网易 CC 在线模式一次取 100 个热度候选后按并发人数排序，避免只在每 20 张卡片内部重排。
-
-猫耳 FM 的精确查询沿用房间详情接口，只读取房间元数据；官网直播间搜索现按 `s/p/page_size` 原生分页并保留未开播房间，媒体线路留待真正进房时解析。见[精确房间查询记录](MISSEVAN_EXACT_ROOM_SEARCH_AUDIT_2026_09_23.md)与[官网关键词搜索审计](MISSEVAN_NATIVE_KEYWORD_SEARCH_AUDIT_2026_09_23.md)。
 
 ## 画质与播放线路契约
 
@@ -113,39 +87,17 @@ TwitCasting 新增公开目录、顶栏分类、详情/HLS三档、录制输入�
 | Twitch | HLS variant attributes | `EXT-X-STREAM-INF` 与紧随其后的 URI 成对解析，支持相对 URL；并发多画面不共享可变 URL 列表 |
 | SOOP Live | preset name | 过滤 `auto` 和重复 preset，按平台 `bps` 排序，请求沿用同一 preset 名称 |
 | YY Live | gear | 同名但不同 gear 保持独立并编号，播放响应只接收有效 HTTP(S) CDN 地址 |
-| 猫耳 FM | `hls` / `flv` | 保留协议身份；刷新当前房间、同协议匹配，不将协议名虚构为分辨率 |
-| 映客 | `flv` | UID 与当前广播 ID 双重匹配官网公开精选；恢复重新查询，签名期限仍待实证 |
 | 克拉克拉 | `flv` / `hls` | 持久 UID 重新查询当前广播，匹配主播/广播身份；恢复保持同协议 |
 | 花椒 | `hls` / `flv` / `unknown` | URL 格式不是分辨率/编码证据；播放和录制重新查询 UID→当前广播并匹配串号，恢复保持同格式 |
 | IPTV | `default` | 单一导入源，空地址不生成伪画质 |
 | AcFun | representation 解析所得稳定 ID | 同档多个有效 URL 合并；续签重新读取详情，按 ID 找回对应画质 |
-| Picarto | HLS 分辨率/fps/编解码与音视频组 | 同档线路合并；恢复重新读详情及列表；外置音轨保留主列表并标 HLS Auto |
-| TwitCasting | `high` / `medium` / `low` | 保留平台档名，不推断分辨率；匹配当前 movie 的 HLS，恢复保持请求档位，明确下播忽略陈旧地址 |
 | OPENREC / mellow-fan | HLS 源族、分辨率、帧率 | 重新核对频道与当前广播；按解析列表匹配质量，外置音轨保留 master |
 | TTingLive / FLEX TV | API `resolution`（0 为 Auto） | ncp / ncp_llh 源保留精确 URL token 策略；过期/recovery 重读频道与 stream，按 owner 和请求画质匹配；已核验保留成品 720p 解码；实时采集、音视频覆盖及其他画质仍待验收 |
 | SHOWROOM | `hls_all` 或带码率的 HLS 源 ID | 自动/原画/中/低档按官方码率分组；恢复重新读取房间与流地址，保持当前档位 |
-| CHZZK | HLS master 分辨率与帧率 | 合并普通 HLS 与 LL-HLS 同档线路；签名到期后重新读取 live-detail 和 master，按稳定质量 ID 恢复 |
 | Kick | AWS HLS master 分辨率与帧率 | 忽略 master 的会话诊断标签，保留明确视频变体；恢复重读频道、签名播放地址与 master，并按稳定质量 ID 匹配 |
-| 17LIVE | API 明确返回的增强高清、高清、H.264、标准 FLV | 同档聚合并保留官方多 CDN 顺序；恢复重新读取房间状态与媒体并保持稳定质量 ID，不跨档静默降级 |
-| LiveMe | `source-flv` / `smooth-flv` / `hls` | 合并官方同档多线路，HTTP 媒体升级到 HTTPS；恢复重新解析短号到当前场次并保持稳定画质 ID，不跨档静默降级 |
-| TikTok LIVE | `codec:quality:protocol` | 按官方 `sdk_params` 绑定 H.264/H.265、画质、分辨率和 FLV/HLS；恢复重查稳定账号并保持精确画质 ID，不跨档或跨协议静默降级 |
-| YouTube Live | HLS master 分辨率/帧率/编码、直连 `itag`，以及 DASH 自动源 | 稳定 ID 区分协议与画质；解析签名到期时间，恢复时重取播放器响应与 manifest，不把加密签名源伪装成可播直链 |
-| Bigo Live | `live` owned input | 每次播放/录制及恢复重新取得 Web token 与 HLS；私有 relay 按清单 seed 还原前两个 TS 包的受保护前缀，官网地址不直接暴露给 native |
-| PandaTV（韩国） | AWS IVS HLS master 分辨率与帧率 | 官方观看会话取得短时 token；解析 master 为稳定 1080p60/720p60 等画质，播放和录制恢复重取会话并保持同一质量 ID |
-| PopkonTV | 官方 HLS master 分辨率与带宽 | 每次播放、录制与恢复重新建立游客观看会话并按稳定分辨率 ID 匹配；成年、密码和其他访问条件保持明确状态 |
-| Shopee Live（印尼） | 官方 FLV URL 的 `resolution` 稳定 ID | 普通 HTTP 优先；遇到官网动态校验时由无界面 WebView 复用官方指纹/SAP 中间件。播放、录制与恢复重新取得短时地址，并按 `expire_ts` 提前续期 |
-| VK Video Live | 官方 HLS master 分辨率与带宽 | 合并主线路与共享线路的同档变体；从 URL 路径 `expires` 解析过期时间，播放、录制与恢复重取房间和签名 HLS 后保持稳定分辨率 ID |
-| NimoTV | 官方签名 FLV 的 `ratio` 五档 | 移动房间页解码时效媒体包，固定使用 HTTPS；播放、录制与恢复重取 `wsSecret/wsTime`，并保持稳定 ratio ID |
-| Dailymotion | 官方嵌入播放器 HLS master 的 `NAME` / 分辨率 / 带宽 | 浏览器上下文读取动态签名 master，仅接受同视频 ID 的 `*.dmcdn.net` rendition；播放恢复与录制入口重新解析并保持稳定 rendition ID |
-| Rumble | 官方直播页 HLS master 的分辨率与带宽 | 浏览器上下文观察当前页面的 `/live-hls[-dvr]/…/playlist.m3u8`，只接收 `*.rumble.cloud` / `*.rmbl.ws` 变体；播放与录制恢复重载同一公开页面身份并保持稳定分辨率 ID |
 | GoodGame | API `source` 与数字分辨率 key | 仅接受同一 stream ID 的 `hls.goodgame.ru/hls/…m3u8` 短时地址；播放与录制恢复重新查询频道并按 `source` / `NNNp` 稳定 ID 找回档位 |
 | FC2 Live | `auto` owned HLS input | 每次原生打开重新取得房间版本、控制令牌和同频道 HLS master；控制 WebSocket 与私有 relay 同生命周期，恢复时建立新会话，不暴露可复用的短时媒体 URL |
-| Steam Broadcasts | `auto` HLS master | 每次播放、录制与恢复重新查询同一 SteamID64，验证 Steam media host、广播身份、`broadcast_origin` 与 master 子清单后再交给原生消费者 |
-| 京东直播 | `hls` / `flv` 原始线路 | 每次播放、录制与恢复重新查询同一场次；HLS 清单和子资源绑定同一 JD Cloud 主机与流标识，默认优先 HLS |
 | 淘宝直播 | `newDefinition` / `definition` 的 `lld`～`ud` 稳定档位 | 匿名 MTop 会话动态签名并按物理媒体去重；每档同时保留 HLS/FLV 线路，播放、录制与恢复重新查询同一场次或主播身份，并按 `auth_key` 提前续期 |
-| 酷狗直播 | `protocol:rate:codec:layout` | 只接受绑定当前房间号且带 `txSecret/txTime/token` 的官方 HTTPS FLV/HLS；合并多 CDN 同档线路，播放、录制与恢复重新取签名，并按 `txTime` 提前续期 |
-| 百度直播 | `protocol:resolution:codec` | 只接受路径绑定当前房间号的 `*.bdstatic.com` HTTPS FLV/HLS；明细返回多档 FLV及默认 HLS，播放与录制恢复重新查询同一房间并保持稳定档位 ID |
-| 六间房直播 | `flv:source` | 房间号先绑定官网返回的主播 UID，再校验当前直播场次；只接受 `wlive.6rooms.com/httpflv/v{UID}-{LIVE_ID}[-many].flv`，播放与录制恢复重新查询同一房间和场次 |
 | LOOK 直播 | `hls:source` / `flv:source` | 官方网页加密信封查询同一房号和当前场次；只接受 `*.live.126.net/live/{SESSION}` 的 HTTPS HLS/FLV，恢复保持同协议，网页未开放媒体的房型明确标为客户端专用 |
 
 横屏“清晰度与播放线路”面板根据画质数、线路数和可用高度计算整体尺寸。一个画质/一条线路时收紧面板；常见四画质使用均衡 `2×2`；项目多时只让按钮网格滚动，不用固定比例制造空白。按钮区域是主要视觉，标题、留白和重复的当前值标签均已压缩。

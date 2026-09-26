@@ -23,7 +23,7 @@ import 'recording_clock_probe_support.dart';
 
 void main() {
   for (final name in [
-    'weibo-retained',
+    'retained-flv',
     'hevc-aac48-stereo',
     'hevc10-aac48',
     'h264-dual-audio',
@@ -202,7 +202,7 @@ void main() {
               lessThanOrEqualTo(2 / rate),
               reason: '$name/$label exact clock',
             );
-            if (track['kind'] == 'audio' && (name == 'weibo-retained' || name == 'aac-jitter-silence')) {
+            if (track['kind'] == 'audio' && (name == 'retained-flv' || name == 'aac-jitter-silence')) {
               // The old single already changes source cadence through PES
               // interpolation. Keep that control and require closer fidelity,
               // rather than manufacturing its lossy timestamps in new output.

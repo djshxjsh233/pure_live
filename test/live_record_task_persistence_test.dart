@@ -5,7 +5,7 @@ import 'package:pure_live/recorder/models/record_status.dart';
 
 void main() {
   test('observed input gaps persist across retries and clear only for a new recording', () {
-    final task = LiveRecordTask.fromJson({'roomId': 'fixture', 'platform': 'picarto'});
+    final task = LiveRecordTask.fromJson({'roomId': 'fixture', 'platform': 'huya'});
     expect(task.inputCoverageIncomplete, false);
     task.inputCoverageIncomplete = true;
     task.clearFailure();
@@ -17,7 +17,7 @@ void main() {
     expect(LiveRecordTask.fromJson(restored.toJson()).inputCoverageIncomplete, false);
   });
   test('discarded input survives restore and retry but resets for a new recording', () {
-    final task = LiveRecordTask.fromJson({'roomId': 'fixture', 'platform': 'picarto'});
+    final task = LiveRecordTask.fromJson({'roomId': 'fixture', 'platform': 'huya'});
     expect(task.inputTailDiscarded, false);
     task.inputTailDiscarded = true;
     task.clearFailure();
@@ -35,7 +35,7 @@ void main() {
       final clean = {'directoryPath': '/recording', 'filePrefix': 'attempt'};
       final task = LiveRecordTask.fromJson({
         'roomId': 'fixture',
-        'platform': 'picarto',
+        'platform': 'huya',
         'pendingAttempts': reversed ? [damaged, clean] : [clean, damaged],
       });
       task.queuePendingAttempt(directoryPath: '/recording', filePrefix: 'attempt');
@@ -49,7 +49,7 @@ void main() {
   test('legacy attempts stay unflagged and damage never leaks to a different attempt', () {
     final task = LiveRecordTask.fromJson({
       'roomId': 'fixture',
-      'platform': 'picarto',
+      'platform': 'huya',
       'schemaVersion': 7,
       'pendingAttempts': [
         {'directoryPath': '/recording', 'filePrefix': 'legacy'},

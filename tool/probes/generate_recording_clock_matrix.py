@@ -1,6 +1,6 @@
 """Generate bounded synthetic recorder inputs; invoke under build_resource_guard.
 
-The Weibo input is a previously retained local FLV, never a live URL.
+The retained input is a previously captured local FLV, never a live URL.
 Existing manifests are verified rather than overwritten. No user media is edited.
 """
 
@@ -68,7 +68,7 @@ def main():
     parser.add_argument("--ffmpeg", required=True)
     parser.add_argument("--ffprobe", required=True)
     parser.add_argument("--output-directory", required=True)
-    parser.add_argument("--weibo-input", required=True)
+    parser.add_argument("--retained-input", required=True)
     args = parser.parse_args()
     root = pathlib.Path(args.output_directory).resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -120,7 +120,7 @@ def main():
         # Preserve partial generation evidence separately if a later encoder fails.
         (root / "generation-progress.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    add_case("weibo-retained", pathlib.Path(args.weibo_input), ["h264", "aac"], legacy_repro=True)
+    add_case("retained-flv", pathlib.Path(args.retained_input), ["h264", "aac"], legacy_repro=True)
     for name in ["hevc-aac48-stereo", "hevc10-aac48", "h264-dual-audio", "h264-ts-wrap"]:
         target = root / f"{name}.ts"
         if target.exists():

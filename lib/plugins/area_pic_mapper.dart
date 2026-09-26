@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:pure_live/common/utils/category_artwork.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:string_similarity/string_similarity.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
@@ -43,8 +42,7 @@ class AreaPicMapper {
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final Map<String, dynamic> decoded = jsonDecode(jsonStr);
         decoded.forEach((key, value) {
-          final picture = value.toString();
-          if (!isCategoryIconSprite(picture)) _picMap[key] = picture;
+          _picMap[key] = value.toString();
         });
       }
     } catch (_) {}
@@ -57,7 +55,6 @@ class AreaPicMapper {
     for (var cat in categories) {
       if (cat.children.isNotEmpty) {
         for (var area in cat.children) {
-          if (isCategoryIconSprite(area.areaPic)) continue;
           if (area.areaName != null && area.areaPic != null && area.areaPic!.isNotEmpty) {
             if (_picMap[area.areaName!] != area.areaPic!) {
               _picMap[area.areaName!] = area.areaPic!;

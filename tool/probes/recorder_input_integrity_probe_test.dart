@@ -41,7 +41,7 @@ void main() {
           final directory = await Directory(p.join(root.path, damaged ? 'damaged' : 'healthy')).create();
           final input = File(p.join(root.path, damaged ? 'truncated.ts' : 'intact.ts'));
           await input.writeAsBytes(damaged ? original.sublist(0, original.length - 97) : original, flush: true);
-          final task = LiveRecordTask.fromRoom(LiveRoom(platform: 'picarto', roomId: 'fixture_$damaged'))
+          final task = LiveRecordTask.fromRoom(LiveRoom(platform: 'huya', roomId: 'fixture_$damaged'))
             ..outputDir = directory.path;
           final native = FFmpegManager.to;
           final terminal = Completer<FFmpegEvent>();

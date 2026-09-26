@@ -24,41 +24,27 @@ A third-party live stream aggregator built with Flutter.
 ---
 
 ## 📺 支持站点
-
-**45 个直播站点 + IPTV 自定义直播源，共 46 个适配器。** 各站分区、搜索、弹幕、人数口径与能力边界见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
-
-### 🇨🇳 国内平台（20 站）
-
+**22 个直播站点 + IPTV 自定义直播源。** 各站分区、搜索、弹幕、人数口径与能力边界见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
+### 🇨🇳 国内平台
 | | | |
 | --- | --- | --- |
 | <img src="assets/images/bilibili.png" width="26"/> **哔哩哔哩** | <img src="assets/images/douyu.png" width="26"/> **斗鱼** | <img src="assets/images/huya.png" width="26"/> **虎牙** |
 | <img src="assets/images/douyin.png" width="26"/> **抖音** | <img src="assets/images/kuaishou.png" width="26"/> **快手** | <img src="assets/images/yy.png" width="26"/> **YY 直播** |
-| <img src="assets/images/cc.png" width="26"/> **网易 CC** | <img src="assets/images/acfun.png" width="26"/> **AcFun** | <img src="assets/images/missevan.png" width="26"/> **猫耳 FM** |
-| <img src="assets/images/inke.png" width="26"/> **映客** | <img src="assets/images/kilakila.png" width="26"/> **克拉克拉** | <img src="assets/images/huajiao.png" width="26"/> **花椒直播** |
-| <img src="assets/images/xiaohongshu.png" width="26"/> **小红书** | <img src="assets/images/weibo.png" width="26"/> **微博直播** | <img src="assets/images/jd.png" width="26"/> **京东直播** |
-| <img src="assets/images/taobao.png" width="26"/> **淘宝直播** | <img src="assets/images/kugou.png" width="26"/> **酷狗直播** | <img src="assets/images/baidu.png" width="26"/> **百度直播** |
-| <img src="assets/images/sixroom.png" width="26"/> **六间房** | <img src="assets/images/look.png" width="26"/> **LOOK 直播** | |
-
-### 🌍 海外平台（25 站）
-
+| <img src="assets/images/cc.png" width="26"/> **网易 CC** | <img src="assets/images/acfun.png" width="26"/> **AcFun** | <img src="assets/images/kilakila.png" width="26"/> **克拉克拉** |
+| <img src="assets/images/huajiao.png" width="26"/> **花椒直播** | <img src="assets/images/xiaohongshu.png" width="26"/> **小红书** | <img src="assets/images/taobao.png" width="26"/> **淘宝直播** |
+| <img src="assets/images/look.png" width="26"/> **LOOK 直播** | | |
+### 🌍 海外平台
 | | | |
 | --- | --- | --- |
-| <img src="assets/images/twitch.png" width="26"/> **Twitch** | <img src="assets/images/soop.png" width="26"/> **SOOP Live** | <img src="assets/images/youtube.png" width="26"/> **YouTube Live** |
-| <img src="assets/images/tiktok.png" width="26"/> **TikTok LIVE** | <img src="assets/images/kick.png" width="26"/> **Kick** | <img src="assets/images/chzzk.png" width="26"/> **CHZZK** |
-| <img src="assets/images/bigo.png" width="26"/> **Bigo Live** | <img src="assets/images/17live.png" width="26"/> **17LIVE** | <img src="assets/images/liveme.png" width="26"/> **LiveMe** |
-| <img src="assets/images/showroom.png" width="26"/> **SHOWROOM** | <img src="assets/images/niconico.png" width="26"/> **niconico** | <img src="assets/images/openrec.png" width="26"/> **OPENREC / mellow-fan** |
-| <img src="assets/images/ttinglive.png" width="26"/> **TTingLive / FLEX TV** | <img src="assets/images/picarto.png" width="26"/> **Picarto** | <img src="assets/images/twitcasting.png" width="26"/> **TwitCasting** |
-| <img src="assets/images/dailymotion.png" width="26"/> **Dailymotion** | <img src="assets/images/rumble.png" width="26"/> **Rumble** | <img src="assets/images/vk.png" width="26"/> **VK Video Live** |
-| <img src="assets/images/goodgame.png" width="26"/> **GoodGame** | <img src="assets/images/fc2.png" width="26"/> **FC2 Live** | <img src="assets/images/steam.png" width="26"/> **Steam 直播** |
-| <img src="assets/images/panda.png" width="26"/> **PandaTV** | <img src="assets/images/popkon.png" width="26"/> **PopkonTV** | <img src="assets/images/shopee.png" width="26"/> **Shopee Live** |
-| <img src="assets/images/nimo.png" width="26"/> **NimoTV** | | |
+| <img src="assets/images/twitch.png" width="26"/> **Twitch** | <img src="assets/images/soop.png" width="26"/> **SOOP Live** | <img src="assets/images/kick.png" width="26"/> **Kick** |
+| <img src="assets/images/bigo.png" width="26"/> **Bigo Live** | <img src="assets/images/showroom.png" width="26"/> **SHOWROOM** | <img src="assets/images/openrec.png" width="26"/> **OPENREC / mellow-fan** |
+| <img src="assets/images/ttinglive.png" width="26"/> **TTingLive / FLEX TV** | <img src="assets/images/goodgame.png" width="26"/> **GoodGame** | <img src="assets/images/fc2.png" width="26"/> **FC2 Live** |
 
 ### 📡 IPTV / 自定义直播源
 
 - 支持 **M3U / M3U8**、本地直播源、网络直播源导入
 - 按分区、平台和频道管理，支持 EPG 节目单与订阅源同步
 
-> 🚧 战旗直播、浪 LIVE 正在内部适配中。注册适配器不等于每个站点都已完整验收，实际能力以[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)为准。
 
 ---
 
@@ -84,7 +70,7 @@ A third-party live stream aggregator built with Flutter.
 
 ### 🎬 多平台聚合
 
-- 聚合 45 个直播平台，按平台与分区浏览、筛选和隐藏入口
+- 聚合 22 个直播平台，按平台与分区浏览、筛选和隐藏入口
 - 跨平台搜索，支持综合 / 平台顺序 / 观众 / 粉丝等排序，直播 / 未开播筛选
 - 各平台保持独立分页状态；"全部"搜索按平台完成顺序渐进显示，单平台超时不挡其他结果
 
@@ -153,7 +139,7 @@ Firebase 不是必要条件，应用不要求注册账号。如需使用可 Fork
 
 ## 🔍 搜索与本地互动
 
-搜索结果支持综合排序、平台顺序、观众人数、粉丝数量与直播状态筛选；百度直播支持精确房间号与官方链接查询，快手保留网页搜索，各平台原生搜索能力详见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
+搜索结果支持综合排序、平台顺序、观众人数、粉丝数量与直播状态筛选；快手保留网页搜索，各平台原生搜索能力详见[平台兼容性](docs/PLATFORM_COMPATIBILITY.md)。
 
 内置本地互动系统，昵称、头衔、弹幕输入、体验币、平台身份徽章、礼物目录、等级风格与画面礼物效果默认保存在本机，可在**设置 → 本地用户与互动**统一启用或关闭。
 
