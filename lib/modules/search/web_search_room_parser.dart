@@ -9,21 +9,9 @@ import 'package:pure_live/core/site/inke/inke_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
-import 'package:pure_live/core/site/liveme/liveme_link.dart';
-import 'package:pure_live/core/site/tiktok/tiktok_link.dart';
-import 'package:pure_live/core/site/youtube/youtube_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_link.dart';
-import 'package:pure_live/core/site/pandalive/pandalive_link.dart';
-import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
-import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
-import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
-import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
-import 'package:pure_live/core/site/rumble/rumble_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
-import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
-import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
-import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
 import 'package:pure_live/core/site/tting/tting_link.dart';
@@ -107,34 +95,8 @@ class WebSearchRoomParser {
     if (showroom != null) return WebSearchRoomTarget(platform: Sites.showroomSite, roomId: showroom);
     final kick = KickLink.parse(rawUrl);
     if (kick != null) return WebSearchRoomTarget(platform: Sites.kickSite, roomId: kick);
-    final liveMe = LiveMeLink.parseDurableRoomId(rawUrl);
-    if (liveMe != null) return WebSearchRoomTarget(platform: Sites.liveMeSite, roomId: liveMe);
-    final tiktok = TikTokLink.parseDurableUsername(rawUrl);
-    if (tiktok != null) return WebSearchRoomTarget(platform: Sites.tiktokSite, roomId: tiktok);
-    final youtube = YouTubeLink.parseDurableVideoId(rawUrl);
-    if (youtube != null) return WebSearchRoomTarget(platform: Sites.youtubeSite, roomId: youtube);
     final bigo = BigoLink.parse(rawUrl);
     if (bigo != null) return WebSearchRoomTarget(platform: Sites.bigoSite, roomId: bigo);
-    final pandaLive = PandaLiveLink.parse(rawUrl);
-    if (pandaLive != null) return WebSearchRoomTarget(platform: Sites.pandaLiveSite, roomId: pandaLive);
-    final popkon = PopkonLink.parse(rawUrl);
-    if (popkon != null) return WebSearchRoomTarget(platform: Sites.popkonSite, roomId: popkon.storageKey);
-    final shopeeLive = ShopeeLiveLink.parse(rawUrl);
-    if (shopeeLive != null) {
-      return WebSearchRoomTarget(platform: Sites.shopeeLiveSite, roomId: shopeeLive.storageKey);
-    }
-    final vkVideoLive = VkVideoLiveLink.parse(rawUrl);
-    if (vkVideoLive != null) {
-      return WebSearchRoomTarget(platform: Sites.vkVideoLiveSite, roomId: vkVideoLive.storageKey);
-    }
-    final nimoTv = NimoTvLink.parse(rawUrl);
-    if (nimoTv != null) {
-      return WebSearchRoomTarget(platform: Sites.nimoTvSite, roomId: nimoTv.storageKey);
-    }
-    final rumble = RumbleLink.parseVideoKey(rawUrl);
-    if (rumble != null) {
-      return WebSearchRoomTarget(platform: Sites.rumbleSite, roomId: rumble);
-    }
     final goodGame = GoodGameLink.parse(rawUrl);
     if (goodGame != null) {
       return WebSearchRoomTarget(platform: Sites.goodGameSite, roomId: goodGame.storageKey);
@@ -142,18 +104,6 @@ class WebSearchRoomParser {
     final fc2Live = Fc2Link.parseChannelId(rawUrl);
     if (fc2Live != null) {
       return WebSearchRoomTarget(platform: Sites.fc2LiveSite, roomId: fc2Live);
-    }
-    final steamBroadcast = SteamBroadcastLink.parseSteamId(rawUrl);
-    if (steamBroadcast != null) {
-      return WebSearchRoomTarget(platform: Sites.steamBroadcastSite, roomId: steamBroadcast);
-    }
-    final jdLive = JdLiveLink.parseLiveId(rawUrl);
-    if (jdLive != null) {
-      return WebSearchRoomTarget(platform: Sites.jdLiveSite, roomId: jdLive);
-    }
-    final kugouLive = KugouLiveLink.parseRoomId(rawUrl);
-    if (kugouLive != null) {
-      return WebSearchRoomTarget(platform: Sites.kugouLiveSite, roomId: kugouLive);
     }
     final lookLive = LookLiveLink.parseRoomId(rawUrl);
     if (lookLive != null) {

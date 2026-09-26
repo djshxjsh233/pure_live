@@ -10,37 +10,25 @@ import 'site/weibo/weibo_site.dart';
 import 'site/tting/tting_site.dart';
 import 'site/acfun/acfun_site.dart';
 import 'site/douyu/douyu_site.dart';
-import 'site/liveme/liveme_site.dart';
-import 'site/tiktok/tiktok_site.dart';
-import 'site/nimotv/nimotv_site.dart';
-import 'site/rumble/rumble_site.dart';
 import 'site/douyin/douyin_site.dart';
-import 'site/jdlive/jd_live_site.dart';
-import 'site/youtube/youtube_site.dart';
 import 'site/openrec/openrec_site.dart';
 import 'site/picarto/picarto_site.dart';
 import 'site/huajiao/huajiao_site.dart';
 import 'site/niconico/niconico_site.dart';
-import 'site/popkontv/popkontv_site.dart';
 import 'site/goodgame/goodgame_site.dart';
 import 'site/showroom/showroom_site.dart';
 import 'site/missevan/missevan_site.dart';
 import 'site/kilakila/kilakila_site.dart';
 import 'site/looklive/look_live_site.dart';
-import 'site/pandalive/pandalive_site.dart';
-import 'site/kugoulive/kugou_live_site.dart';
 
 import 'package:pure_live/common/index.dart';
 
-import 'site/shopeelive/shopeelive_site.dart';
 import 'site/taobaolive/taobao_live_site.dart';
-import 'site/vkvideolive/vkvideolive_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';
 import 'site/twitcasting/twitcasting_site.dart';
 
 import 'package:pure_live/core/site/cc/cc_site.dart';
 
-import 'site/steambroadcast/steam_broadcast_site.dart';
 
 import 'package:pure_live/core/site/iptv/iptv_site.dart';
 import 'package:pure_live/core/site/twitch/twitch_site.dart';
@@ -73,22 +61,10 @@ class Sites {
   static const String xiaohongshuSite = 'xiaohongshu';
   static const String showroomSite = 'showroom';
   static const String kickSite = 'kick';
-  static const String liveMeSite = 'liveme';
-  static const String tiktokSite = 'tiktok';
-  static const String youtubeSite = 'youtube';
   static const String bigoSite = 'bigo';
-  static const String pandaLiveSite = 'pandalive';
-  static const String popkonSite = 'popkontv';
-  static const String shopeeLiveSite = 'shopeelive';
-  static const String vkVideoLiveSite = 'vkvideolive';
-  static const String nimoTvSite = 'nimotv';
-  static const String rumbleSite = 'rumble';
   static const String goodGameSite = 'goodgame';
   static const String fc2LiveSite = 'fc2live';
-  static const String steamBroadcastSite = 'steambroadcast';
-  static const String jdLiveSite = 'jdlive';
   static const String taobaoLiveSite = 'taobaolive';
-  static const String kugouLiveSite = 'kugoulive';
   static const String lookLiveSite = 'looklive';
 
   static const Set<String> supportedSiteIds = {
@@ -115,22 +91,10 @@ class Sites {
     xiaohongshuSite,
     showroomSite,
     kickSite,
-    liveMeSite,
-    tiktokSite,
-    youtubeSite,
     bigoSite,
-    pandaLiveSite,
-    popkonSite,
-    shopeeLiveSite,
-    vkVideoLiveSite,
-    nimoTvSite,
-    rumbleSite,
     goodGameSite,
     fc2LiveSite,
-    steamBroadcastSite,
-    jdLiveSite,
     taobaoLiveSite,
-    kugouLiveSite,
     lookLiveSite,
     iptvSite,
   };
@@ -168,23 +132,11 @@ class Sites {
     weiboSite: '$_assetRoot/weibo.png',
     showroomSite: '$_assetRoot/showroom.png',
     kickSite: '$_assetRoot/kick.png',
-    pandaLiveSite: '$_assetRoot/panda.png',
-    popkonSite: '$_assetRoot/popkon.png',
-    shopeeLiveSite: '$_assetRoot/shopee.png',
-    vkVideoLiveSite: '$_assetRoot/vk.png',
-    nimoTvSite: '$_assetRoot/nimo.png',
-    rumbleSite: '$_assetRoot/rumble.png',
     goodGameSite: '$_assetRoot/goodgame.png',
     fc2LiveSite: '$_assetRoot/fc2.png',
-    steamBroadcastSite: '$_assetRoot/steam.png',
-    jdLiveSite: '$_assetRoot/jd.png',
     taobaoLiveSite: '$_assetRoot/taobao.png',
-    kugouLiveSite: '$_assetRoot/kugou.png',
     lookLiveSite: '$_assetRoot/look.png',
-    youtubeSite: '$_assetRoot/youtube.png',
     bigoSite: '$_assetRoot/bigo.png',
-    liveMeSite: '$_assetRoot/liveme.png',
-    tiktokSite: '$_assetRoot/tiktok.png',
   };
 
   static bool isSupported(String id) => supportedSiteIds.contains(id.trim().toLowerCase());
@@ -285,61 +237,7 @@ class Sites {
         liveSite: ShowroomSite(),
       ),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoForId(kickSite), liveSite: KickSite()),
-      liveMeSite => Site(
-        id: liveMeSite,
-        name: i18n('site_liveme'),
-        logo: logoForId(liveMeSite),
-        liveSite: LiveMeSite(),
-      ),
-      tiktokSite => Site(
-        id: tiktokSite,
-        name: i18n('site_tiktok'),
-        logo: logoForId(tiktokSite),
-        liveSite: TikTokSite(),
-      ),
-      youtubeSite => Site(
-        id: youtubeSite,
-        name: i18n('site_youtube'),
-        logo: logoForId(youtubeSite),
-        liveSite: YouTubeSite(),
-      ),
       bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoForId(bigoSite), liveSite: BigoSite()),
-      pandaLiveSite => Site(
-        id: pandaLiveSite,
-        name: i18n('site_pandalive'),
-        logo: logoForId(pandaLiveSite),
-        liveSite: PandaLiveSite(),
-      ),
-      popkonSite => Site(
-        id: popkonSite,
-        name: i18n('site_popkontv'),
-        logo: logoForId(popkonSite),
-        liveSite: PopkonSite(),
-      ),
-      shopeeLiveSite => Site(
-        id: shopeeLiveSite,
-        name: i18n('site_shopeelive'),
-        logo: logoForId(shopeeLiveSite),
-        liveSite: ShopeeLiveSite(),
-      ),
-      vkVideoLiveSite => Site(
-        id: vkVideoLiveSite,
-        name: i18n('site_vkvideolive'),
-        logo: logoForId(vkVideoLiveSite),
-        liveSite: VkVideoLiveSite(),
-      ),
-      nimoTvSite => Site(
-        id: nimoTvSite,
-        name: i18n('site_nimotv'),
-        logo: logoForId(nimoTvSite),
-        liveSite: NimoTvSite(),
-      ),
-      rumbleSite => Site(
-        id: rumbleSite,
-        name: i18n('site_rumble'),
-        logo: logoForId(rumbleSite),
-        liveSite: RumbleSite(),
-      ),
       goodGameSite => Site(
         id: goodGameSite,
         name: i18n('site_goodgame'),
@@ -352,29 +250,11 @@ class Sites {
         logo: logoForId(fc2LiveSite),
         liveSite: Fc2Site(),
       ),
-      steamBroadcastSite => Site(
-        id: steamBroadcastSite,
-        name: i18n('site_steambroadcast'),
-        logo: logoForId(steamBroadcastSite),
-        liveSite: SteamBroadcastSite(),
-      ),
-      jdLiveSite => Site(
-        id: jdLiveSite,
-        name: i18n('site_jdlive'),
-        logo: logoForId(jdLiveSite),
-        liveSite: JdLiveSite(),
-      ),
       taobaoLiveSite => Site(
         id: taobaoLiveSite,
         name: i18n('site_taobaolive'),
         logo: logoForId(taobaoLiveSite),
         liveSite: TaobaoLiveSite(),
-      ),
-      kugouLiveSite => Site(
-        id: kugouLiveSite,
-        name: i18n('site_kugoulive'),
-        logo: logoForId(kugouLiveSite),
-        liveSite: KugouLiveSite(),
       ),
       lookLiveSite => Site(
         id: lookLiveSite,
@@ -416,22 +296,10 @@ class Sites {
       weiboSite,
       showroomSite,
       kickSite,
-      liveMeSite,
-      tiktokSite,
-      youtubeSite,
       bigoSite,
-      pandaLiveSite,
-      popkonSite,
-      shopeeLiveSite,
-      vkVideoLiveSite,
-      nimoTvSite,
-      rumbleSite,
       goodGameSite,
       fc2LiveSite,
-      steamBroadcastSite,
-      jdLiveSite,
       taobaoLiveSite,
-      kugouLiveSite,
         lookLiveSite,
       iptvSite,
     ])

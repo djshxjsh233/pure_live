@@ -46,58 +46,13 @@ class LiveSearchCapabilities {
       supportsPagination: false,
       supportsWebSearch: false,
     ),
-    Sites.liveMeSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.tiktokSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.channelLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.youtubeSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.channelLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.bigoSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.showcaseSnapshot,
       supportsPagination: false,
       supportsWebSearch: false,
     ),
-    Sites.pandaLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.popkonSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     // These registered adapters already implement native search. Keep their
     // UI capability in sync with the actual exact-ID, snapshot or paged API.
-    Sites.shopeeLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.vkVideoLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.nimoTvSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.rumbleSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
     Sites.goodGameSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.liveAndOffline,
       supportsPagination: true,
@@ -108,24 +63,9 @@ class LiveSearchCapabilities {
       supportsPagination: true,
       supportsWebSearch: false,
     ),
-    Sites.steamBroadcastSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.jdLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
     Sites.taobaoLiveSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.roomLookup,
       supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.kugouLiveSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: true,
       supportsWebSearch: false,
     ),
     Sites.lookLiveSite: LiveSearchCapability(

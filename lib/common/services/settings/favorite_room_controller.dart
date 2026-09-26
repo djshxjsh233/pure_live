@@ -70,25 +70,13 @@ class FavoriteRoomController extends GetxController {
     Sites.weiboSite, // v14
     Sites.showroomSite, // v15
     Sites.kickSite, // v17
-    Sites.liveMeSite, // v19
-    Sites.tiktokSite, // v20
-    Sites.youtubeSite, // v21
     Sites.bigoSite, // v22
-    Sites.pandaLiveSite, // v23
-    Sites.popkonSite, // v24
-    Sites.shopeeLiveSite, // v25
-    Sites.vkVideoLiveSite, // v26
-    Sites.nimoTvSite, // v27
-    Sites.rumbleSite, // v29
     Sites.goodGameSite, // v30
     Sites.fc2LiveSite, // v31
-    Sites.steamBroadcastSite, // v32
-    Sites.jdLiveSite, // v33
     Sites.taobaoLiveSite, // v34
-    Sites.kugouLiveSite, // v35
     Sites.lookLiveSite, // v38
   ];
-  static const int currentSiteCatalogMigration = 33;
+  static const int currentSiteCatalogMigration = 21;
 
   void _migrateSiteCatalog() {
     assert(currentSiteCatalogMigration == 2 + _catalogAdditions.length);

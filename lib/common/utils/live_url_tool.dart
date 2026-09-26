@@ -11,24 +11,9 @@ import 'package:pure_live/core/site/kilakila/kilakila_api.dart';
 import 'package:pure_live/core/site/kilakila/kilakila_link.dart';
 import 'package:pure_live/core/site/showroom/showroom_link.dart';
 import 'package:pure_live/core/site/kick/kick_link.dart';
-import 'package:pure_live/core/site/liveme/liveme_api.dart';
-import 'package:pure_live/core/site/liveme/liveme_link.dart';
-import 'package:pure_live/core/site/tiktok/tiktok_api.dart';
-import 'package:pure_live/core/site/tiktok/tiktok_link.dart';
-import 'package:pure_live/core/site/youtube/youtube_api.dart';
-import 'package:pure_live/core/site/youtube/youtube_link.dart';
 import 'package:pure_live/core/site/bigo/bigo_link.dart';
-import 'package:pure_live/core/site/pandalive/pandalive_link.dart';
-import 'package:pure_live/core/site/popkontv/popkontv_link.dart';
-import 'package:pure_live/core/site/shopeelive/shopeelive_link.dart';
-import 'package:pure_live/core/site/vkvideolive/vkvideolive_link.dart';
-import 'package:pure_live/core/site/nimotv/nimotv_link.dart';
-import 'package:pure_live/core/site/rumble/rumble_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
-import 'package:pure_live/core/site/steambroadcast/steam_broadcast_link.dart';
-import 'package:pure_live/core/site/jdlive/jd_live_link.dart';
-import 'package:pure_live/core/site/kugoulive/kugou_live_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_api.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
@@ -122,20 +107,9 @@ class LiveUrlTool {
       }
       if (ShowroomLink.parse(raw) != null) return true;
       if (KickLink.parse(raw) != null) return true;
-      if (LiveMeLink.parse(raw) != null) return true;
-      if (TikTokLink.parse(raw) != null) return true;
-      if (YouTubeLink.parse(raw) != null) return true;
       if (BigoLink.parse(raw) != null) return true;
-      if (PandaLiveLink.parse(raw) != null) return true;
-      if (PopkonLink.parse(raw) != null) return true;
-      if (ShopeeLiveLink.parse(raw) != null) return true;
-      if (VkVideoLiveLink.parse(raw) != null) return true;
-      if (RumbleLink.parseVideoKey(raw) != null) return true;
       if (GoodGameLink.parse(raw) != null) return true;
       if (Fc2Link.parseChannelId(raw) != null) return true;
-      if (SteamBroadcastLink.parseSteamId(raw) != null) return true;
-      if (JdLiveLink.parseLiveId(raw) != null) return true;
-      if (KugouLiveLink.parseRoomId(raw) != null) return true;
       if (LookLiveLink.parseRoomId(raw) != null) return true;
       if (TaobaoLiveLink.parse(raw) != null || TaobaoLiveLink.shortUri(raw) != null) return true;
       // Reuse the actual synchronous room-link contract. A platform's home,
@@ -147,7 +121,7 @@ class LiveUrlTool {
       if (segments.isEmpty) return false;
       // These links need a redirect or a legacy alias in parseLiveUrl, so
       // they have no immediate WebSearchRoomTarget to reuse.
-      if (TikTokLink.isShortHost(host) || _hostIs(host, 'b23.tv') || host == 'v.douyin.com') return true;
+      if (_hostIs(host, 'b23.tv') || host == 'v.douyin.com') return true;
       if (host == 'live.kuaishou.cn' && segments.length >= 2 && segments.first == 'u') {
         return WebSearchRoomParser.isRoomIdentifier(segments[1], RegExp(r'^[a-zA-Z0-9_-]+$'));
       }
@@ -175,9 +149,6 @@ class LiveUrlTool {
     KilakilaApi? kilakilaApi,
     HuajiaoApi? huajiaoApi,
     OpenrecApi? openrecApi,
-    LiveMeApi? liveMeApi,
-    TikTokApi? tiktokApi,
-    YouTubeApi? youtubeApi,
     TaobaoLiveApi? taobaoLiveApi,
     Duration timeout = const Duration(seconds: 12),
   }) async {
@@ -191,9 +162,6 @@ class LiveUrlTool {
         kilakilaApi ?? KilakilaApi(),
         huajiaoApi ?? HuajiaoApi(),
         openrecApi ?? OpenrecApi(),
-        liveMeApi ?? LiveMeApi(),
-        tiktokApi ?? TikTokApi(),
-        youtubeApi ?? YouTubeApi(),
         taobaoLiveApi ?? TaobaoLiveApi(),
         ownedCancel,
       );
@@ -219,9 +187,6 @@ class LiveUrlTool {
     KilakilaApi kilakilaApi,
     HuajiaoApi huajiaoApi,
     OpenrecApi openrecApi,
-    LiveMeApi liveMeApi,
-    TikTokApi tiktokApi,
-    YouTubeApi youtubeApi,
     TaobaoLiveApi taobaoLiveApi,
     dio.CancelToken cancel,
   ) async {
@@ -265,48 +230,12 @@ class LiveUrlTool {
         if (session.isClosed || cancel.isCancelled) return [];
         return [owner.userId, Sites.kilakilaSite];
       }
-      final liveMe = LiveMeLink.parse(raw);
-      if (liveMe != null) {
-        final shortId = await liveMeApi.resolveReference(liveMe, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [shortId, Sites.liveMeSite];
-      }
-      final tiktok = TikTokLink.parse(raw);
-      if (tiktok != null) {
-        final username = await tiktokApi.resolveReference(tiktok, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [username, Sites.tiktokSite];
-      }
-      final youtube = YouTubeLink.parse(raw);
-      if (youtube != null) {
-        final videoId = await youtubeApi.resolveReference(youtube, cancel: cancel);
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [videoId, Sites.youtubeSite];
-      }
       final bigo = BigoLink.parse(raw);
       if (bigo != null) return [bigo, Sites.bigoSite];
-      final pandaLive = PandaLiveLink.parse(raw);
-      if (pandaLive != null) return [pandaLive, Sites.pandaLiveSite];
-      final popkon = PopkonLink.parse(raw);
-      if (popkon != null) return [popkon.storageKey, Sites.popkonSite];
-      final shopeeLive = ShopeeLiveLink.parse(raw);
-      if (shopeeLive != null) return [shopeeLive.storageKey, Sites.shopeeLiveSite];
-      final vkVideoLive = VkVideoLiveLink.parse(raw);
-      if (vkVideoLive != null) return [vkVideoLive.storageKey, Sites.vkVideoLiveSite];
-      final nimoTv = NimoTvLink.parse(raw);
-      if (nimoTv != null) return [nimoTv.storageKey, Sites.nimoTvSite];
-      final rumble = RumbleLink.parseVideoKey(raw);
-      if (rumble != null) return [rumble, Sites.rumbleSite];
       final goodGame = GoodGameLink.parse(raw);
       if (goodGame != null) return [goodGame.storageKey, Sites.goodGameSite];
       final fc2Live = Fc2Link.parseChannelId(raw);
       if (fc2Live != null) return [fc2Live, Sites.fc2LiveSite];
-      final steamBroadcast = SteamBroadcastLink.parseSteamId(raw);
-      if (steamBroadcast != null) return [steamBroadcast, Sites.steamBroadcastSite];
-      final jdLive = JdLiveLink.parseLiveId(raw);
-      if (jdLive != null) return [jdLive, Sites.jdLiveSite];
-      final kugouLive = KugouLiveLink.parseRoomId(raw);
-      if (kugouLive != null) return [kugouLive, Sites.kugouLiveSite];
       final lookLive = LookLiveLink.parseRoomId(raw);
       if (lookLive != null) return [lookLive, Sites.lookLiveSite];
       final taobaoLive = TaobaoLiveLink.parse(raw);
@@ -323,25 +252,6 @@ class LiveUrlTool {
         continue;
       }
       if (segments.isEmpty) continue;
-      if (TikTokLink.isShortHost(host)) {
-        final response = await session.get(uri);
-        final location = LiveShortLinkSession.redirectTarget(uri, response);
-        if (location == null) continue;
-        final target = await _parseLiveUrl(
-          location.toString(),
-          session,
-          kilakilaApi,
-          huajiaoApi,
-          openrecApi,
-          liveMeApi,
-          tiktokApi,
-          youtubeApi,
-          taobaoLiveApi,
-          cancel,
-        );
-        if (target.isNotEmpty) return target;
-        continue;
-      }
       if (_hostIs(host, 'b23.tv')) {
         final response = await session.get(uri);
         final location = LiveShortLinkSession.redirectTarget(uri, response);
@@ -352,9 +262,6 @@ class LiveUrlTool {
           kilakilaApi,
           huajiaoApi,
           openrecApi,
-          liveMeApi,
-          tiktokApi,
-          youtubeApi,
           taobaoLiveApi,
           cancel,
         );
