@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +14,6 @@ import 'package:pure_live/modules/live_play/states/live_play_state.dart';
 import 'package:pure_live/modules/live_play/controllers/player_controller.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/resolution_selector/resolution_selector.dart';
-
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -103,13 +103,7 @@ class _LabelController extends GetxController implements LivePlayController {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  void updateUI({
-    Object? screenMode,
-    int? refreshKey,
-    bool? isMenuOpen,
-    int? closeTimes,
-    bool? closeTimeFlag
-  }) {}
+  void updateUI({Object? screenMode, int? refreshKey, bool? isMenuOpen, int? closeTimes, bool? closeTimeFlag}) {}
 
   @override
   void onClose() {

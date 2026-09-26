@@ -1,5 +1,7 @@
 import 'dart:core' as $core;
+
 import 'douyin.pbenum.dart';
+
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 // This is a generated file - do not edit.

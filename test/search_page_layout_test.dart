@@ -167,7 +167,7 @@ void main() {
   tearDown(Get.reset);
   tearDownAll(Hive.close);
 
-  for (final platform in [Sites.xiaohongshuSite, Sites.ttingSite, Sites.iptvSite, Sites.bilibiliSite]) {
+  for (final platform in [Sites.douyinSite, Sites.kuaishouSite, Sites.iptvSite, Sites.bilibiliSite]) {
     testWidgets('empty search action follows actual $platform capability', (tester) async {
       final c = await _mount(tester, platform: platform);
       final status = tester.widget<AppStatusView>(find.byType(AppStatusView));
@@ -250,13 +250,7 @@ void main() {
     });
   }
 
-  for (final platform in [
-    Sites.openrecSite,
-    Sites.goodGameSite,
-    Sites.fc2LiveSite,
-    Sites.taobaoLiveSite,
-    Sites.lookLiveSite,
-  ]) {
+  for (final platform in [Sites.bilibiliSite, Sites.douyuSite, Sites.huyaSite, Sites.douyinSite]) {
     testWidgets('$platform native search is actionable and keeps its web capability', (tester) async {
       final c = await _mount(tester, platform: platform);
       expect(c.canSearchNatively, true);
@@ -286,7 +280,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(c.sortMode.value, LiveSearchSortMode.audience);
-    c.index.value = c.sites.indexWhere((s) => s.id == Sites.xiaohongshuSite) + 1;
+    c.index.value = c.sites.indexWhere((s) => s.id == Sites.douyinSite) + 1;
     c.errorMessage.value = 'A new error with no result-count change';
     c.scrollController.jumpTo(0);
     await tester.pumpAndSettle();

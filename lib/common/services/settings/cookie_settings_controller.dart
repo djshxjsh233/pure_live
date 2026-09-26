@@ -19,14 +19,7 @@ class CookieSettingsController extends GetxController {
   }
 
   void _normalizeStoredCookies() {
-    for (final cookie in [
-      bilibiliCookie,
-      huyaCookie,
-      douyuCookie,
-      douyinCookie,
-      kuaishouCookie,
-      taobaoCookie,
-    ]) {
+    for (final cookie in [bilibiliCookie, huyaCookie, douyuCookie, douyinCookie, kuaishouCookie, taobaoCookie]) {
       final normalized = normalizeAccountCookie(cookie.v);
       if (normalized != cookie.v) cookie.v = normalized;
     }

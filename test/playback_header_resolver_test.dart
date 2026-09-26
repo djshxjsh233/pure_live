@@ -36,13 +36,9 @@ void main() {
     expect(playback['cookie'], contains('acf_did='));
   });
 
-  test('Openrec gets browser origin headers and unknown platforms stay header-free', () async {
-    final openrec = await PlaybackHeaderResolver.resolve(platform: 'openrec', roomId: '1');
+  test('unknown platforms stay header-free', () async {
     final unknown = await PlaybackHeaderResolver.resolve(platform: 'unknown', roomId: '1');
 
-    expect(openrec['origin'], 'https://www.mellow-fan.com');
-    expect(openrec['referer'], 'https://www.mellow-fan.com/');
-    expect(openrec['user-agent'], isNotEmpty);
     expect(unknown, isEmpty);
   });
 

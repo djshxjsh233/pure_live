@@ -74,22 +74,14 @@ void main() {
     expect(find.byKey(const ValueKey('audience-platform-douyin')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    final openrec = find.byKey(const ValueKey('audience-platform-openrec'));
-    await tester.ensureVisible(openrec);
+    final kuaishou = find.byKey(const ValueKey('audience-platform-kuaishou'));
+    await tester.ensureVisible(kuaishou);
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(openrec).value, isTrue);
-    await tester.tap(openrec);
+    expect(tester.widget<SwitchListTile>(kuaishou).value, isTrue);
+    await tester.tap(kuaishou);
     await tester.pumpAndSettle();
-    expect(SettingsService.to.app.isRealOnlineEnabledFor('openrec'), isFalse);
-    expect(tester.widget<SwitchListTile>(openrec).value, isFalse);
-    final tting = find.byKey(const ValueKey('audience-platform-ttinglive'));
-    await tester.ensureVisible(tting);
-    await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(tting).value, isTrue);
-    await tester.tap(tting);
-    await tester.pumpAndSettle();
-    expect(SettingsService.to.app.isRealOnlineEnabledFor('ttinglive'), isFalse);
-    expect(tester.widget<SwitchListTile>(tting).value, isFalse);
+    expect(SettingsService.to.app.isRealOnlineEnabledFor('kuaishou'), isFalse);
+    expect(tester.widget<SwitchListTile>(kuaishou).value, isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -180,9 +172,6 @@ void main() {
       'huya': 'Huya',
       'douyin': 'Douyin',
       'kuaishou': 'Kuaishou',
-      'openrec': 'mellow-fan (OPENREC)',
-      'ttinglive': 'FLEX TV (TTingLive)',
-      'xiaohongshu': 'Xiaohongshu',
     };
     for (final entry in expectedPlatforms.entries) {
       final tile = find.byKey(ValueKey('audience-platform-${entry.key}'));

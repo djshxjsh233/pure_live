@@ -24,10 +24,7 @@ import '../routes/transitions_type.dart';
 ///
 /// another pop will change the _activePages stack to:
 /// 1) /home
-enum PopMode {
-  history,
-  page,
-}
+enum PopMode { history, page }
 
 /// Enables the user to customize the behavior when pushing multiple routes that
 /// shouldn't be duplicates
@@ -65,10 +62,7 @@ mixin IGetNavigation {
     double Function(BuildContext context)? gestureWidth,
   });
 
-  Future<void> popModeUntil(
-    String fullRoute, {
-    PopMode popMode = PopMode.history,
-  });
+  Future<void> popModeUntil(String fullRoute, {PopMode popMode = PopMode.history});
 
   Future<T?> off<T>(
     Widget Function() page, {
@@ -112,12 +106,7 @@ mixin IGetNavigation {
     Map<String, String>? parameters,
   });
 
-  Future<T?> offNamed<T>(
-    String page, {
-    dynamic arguments,
-    String? id,
-    Map<String, String>? parameters,
-  });
+  Future<T?> offNamed<T>(String page, {dynamic arguments, String? id, Map<String, String>? parameters});
 
   Future<T?>? offAllNamed<T>(
     String newRouteName, {
@@ -135,17 +124,9 @@ mixin IGetNavigation {
     Map<String, String>? parameters,
   });
 
-  Future<T?> toNamedAndOffUntil<T>(
-    String page,
-    bool Function(GetPage) predicate, [
-    Object? data,
-  ]);
+  Future<T?> toNamedAndOffUntil<T>(String page, bool Function(GetPage) predicate, [Object? data]);
 
-  Future<T?> offUntil<T>(
-    Widget Function() page,
-    bool Function(GetPage) predicate, [
-    Object? arguments,
-  ]);
+  Future<T?> offUntil<T>(Widget Function() page, bool Function(GetPage) predicate, [Object? arguments]);
 
   void removeRoute<T>(String name);
 

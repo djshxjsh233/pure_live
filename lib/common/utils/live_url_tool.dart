@@ -1,11 +1,4 @@
-import 'package:pure_live/core/site/tting/tting_link.dart';
-import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
-import 'package:pure_live/core/site/openrec/openrec_api.dart';
-import 'package:pure_live/core/site/openrec/openrec_link.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:pure_live/core/site/showroom/showroom_link.dart';
-import 'package:pure_live/core/site/kick/kick_link.dart';
-import 'package:pure_live/core/site/bigo/bigo_link.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
 import 'package:pure_live/core/site/looklive/look_live_link.dart';
@@ -20,14 +13,6 @@ import 'package:pure_live/modules/toolbox/toolbox_direct_link_flow.dart';
 import 'package:pure_live/modules/search/web_search_room_parser.dart';
 
 class LiveUrlTool {
-  static Iterable<String> _sharedXhsDeepLinks(String text) sync* {
-    final links = RegExp(r'(?<![A-Za-z0-9:/=?&._-])xhsdiscover://live_audience\?[^\s<>]+', caseSensitive: false);
-    for (final match in links.allMatches(text)) {
-      final candidate = match.group(0)!.split(RegExp(r'[，。！？、；：）》」』”’]')).first;
-      yield candidate.replaceFirst(RegExp(r'''[,!?;:)\]}"']+$'''), '');
-    }
-  }
-
   /// Extract complete HTTP URLs before inspecting host/path. This also avoids
   /// treating an embedded www address in an FTP URL as a second HTTP link.
   static Iterable<Uri> sharedHttpUris(String text) => sharedHttpUrls(text).map(Uri.parse);
@@ -38,22 +23,7 @@ class LiveUrlTool {
     for (final match in urls.allMatches(text)) {
       var candidate = match.group(0)!;
       if (candidate.toLowerCase().startsWith('www.')) candidate = 'https://$candidate';
-      // XHS shares append Chinese prose without whitespace.
-      // Keep percent-encoded punctuation and other platforms' URL spelling.
-      if ({
-        'xhslink.com',
-        'www.xiaohongshu.com',
-        'xiaohongshu.com',
-      }.contains(Uri.tryParse(candidate)?.host)) {
-        candidate = candidate.split(RegExp(r'[，。！？、；：）》」』”’]')).first;
-        candidate = candidate.replaceFirst(RegExp(r'''[,!?;:)\]}"']+$'''), '');
-        // A terminal dot path component is URL structure, not prose punctuation.
-        if (!candidate.endsWith('/.') && !candidate.endsWith('/..')) {
-          candidate = candidate.replaceFirst(RegExp(r'\.+$'), '');
-        }
-      } else {
-        candidate = candidate.replaceFirst(RegExp(r'''[.,!?;:)\]}。！？、，；：）》」』”’"']+$'''), '');
-      }
+      candidate = candidate.replaceFirst(RegExp(r'''[.,!?;:)\]}。！？、，；：）》」』”’"']+$'''), '');
       final uri = Uri.tryParse(candidate);
       if (uri == null ||
           uri.userInfo.isNotEmpty ||
@@ -85,17 +55,7 @@ class LiveUrlTool {
   }
 
   static bool containsSupportedLink(String text) {
-    if (_sharedXhsDeepLinks(text).any((raw) => XiaohongshuLink.deepLinkRoomId(raw) != null)) return true;
     return sharedHttpUrls(text).any((raw) {
-      if (XiaohongshuLink.parse(raw) != null ||
-          XiaohongshuLink.shortUri(raw) != null ||
-          TtingLink.parse(raw) != null ||
-          OpenrecLink.parse(raw) != null) {
-        return true;
-      }
-      if (ShowroomLink.parse(raw) != null) return true;
-      if (KickLink.parse(raw) != null) return true;
-      if (BigoLink.parse(raw) != null) return true;
       if (GoodGameLink.parse(raw) != null) return true;
       if (Fc2Link.parseChannelId(raw) != null) return true;
       if (LookLiveLink.parseRoomId(raw) != null) return true;
@@ -131,7 +91,6 @@ class LiveUrlTool {
     String text, {
     dio.Dio Function()? clientFactory,
     dio.CancelToken? cancelToken,
-    OpenrecApi? openrecApi,
     TaobaoLiveApi? taobaoLiveApi,
     Duration timeout = const Duration(seconds: 12),
   }) async {
@@ -139,13 +98,7 @@ class LiveUrlTool {
     final session = LiveShortLinkSession(timeout: timeout, clientFactory: clientFactory);
     final ownedCancel = dio.CancelToken();
     try {
-      final parsing = _parseLiveUrl(
-        text,
-        session,
-        openrecApi ?? OpenrecApi(),
-        taobaoLiveApi ?? TaobaoLiveApi(),
-        ownedCancel,
-      );
+      final parsing = _parseLiveUrl(text, session, taobaoLiveApi ?? TaobaoLiveApi(), ownedCancel);
       final result = cancelToken == null
           ? parsing
           : Future.any<List<String>>([parsing, cancelToken.whenCancel.then((_) => <String>[])]);
@@ -165,38 +118,14 @@ class LiveUrlTool {
   static Future<List<String>> _parseLiveUrl(
     String text,
     LiveShortLinkSession session,
-    OpenrecApi openrecApi,
     TaobaoLiveApi taobaoLiveApi,
     dio.CancelToken cancel,
   ) async {
-    for (final raw in _sharedXhsDeepLinks(text)) {
-      final roomId = XiaohongshuLink.deepLinkRoomId(raw);
-      if (roomId != null) return [roomId, Sites.xiaohongshuSite];
-    }
     for (final raw in sharedHttpUrls(text)) {
       final uri = Uri.parse(raw);
       if (session.isClosed) return [];
       final host = uri.host.toLowerCase();
       final realUrl = raw;
-      final xiaohongshu = await XiaohongshuLink.resolve(raw, session: session);
-      if (xiaohongshu != null) return [xiaohongshu, Sites.xiaohongshuSite];
-      final tting = TtingLink.parse(raw);
-      if (tting != null) return ['$tting', Sites.ttingSite];
-      final openrec = OpenrecLink.parse(raw);
-      if (openrec != null) {
-        late final OpenrecRoomKey key;
-        if (openrec.kind == OpenrecLinkKind.channel) {
-          final owner = await openrecApi.channel(openrec.id, cancel: cancel);
-          key = OpenrecRoomKey.create(owner.id, owner.numericId);
-        } else {
-          final movie = await openrecApi.movie(openrec.id, cancel: cancel);
-          key = OpenrecRoomKey.create(movie.channelId, movie.numericChannelId);
-        }
-        if (session.isClosed || cancel.isCancelled) return [];
-        return [key.value, Sites.openrecSite];
-      }
-      final bigo = BigoLink.parse(raw);
-      if (bigo != null) return [bigo, Sites.bigoSite];
       final goodGame = GoodGameLink.parse(raw);
       if (goodGame != null) return [goodGame.storageKey, Sites.goodGameSite];
       final fc2Live = Fc2Link.parseChannelId(raw);
@@ -221,13 +150,7 @@ class LiveUrlTool {
         final response = await session.get(uri);
         final location = LiveShortLinkSession.redirectTarget(uri, response);
         if (location == null) continue;
-        final target = await _parseLiveUrl(
-          location.toString(),
-          session,
-          openrecApi,
-          taobaoLiveApi,
-          cancel,
-        );
+        final target = await _parseLiveUrl(location.toString(), session, taobaoLiveApi, cancel);
         if (target.isNotEmpty) return target;
         continue;
       }

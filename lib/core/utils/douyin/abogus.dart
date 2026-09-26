@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:dart_sm/dart_sm.dart';
 
 class StringProcessor {
@@ -608,9 +609,7 @@ class ABogus {
   // fmt: on
 
   ABogus({String? fp, String? userAgent, List<int>? options})
-    : userAgent = userAgent != null && userAgent.isNotEmpty
-          ? userAgent
-          : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+    : userAgent = userAgent != null && userAgent.isNotEmpty ? userAgent : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
       browserFp = fp != null && fp.isNotEmpty
           ? fp
           : BrowserFingerprintGenerator.generateFingerprint(browserType: "Edge"),

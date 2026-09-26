@@ -72,18 +72,18 @@ void main() {
     test('removes platforms whose public values are heat only', () {
       final config = AppSettingsController.extractConfig({
         'app': {
-          'realOnlinePlatforms': ['huya', 'douyin', 'kuaishou', 'showroom'],
+          'realOnlinePlatforms': ['huya', 'douyin', 'kuaishou', 'bilibili'],
         },
       });
 
       expect(config['realOnlinePlatforms'], ['douyin', 'kuaishou']);
     });
 
-    test('normalizes concurrent platform ids and includes OPENREC for new installs', () {
-      expect(AppSettingsController.defaultRealOnlinePlatforms, contains('openrec'));
-      expect(AppSettingsController.normalizeRealOnlinePlatforms(['DOUYIN', ' openrec ', 'SHOWROOM', 'OPENREC']), [
+    test('normalizes concurrent platform ids and keeps only verified concurrent platforms', () {
+      expect(AppSettingsController.defaultRealOnlinePlatforms, containsAll(<String>['douyin', 'kuaishou']));
+      expect(AppSettingsController.normalizeRealOnlinePlatforms(['DOUYIN', ' kuaishou ', 'BILIBILI', 'DOUYU']), [
         'douyin',
-        'openrec',
+        'kuaishou',
       ]);
     });
 

@@ -1,8 +1,11 @@
 import '../../get_state_manager.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/foundation.dart';
+
 import '../../../get_instance/src/lifecycle.dart';
+
 // ignore_for_file: lines_longer_than_80_chars
 
 /// Used like `SingleTickerProviderMixin` but only with Get Controllers.

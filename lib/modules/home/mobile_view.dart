@@ -7,12 +7,7 @@ class HomeMobileView extends StatelessWidget {
   final int index;
   final void Function(int) onDestinationSelected;
 
-  const HomeMobileView({
-    super.key,
-    required this.body,
-    required this.index,
-    required this.onDestinationSelected,
-  });
+  const HomeMobileView({super.key, required this.body, required this.index, required this.onDestinationSelected});
 
   @override
   Widget build(BuildContext context) {

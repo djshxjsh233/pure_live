@@ -1,22 +1,14 @@
-import 'site/kick/kick_site.dart';
-import 'site/bigo/bigo_site.dart';
 import 'site/huya/huya_site.dart';
 import 'interface/live_site.dart';
 import 'site/fc2live/fc2_site.dart';
-import 'site/tting/tting_site.dart';
 import 'site/douyu/douyu_site.dart';
 import 'site/douyin/douyin_site.dart';
-import 'site/openrec/openrec_site.dart';
 import 'site/goodgame/goodgame_site.dart';
-import 'site/showroom/showroom_site.dart';
 import 'site/looklive/look_live_site.dart';
 
 import 'package:pure_live/common/index.dart';
 
 import 'site/taobaolive/taobao_live_site.dart';
-import 'site/xiaohongshu/xiaohongshu_site.dart';
-
-
 
 import 'package:pure_live/core/site/iptv/iptv_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
@@ -30,12 +22,6 @@ class Sites {
   static const String douyinSite = "douyin";
   static const String kuaishouSite = "kuaishou";
   static const String iptvSite = "iptv";
-  static const String openrecSite = 'openrec';
-  static const String ttingSite = 'ttinglive';
-  static const String xiaohongshuSite = 'xiaohongshu';
-  static const String showroomSite = 'showroom';
-  static const String kickSite = 'kick';
-  static const String bigoSite = 'bigo';
   static const String goodGameSite = 'goodgame';
   static const String fc2LiveSite = 'fc2live';
   static const String taobaoLiveSite = 'taobaolive';
@@ -47,12 +33,6 @@ class Sites {
     huyaSite,
     douyinSite,
     kuaishouSite,
-    openrecSite,
-    ttingSite,
-    xiaohongshuSite,
-    showroomSite,
-    kickSite,
-    bigoSite,
     goodGameSite,
     fc2LiveSite,
     taobaoLiveSite,
@@ -75,16 +55,10 @@ class Sites {
     douyinSite: '$_assetRoot/douyin.png',
     kuaishouSite: '$_assetRoot/kuaishou.png',
     iptvSite: '$_assetRoot/iptv.png',
-    openrecSite: '$_assetRoot/openrec.png',
-    ttingSite: '$_assetRoot/ttinglive.png',
-    xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
-    showroomSite: '$_assetRoot/showroom.png',
-    kickSite: '$_assetRoot/kick.png',
     goodGameSite: '$_assetRoot/goodgame.png',
     fc2LiveSite: '$_assetRoot/fc2.png',
     taobaoLiveSite: '$_assetRoot/taobao.png',
     lookLiveSite: '$_assetRoot/look.png',
-    bigoSite: '$_assetRoot/bigo.png',
   };
 
   static bool isSupported(String id) => supportedSiteIds.contains(id.trim().toLowerCase());
@@ -127,27 +101,6 @@ class Sites {
         liveSite: KuaishowSite(),
       ),
       iptvSite => Site(id: iptvSite, name: i18n("site_iptv"), logo: logoForId(iptvSite), liveSite: IptvSite()),
-      openrecSite => Site(
-        id: openrecSite,
-        name: 'mellow-fan (OPENREC)',
-        logo: logoForId(openrecSite),
-        liveSite: OpenrecSite(),
-      ),
-      ttingSite => Site(id: ttingSite, name: 'FLEX TV (TTingLive)', logo: logoForId(ttingSite), liveSite: TtingSite()),
-      xiaohongshuSite => Site(
-        id: xiaohongshuSite,
-        name: i18n('site_xiaohongshu'),
-        logo: logoForId(xiaohongshuSite),
-        liveSite: XiaohongshuSite(),
-      ),
-      showroomSite => Site(
-        id: showroomSite,
-        name: i18n('site_showroom'),
-        logo: logoForId(showroomSite),
-        liveSite: ShowroomSite(),
-      ),
-      kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoForId(kickSite), liveSite: KickSite()),
-      bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoForId(bigoSite), liveSite: BigoSite()),
       goodGameSite => Site(
         id: goodGameSite,
         name: i18n('site_goodgame'),
@@ -188,16 +141,10 @@ class Sites {
       huyaSite,
       douyinSite,
       kuaishouSite,
-      openrecSite,
-      ttingSite,
-      xiaohongshuSite,
-      showroomSite,
-      kickSite,
-      bigoSite,
       goodGameSite,
       fc2LiveSite,
       taobaoLiveSite,
-        lookLiveSite,
+      lookLiveSite,
       iptvSite,
     ])
       _createSite(id),

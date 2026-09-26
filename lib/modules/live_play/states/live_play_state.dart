@@ -2,6 +2,7 @@ import 'ui_state.dart';
 import 'room_state.dart';
 import 'player_state.dart';
 import 'danmaku_state.dart';
+
 import 'package:flutter/foundation.dart';
 
 @immutable

@@ -7,8 +7,7 @@ extension GetStringUtils on String {
   /// Discover if the String is numeric only
   bool get isNumericOnly => GetUtils.isNumericOnly(this);
 
-  String numericOnly({bool firstWordOnly = false}) =>
-      GetUtils.numericOnly(this, firstWordOnly: firstWordOnly);
+  String numericOnly({bool firstWordOnly = false}) => GetUtils.numericOnly(this, firstWordOnly: firstWordOnly);
 
   /// Discover if the String is alphanumeric only
   bool get isAlphabetOnly => GetUtils.isAlphabetOnly(this);
@@ -97,12 +96,10 @@ extension GetStringUtils on String {
   bool get isCnpj => GetUtils.isCnpj(this);
 
   /// Discover if the String is a case insensitive
-  bool isCaseInsensitiveContains(String b) =>
-      GetUtils.isCaseInsensitiveContains(this, b);
+  bool isCaseInsensitiveContains(String b) => GetUtils.isCaseInsensitiveContains(this, b);
 
   /// Discover if the String is a case sensitive and contains any value
-  bool isCaseInsensitiveContainsAny(String b) =>
-      GetUtils.isCaseInsensitiveContainsAny(this, b);
+  bool isCaseInsensitiveContainsAny(String b) => GetUtils.isCaseInsensitiveContainsAny(this, b);
 
   /// capitalize the String
   String get capitalize => GetUtils.capitalize(this);
@@ -126,6 +123,5 @@ extension GetStringUtils on String {
   }
 
   /// capitalize only first letter in String words to upper case
-  String capitalizeAllWordsFirstLetter() =>
-      GetUtils.capitalizeAllWordsFirstLetter(this);
+  String capitalizeAllWordsFirstLetter() => GetUtils.capitalizeAllWordsFirstLetter(this);
 }

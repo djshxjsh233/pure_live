@@ -42,12 +42,7 @@ void main() {
     );
   });
   test('new platform malformed identities never become shell targets', () {
-    final invalid = <String, String>{
-      'goodgame': 'id:0',
-      'fc2live': 'abc',
-      'taobaolive': 'live:0',
-      'looklive': '1',
-    };
+    final invalid = <String, String>{'goodgame': 'id:0', 'fc2live': 'abc', 'taobaolive': 'live:0', 'looklive': '1'};
     for (final entry in invalid.entries) {
       expect(RoomExternalOpener.resolve(entry.key, LiveRoom(roomId: entry.value)), isNull, reason: entry.key);
     }

@@ -8,12 +8,7 @@ import 'package:pure_live/common/utils/hive_pref_util.dart';
 
 class AppSettingsController extends GetxController {
   static const int maxSleepMinutes = 525600;
-  static const List<String> defaultRealOnlinePlatforms = [
-    Sites.douyinSite,
-    Sites.kuaishouSite,
-    Sites.openrecSite,
-    Sites.ttingSite,
-  ];
+  static const List<String> defaultRealOnlinePlatforms = [Sites.douyinSite, Sites.kuaishouSite];
 
   Worker? _refreshRateModeWorker;
   Worker? _realOnlinePlatformsWorker;
@@ -69,14 +64,6 @@ class AppSettingsController extends GetxController {
     super.onInit();
     final normalizedMenus = normalizeMenuIds(savedMenuIds.v);
     if (!listEquals(savedMenuIds.v, normalizedMenus)) savedMenuIds.v = normalizedMenus;
-    if (audienceMetricMigration.v < 1) {
-      if (!realOnlinePlatforms.contains(Sites.openrecSite)) realOnlinePlatforms.add(Sites.openrecSite);
-      audienceMetricMigration.v = 1;
-    }
-    if (audienceMetricMigration.v < 2) {
-      if (!realOnlinePlatforms.contains(Sites.ttingSite)) realOnlinePlatforms.add(Sites.ttingSite);
-      audienceMetricMigration.v = 2;
-    }
     _repairRealOnlinePlatforms();
     _realOnlinePlatformsWorker = ever<List<String>>(realOnlinePlatforms, (_) => _repairRealOnlinePlatforms());
     if (Platform.isAndroid || Platform.isWindows) {

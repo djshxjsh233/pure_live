@@ -6,19 +6,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/common/http_client.dart' as shared;
 import 'package:pure_live/core/common/request_scope.dart';
-import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_api.dart';
-import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_share.dart';
 import 'package:pure_live/core/site/zhanqi/zhanqi_api.dart';
 
 typedef _Read = Future<Object?> Function(CancelToken?);
 typedef _Case = ({String name, _Read read, String body, int cap});
 final _cases = <_Case>[
-  (
-    name: 'Xiaohongshu',
-    read: (c) => XiaohongshuApi().room('123', cancel: c),
-    body: '<script>window.__INITIAL_STATE__={"liveStream":{"pageStatus":"success","liveStatus":"end","roomData":{"roomInfo":{"status":3},"hostInfo":{}}}}</script>',
-    cap: XiaohongshuShare.responseLimit,
-  ),
   (
     name: 'Zhanqi',
     read: (c) => ZhanqiApi().directory(cancel: c),
@@ -29,7 +21,6 @@ final _cases = <_Case>[
 
 String _kind(Object? error) => switch (error) {
   ZhanqiException e => e.kind.name,
-  XiaohongshuException e => e.kind.name,
   _ => '${error.runtimeType}',
 };
 Matcher _failure(String kind) => throwsA(predicate<Object>((e) => _kind(e) == kind, kind));

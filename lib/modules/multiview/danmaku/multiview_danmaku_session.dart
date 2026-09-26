@@ -59,7 +59,6 @@ class MultiviewDanmakuSession {
       Sites.huyaSite,
       Sites.douyinSite,
       Sites.kuaishouSite,
-      Sites.kickSite,
       Sites.goodGameSite,
     };
     return supported.contains(platform?.trim().toLowerCase());

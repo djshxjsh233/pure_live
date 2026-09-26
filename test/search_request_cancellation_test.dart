@@ -13,7 +13,6 @@ import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/search/search_controller.dart' as search;
 
-
 typedef _Search = Future<List<LiveRoom>> Function(String keyword, int page);
 typedef _OwnedSearch = Future<List<LiveRoom>> Function(String keyword, int page, CancelToken token);
 
@@ -59,12 +58,6 @@ const _manyNativeIds = [
   Sites.douyuSite,
   Sites.huyaSite,
   Sites.douyinSite,
-  Sites.openrecSite,
-  Sites.ttingSite,
-  Sites.xiaohongshuSite,
-  Sites.showroomSite,
-  Sites.kickSite,
-  Sites.bigoSite,
   Sites.goodGameSite,
   Sites.fc2LiveSite,
   Sites.taobaoLiveSite,

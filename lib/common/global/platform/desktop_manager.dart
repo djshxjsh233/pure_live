@@ -106,7 +106,6 @@ class DesktopManager {
     if (state is WindowListener) {
       windowManager.addListener(state as WindowListener);
     }
-
   }
 
   static void disposeListeners() {
@@ -115,7 +114,6 @@ class DesktopManager {
     if (_currentState is WindowListener) {
       windowManager.removeListener(_currentState as WindowListener);
     }
-
 
     _currentState = null;
   }
@@ -592,8 +590,7 @@ class _WindowControlButtonState extends State<WindowControlButton> {
   }
 }
 
-mixin DesktopWindowMixin<T extends StatefulWidget> on State<T>
-    implements WindowListener, WidgetsBindingObserver {
+mixin DesktopWindowMixin<T extends StatefulWidget> on State<T> implements WindowListener, WidgetsBindingObserver {
   final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'Pure Live navigator');
   bool _isDialogOpen = false;
   Timer? _windowGeometryTimer;

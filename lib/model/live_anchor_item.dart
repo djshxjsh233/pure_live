@@ -13,20 +13,10 @@ class LiveAnchorItem {
   /// 直播中
   final bool liveStatus;
 
-  LiveAnchorItem({
-    required this.roomId,
-    required this.avatar,
-    required this.userName,
-    required this.liveStatus,
-  });
+  LiveAnchorItem({required this.roomId, required this.avatar, required this.userName, required this.liveStatus});
 
   @override
   String toString() {
-    return json.encode({
-      "roomId": roomId,
-      "avatar": avatar,
-      "userName": userName,
-      "liveStatus": liveStatus,
-    });
+    return json.encode({"roomId": roomId, "avatar": avatar, "userName": userName, "liveStatus": liveStatus});
   }
 }

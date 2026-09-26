@@ -11,14 +11,9 @@ class LiveTag {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      order: json['order'] ?? 0
+      order: json['order'] ?? 0,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'description': description,
-    'order': order
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'description': description, 'order': order};
 }

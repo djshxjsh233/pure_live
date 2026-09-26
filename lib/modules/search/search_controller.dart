@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 const Duration liveSearchRequestTimeout = Duration(seconds: 12);
 const int maxConsecutiveStagnantSearchPages = 2;
-const int maxConcurrentNativeSearchSites = 12;
+const int maxConcurrentNativeSearchSites = 3;
 
 class SearchController extends GetxController {
   SearchController({List<Site>? searchSites, this.requestTimeout = liveSearchRequestTimeout})
@@ -100,14 +100,6 @@ class SearchController extends GetxController {
   String buildSearchUrl(String platform, String keyword) {
     final q = Uri.encodeComponent(keyword);
     switch (platform) {
-      case Sites.showroomSite:
-        throw StateError('SHOWROOM web keyword search is not exposed');
-      case Sites.xiaohongshuSite:
-        throw StateError('Xiaohongshu supports exact broadcast-room lookup, not web keyword search');
-      case Sites.ttingSite:
-        throw StateError('TTing supports exact channel lookup, not web keyword search');
-      case Sites.openrecSite:
-        throw StateError('Openrec search is not integrated');
       case Sites.kuaishouSite:
         return "https://live.kuaishou.com/search?keyword=$q";
       case Sites.huyaSite:
@@ -421,7 +413,6 @@ class SearchController extends GetxController {
     if (index.v > 0 && index.v <= sites.length) {
       final site = sites[index.v - 1];
       final capability = LiveSearchCapabilities.forPlatform(site.id);
-      if (site.id == Sites.openrecSite) return i18n('search_coverage_openrec');
       return switch (capability.coverage) {
         NativeSearchCoverage.roomLookup => i18n('search_coverage_room_lookup', args: {'site': site.name}),
         NativeSearchCoverage.showcaseSnapshot => i18n('search_coverage_showcase_snapshot', args: {'site': site.name}),

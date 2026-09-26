@@ -35,6 +35,7 @@ extension RecordStatusExt on RecordStatus {
         return 8;
     }
   }
+
   String get label {
     switch (this) {
       case RecordStatus.queued:

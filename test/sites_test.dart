@@ -15,9 +15,7 @@ void main() {
         expect((label as String).trim(), isNotEmpty);
         expect(label, isNot('site_$id'));
       }
-      expect(labels['site_openrec'], 'mellow-fan (OPENREC)');
-      expect(labels['site_ttinglive'], 'FLEX TV (TTingLive)');
-      expect(labels['site_xiaohongshu'], isNotEmpty);
+      expect(labels['site_bilibili'], isNotEmpty);
       expect(labels['recorder_input_integrity_failed'], isA<String>());
     }
   });

@@ -68,30 +68,6 @@ class LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
-    'openrec': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // SHOWROOM's view_num is session traffic and is not documented as a
-    // concurrent audience. Keep it in the cumulative column.
-    'showroom': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: true,
-      onlineAvailability: AudienceOnlineAvailability.unsupported,
-    ),
-    'kick': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    // The finite public directory exposes user_count for current broadcasts.
-    // Room detail has no verified concurrent field and therefore keeps it unknown.
-    'bigo': AudiencePlatformCapability(
-      hasPopularity: false,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
     // GoodGame's public directory and channel endpoint expose `viewers` as
     // the live audience. Rating and premium counters are separate concepts.
     'goodgame': AudiencePlatformCapability(
@@ -117,11 +93,6 @@ class LiveRoom {
     // values. The latter is the current audience shown on official web cards.
     'looklive': AudiencePlatformCapability(
       hasPopularity: true,
-      hasTotalViewers: false,
-      onlineAvailability: AudienceOnlineAvailability.roomList,
-    ),
-    'ttinglive': AudiencePlatformCapability(
-      hasPopularity: false,
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),

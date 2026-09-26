@@ -25,12 +25,14 @@ class DesktopTrayService {
     final icon = TrayIcon.create() ?? (throw StateError('Failed to create tray icon'));
     _icon = icon;
     try {
-      final image = ImageAsset.fromAsset('assets/icons/icon.png') ??
-          (throw StateError('Failed to load tray icon asset'));
+      final image =
+          ImageAsset.fromAsset('assets/icons/icon.png') ?? (throw StateError('Failed to load tray icon asset'));
       final menu = Menu.create() ?? (throw StateError('Failed to create tray menu'));
-      final windowItem = MenuItem.createWithLabelAndType('', MenuItemType.normal) ??
+      final windowItem =
+          MenuItem.createWithLabelAndType('', MenuItemType.normal) ??
           (throw StateError('Failed to create tray window item'));
-      final exitItem = MenuItem.createWithLabelAndType('', MenuItemType.normal) ??
+      final exitItem =
+          MenuItem.createWithLabelAndType('', MenuItemType.normal) ??
           (throw StateError('Failed to create tray exit item'));
 
       _image = image;
@@ -63,11 +65,7 @@ class DesktopTrayService {
     }
   }
 
-  static void update({
-    required String tooltip,
-    required String windowLabel,
-    required String exitLabel,
-  }) {
+  static void update({required String tooltip, required String windowLabel, required String exitLabel}) {
     final icon = _icon;
     if (icon == null) return;
     icon.setTooltip(tooltip);

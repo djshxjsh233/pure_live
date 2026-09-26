@@ -1,5 +1,6 @@
 import '../models/epg.dart';
 import '../models/channel.dart';
+
 import 'package:string_similarity/string_similarity.dart';
 
 /// Automatically maps provider channels to EPG channels using multiple
@@ -243,9 +244,8 @@ class EpgAutoMapper {
 
     // Handle "abcwabc.us" pattern — strip network prefix before call sign
     // Common US networks: abc, cbs, nbc, fox, pbs, cw
-    final prefixMatch = RegExp(
-      r'^(abc|cbs|nbc|fox|pbs|cw)(\w{3,})(.*)$',
-    ).firstMatch(normalized.replaceAll(RegExp(r'[._\-\s]'), ''));
+    final prefixMatch = RegExp(r'^(abc|cbs|nbc|fox|pbs|cw)(\w{3,})(.*)$')
+        .firstMatch(normalized.replaceAll(RegExp(r'[._\-\s]'), ''));
     if (prefixMatch != null) {
       final callSign = prefixMatch.group(2)!;
       final rest = prefixMatch.group(3)!;

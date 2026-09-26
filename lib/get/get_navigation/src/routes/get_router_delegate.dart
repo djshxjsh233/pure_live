@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import '../../../route_manager.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+
 import '../../../get_utils/src/platform/platform.dart';
 import '../../../get_instance/src/bindings_interface.dart';
 
@@ -628,6 +631,7 @@ class GetDelegate extends RouterDelegate<RouteDecoder>
     final result = await activePage.route?.completer?.future as Future<T?>?;
     return result;
   }
+
   String _cleanRouteName(String name) {
     name = name.replaceAll('() => ', '');
     if (!name.startsWith('/')) {

@@ -16,7 +16,6 @@ import 'package:pure_live/common/widgets/room_card.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/popular/popular_grid_view.dart';
 
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {

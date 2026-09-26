@@ -1,6 +1,7 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
+
 // This is a generated file - do not edit.
 //
 // Generated from douyin.proto.

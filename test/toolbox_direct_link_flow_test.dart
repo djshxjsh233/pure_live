@@ -54,9 +54,7 @@ void main() {
   for (final cast in [false, true]) {
     test('owned input reports session requirement without exporting for cast=$cast', () async {
       final resolved = resolvedSite();
-      resolved.resolution = LivePlayUrlResolution.owned(
-        input: const _FixtureRecipe('owned:lv123:auto'),
-      );
+      resolved.resolution = LivePlayUrlResolution.owned(input: const _FixtureRecipe('owned:lv123:auto'));
       var choices = 0;
       final exports = <String>[];
       await flow.run(

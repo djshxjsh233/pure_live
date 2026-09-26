@@ -30,21 +30,6 @@ class LiveSearchCapabilities {
   const LiveSearchCapabilities._();
 
   static const Map<String, LiveSearchCapability> _byPlatform = {
-    Sites.showroomSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveOnly,
-      supportsPagination: true,
-      supportsWebSearch: false,
-    ),
-    Sites.kickSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.liveAndOffline,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.bigoSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.showcaseSnapshot,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     // These registered adapters already implement native search. Keep their
     // UI capability in sync with the actual exact-ID, snapshot or paged API.
     Sites.goodGameSite: LiveSearchCapability(
@@ -67,26 +52,11 @@ class LiveSearchCapabilities {
       supportsPagination: false,
       supportsWebSearch: false,
     ),
-    Sites.xiaohongshuSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.roomLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
-    Sites.ttingSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.channelLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.bilibiliSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.douyuSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveAndOffline, supportsPagination: true),
     Sites.huyaSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.douyinSite: LiveSearchCapability(coverage: NativeSearchCoverage.liveOnly, supportsPagination: true),
     Sites.kuaishouSite: LiveSearchCapability(coverage: NativeSearchCoverage.webOnly, supportsPagination: false),
-    Sites.openrecSite: LiveSearchCapability(
-      coverage: NativeSearchCoverage.channelLookup,
-      supportsPagination: false,
-      supportsWebSearch: false,
-    ),
     Sites.iptvSite: LiveSearchCapability(
       coverage: NativeSearchCoverage.localChannels,
       supportsPagination: false,

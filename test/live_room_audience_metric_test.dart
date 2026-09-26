@@ -51,14 +51,14 @@ void main() {
     });
 
     test('unknown platform metric does not display the legacy zero sentinel', () {
-      for (final platform in ['kick', 'bigo', 'tting']) {
+      for (final platform in ['mystery', 'unmapped']) {
         final room = LiveRoom(platform: platform);
         expect(room.audienceValue(preferRealOnline: false, platformEnabled: false), isEmpty, reason: platform);
         expect(room.audienceType(preferRealOnline: false, platformEnabled: false), AudienceMetricType.unknown);
       }
-      final legacy = LiveRoom.fromJson({'platform': 'kick', 'roomId': 'creator'});
+      final legacy = LiveRoom.fromJson({'platform': 'mystery', 'roomId': 'creator'});
       expect(legacy.audienceValue(preferRealOnline: false, platformEnabled: false), isEmpty);
-      final measured = LiveRoom(platform: 'kick', watching: '72');
+      final measured = LiveRoom(platform: 'mystery', watching: '72');
       expect(measured.audienceValue(preferRealOnline: false, platformEnabled: false), '72');
     });
 

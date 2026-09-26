@@ -1,15 +1,9 @@
-import 'package:pure_live/core/site/tting/tting_api.dart';
-import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_api.dart';
-import 'package:pure_live/core/site/openrec/openrec_api.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 import 'package:pure_live/core/site/douyin/douyin_site.dart';
 import 'package:pure_live/core/site/douyu/douyu_utils.dart';
 import 'package:pure_live/core/site/huya/huya_site.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/showroom/showroom_api.dart';
-import 'package:pure_live/core/site/kick/kick_api.dart';
-import 'package:pure_live/core/site/bigo/bigo_api.dart';
 import 'package:pure_live/core/common/http_header_policy.dart';
 
 /// Resolves the HTTP headers used to read a platform's media stream.
@@ -100,24 +94,6 @@ class PlaybackHeaderResolver {
           if (userAgent.isNotEmpty) 'user-agent': userAgent,
           ...HttpHeaderPolicy.normalize(roomHeaders),
         };
-        break;
-      case Sites.openrecSite:
-        headers = OpenrecApi.headers;
-        break;
-      case Sites.ttingSite:
-        headers = TtingApi.playHeaders;
-        break;
-      case Sites.xiaohongshuSite:
-        headers = XiaohongshuApi.headers;
-        break;
-      case Sites.showroomSite:
-        headers = ShowroomApi.mediaHeaders;
-        break;
-      case Sites.kickSite:
-        headers = KickApi.mediaHeaders(roomId);
-        break;
-      case Sites.bigoSite:
-        headers = BigoApi.headers;
         break;
       default:
         headers = const <String, String>{};

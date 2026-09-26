@@ -25,11 +25,11 @@ void main() {
   test('popular heat mode sorts native platform values descending', () {
     final ranked = rankPopularRoomsByAudience(
       [
-        room(id: 'low', platform: 'openrec', popularity: '100', online: '900'),
-        room(id: 'high', platform: 'openrec', popularity: '300', online: '10'),
+        room(id: 'low', platform: 'douyin', popularity: '100', online: '900'),
+        room(id: 'high', platform: 'douyin', popularity: '300', online: '10'),
       ],
       preferRealOnline: false,
-      realOnlinePlatforms: const ['openrec'],
+      realOnlinePlatforms: const ['douyin'],
     );
 
     expect(ranked.map((item) => item.roomId), ['high', 'low']);
@@ -38,12 +38,12 @@ void main() {
   test('popular online mode sorts explicit concurrent viewers descending', () {
     final ranked = rankPopularRoomsByAudience(
       [
-        room(id: 'heat-first', platform: 'openrec', popularity: '500000', online: '15'),
-        room(id: 'online-first', platform: 'openrec', popularity: '200000', online: '376'),
-        room(id: 'pending', platform: 'openrec', popularity: '900000'),
+        room(id: 'heat-first', platform: 'douyin', popularity: '500000', online: '15'),
+        room(id: 'online-first', platform: 'douyin', popularity: '200000', online: '376'),
+        room(id: 'pending', platform: 'douyin', popularity: '900000'),
       ],
       preferRealOnline: true,
-      realOnlinePlatforms: const ['openrec'],
+      realOnlinePlatforms: const ['douyin'],
     );
 
     expect(ranked.map((item) => item.roomId), ['online-first', 'heat-first', 'pending']);
@@ -53,7 +53,7 @@ void main() {
     final ranked = rankPopularRoomsByAudience(
       [room(id: 'one', platform: 'douyu', popularity: '2.8万'), room(id: 'two', platform: 'douyu', popularity: '350万')],
       preferRealOnline: true,
-      realOnlinePlatforms: const ['douyin', 'openrec'],
+      realOnlinePlatforms: const ['douyin'],
     );
 
     expect(ranked.map((item) => item.roomId), ['two', 'one']);

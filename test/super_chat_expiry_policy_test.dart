@@ -34,9 +34,7 @@ void main() {
 
   test('an expired super-chat is pruned on the next event-loop turn', () {
     final now = DateTime(2026);
-    final delay = LivePlayController.nextSuperChatExpiryDelay([
-      message(now.subtract(const Duration(seconds: 1))),
-    ], now);
+    final delay = LivePlayController.nextSuperChatExpiryDelay([message(now.subtract(const Duration(seconds: 1)))], now);
 
     expect(delay, const Duration(milliseconds: 1));
   });

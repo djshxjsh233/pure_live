@@ -1,15 +1,7 @@
-import 'package:pure_live/core/site/tting/tting_link.dart';
-import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_link.dart';
-import 'package:pure_live/core/site/openrec/openrec_link.dart';
-import 'package:pure_live/core/site/openrec/openrec_api.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/danmaku/douyin_danmaku.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/site/showroom/showroom_link.dart';
-import 'package:pure_live/core/site/kick/kick_link.dart';
-import 'package:pure_live/core/site/bigo/bigo_link.dart';
-import 'package:pure_live/core/site/bigo/bigo_api.dart';
 import 'package:pure_live/core/site/goodgame/goodgame_link.dart';
 import 'package:pure_live/core/site/fc2live/fc2_link.dart';
 import 'package:pure_live/core/site/taobaolive/taobao_live_link.dart';
@@ -49,24 +41,6 @@ class RoomExternalOpener {
     if (id == null) return null;
     final path = Uri.encodeComponent(id);
     switch (site) {
-      case Sites.showroomSite:
-        try {
-          return RoomExternalTarget(web: ShowroomLink.roomUrl(id));
-        } on FormatException {
-          return null;
-        }
-      case Sites.kickSite:
-        try {
-          return RoomExternalTarget(web: KickLink.url(id));
-        } on FormatException {
-          return null;
-        }
-      case Sites.bigoSite:
-        try {
-          return RoomExternalTarget(web: BigoLink.url(id));
-        } on BigoException {
-          return null;
-        }
       case Sites.goodGameSite:
         final reference = GoodGameLink.parseReference(id);
         if (reference == null) return null;
@@ -81,18 +55,6 @@ class RoomExternalOpener {
         return _official(() => TaobaoLiveLink.watchUrl(id));
       case Sites.lookLiveSite:
         return _official(() => LookLiveLink.watchUrl(id));
-      case Sites.xiaohongshuSite:
-        final broadcast = XiaohongshuLink.parse(id);
-        return broadcast == null ? null : RoomExternalTarget(web: XiaohongshuLink.url(broadcast));
-      case Sites.ttingSite:
-        final channel = TtingLink.parse(id);
-        return channel == null ? null : RoomExternalTarget(web: TtingLink.url(channel));
-      case Sites.openrecSite:
-        try {
-          return RoomExternalTarget(web: OpenrecRoomKey.parse(id).url);
-        } on OpenrecException {
-          return null;
-        }
       case Sites.bilibiliSite:
         return RoomExternalTarget(web: 'https://live.bilibili.com/$path', native: 'bilibili://live/$path');
       case Sites.douyinSite:

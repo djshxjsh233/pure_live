@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
+
 import 'app_path_manager.dart';
+
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/global.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -20,9 +22,6 @@ import 'package:pure_live/recorder/services/recorder_proxy_routing.dart';
 import 'package:pure_live/common/services/settings/backup_controller.dart';
 import 'package:pure_live/common/utils/windows_multi_instance_launcher.dart';
 import 'package:pure_live/common/services/utils/settings_upgrade_migration.dart';
-
-
-
 
 /// Keep decoded cover/avatar memory bounded independently from the encoded
 /// HTTP/disk cache. A 960x540 RGBA cover is roughly 2 MiB after decoding, so

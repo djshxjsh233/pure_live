@@ -82,8 +82,7 @@ abstract class StateController<T> extends GetxController with StateMixin<T> {}
 
 /// A controller with super lifecycles (including native lifecycles)
 /// and StateMixins
-abstract class SuperController<T> extends FullLifeCycleController
-    with FullLifeCycleMixin, StateMixin<T> {}
+abstract class SuperController<T> extends FullLifeCycleController with FullLifeCycleMixin, StateMixin<T> {}
 
 /// A controller with super lifecycles (including native lifecycles)
 abstract class FullLifeCycleController extends GetxController

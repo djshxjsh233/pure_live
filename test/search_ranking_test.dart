@@ -96,7 +96,12 @@ void main() {
     });
 
     test('concurrent mode does not let platform heat overwhelm real viewers', () {
-      final online = LiveRoom(roomId: 'online', platform: 'kuaishou', liveStatus: LiveStatus.live, onlineViewers: '120');
+      final online = LiveRoom(
+        roomId: 'online',
+        platform: 'kuaishou',
+        liveStatus: LiveStatus.live,
+        onlineViewers: '120',
+      );
       final heat = LiveRoom(roomId: 'heat', platform: 'bilibili', liveStatus: LiveStatus.live, popularity: '900万');
       final ranked = LiveSearchRanking.apply(
         rooms: [heat, online],
@@ -120,5 +125,4 @@ void main() {
     expect(LiveSearchCapabilities.forPlatform('iptv').supportsPagination, isFalse);
     expect(LiveSearchCapabilities.forPlatform('iptv').supportsWebSearch, isFalse);
   });
-
 }

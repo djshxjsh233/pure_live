@@ -4,7 +4,6 @@ import 'package:pure_live/modules/search/web_search_room_parser.dart';
 import 'package:pure_live/common/utils/live_url_tool.dart';
 
 void main() {
-
   test('ignores search/navigation pages and lookalike domains', () {
     const urls = [
       'https://www.huya.com/search?hsk=test',
@@ -26,18 +25,12 @@ void main() {
     }
   });
 
-
-
-
-
   test('GoodGame channel and player links resolve to durable channel or stream identities', () async {
     expect(await LiveUrlTool.parseLiveUrl('https://goodgame.ru/Verloin'), ['verloin', Sites.goodGameSite]);
     expect(await LiveUrlTool.parseLiveUrl('https://goodgame.ru/player?15365'), ['id:15365', Sites.goodGameSite]);
     expect(await LiveUrlTool.parseLiveUrl('https://live.fc2.com/10608314/'), ['10608314', Sites.fc2LiveSite]);
     expect(await LiveUrlTool.parseLiveUrl('https://goodgame.ru/streams'), isEmpty);
   });
-
-
 
   test('Taobao Live official room links resolve without a network request', () async {
     const url = 'https://h5.m.taobao.com/taolive/video.html?id=12345678901';
