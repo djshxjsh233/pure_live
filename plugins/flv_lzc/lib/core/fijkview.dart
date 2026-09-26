@@ -470,9 +470,12 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
   }
 
   Widget buildTexture() {
-    Widget tex = _textureId > 0 ? Texture(textureId: _textureId) : Container();
+    Widget tex = _textureId >= 0 ? Texture(textureId: _textureId) : Container();
     if (_degree != 0 && _textureId >= 0) {
-      return RotatedBox(quarterTurns: _degree ~/ 90, child: tex);
+      return RotatedBox(
+        quarterTurns: _degree ~/ 90,
+        child: tex,
+      );
     }
     return tex;
   }
