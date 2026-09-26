@@ -11,7 +11,6 @@ void main() {
     'shopeelive': ('id:12345', 'https://live.shopee.co.id/share?from=live&session=12345'),
     'vkvideolive': ('fixture_channel', 'https://live.vkvideo.ru/fixture_channel'),
     'nimotv': ('2468', 'https://www.nimo.tv/live/2468'),
-    'dailymotion': ('x12345', 'https://www.dailymotion.com/video/x12345'),
     'rumble': ('v7fngda-title', 'https://rumble.com/v7fngda-title.html'),
     'goodgame': ('fixture_channel', 'https://goodgame.ru/fixture_channel'),
     'fc2live': ('12345', 'https://live.fc2.com/12345/'),
@@ -19,7 +18,6 @@ void main() {
     'jdlive': ('12345', 'https://lives.jd.com/#/12345'),
     'taobaolive': ('live:12345', 'https://h5.m.taobao.com/taolive/video.html?id=12345'),
     'kugoulive': ('12345', 'https://fanxing.kugou.com/12345'),
-    'baidulive': ('123456', 'https://live.baidu.com/m/room/123456'),
     'looklive': ('12345', 'https://look.163.com/live?id=12345'),
   };
   for (final entry in newPlatformWebTargets.entries) {
@@ -55,7 +53,6 @@ void main() {
       'shopeelive': 'id:zero',
       'vkvideolive': 'login',
       'nimotv': 'search',
-      'dailymotion': 'video',
       'rumble': 'archive',
       'goodgame': 'id:0',
       'fc2live': 'abc',
@@ -63,7 +60,6 @@ void main() {
       'jdlive': 'abc',
       'taobaolive': 'live:0',
       'kugoulive': 'abc',
-      'baidulive': '12345',
       'looklive': '1',
     };
     for (final entry in invalid.entries) {

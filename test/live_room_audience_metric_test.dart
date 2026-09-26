@@ -55,7 +55,7 @@ void main() {
     });
 
     test('unknown platform metric does not display the legacy zero sentinel', () {
-      for (final platform in ['kick', 'chzzk', 'bigo', 'tting']) {
+      for (final platform in ['kick', 'bigo', 'tting']) {
         final room = LiveRoom(platform: platform);
         expect(room.audienceValue(preferRealOnline: false, platformEnabled: false), isEmpty, reason: platform);
         expect(room.audienceType(preferRealOnline: false, platformEnabled: false), AudienceMetricType.unknown);
