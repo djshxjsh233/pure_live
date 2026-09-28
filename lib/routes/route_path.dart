@@ -39,6 +39,9 @@ class RoutePath {
   /// 本地恢复
   static const kBackup = "/backup";
 
+  /// Gist 云备份
+  static const kGistBackup = "/gist_backup";
+
   /// 关于
   static const kAbout = "/about";
 

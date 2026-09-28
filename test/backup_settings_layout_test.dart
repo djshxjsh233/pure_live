@@ -12,7 +12,6 @@ import 'package:pure_live/common/services/settings/log_controller.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/get/get.dart';
-import 'package:pure_live/modules/auth/auth_controller.dart';
 import 'package:pure_live/modules/backup/backup_page.dart';
 import 'package:pure_live/modules/settings/pages/local_config_preveiw.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +21,6 @@ void main() {
   late Directory hiveDirectory;
   late Map<String, dynamic> english;
   late _FixtureBackupController backup;
-  late _FixtureAuthController auth;
   late _LogStatusFixture logStatus;
   late _FixtureLogController logController;
 
@@ -46,8 +44,6 @@ void main() {
     logController = _FixtureLogController(logStatus.apply);
     Get.put<LogController>(logController);
     Get.put<SettingsService>(_FixtureSettingsService());
-    auth = Get.put<AuthController>(_FixtureAuthController()) as _FixtureAuthController;
-    auth.isInitSuccess = true;
   });
 
   tearDown(() async {
@@ -112,18 +108,18 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('backup connection status stacks its progress control below readable text', (tester) async {
-    auth.isInitSuccess = false;
-    auth.isConnecting = true;
+  testWidgets('cloud backup entry stacks its text below the readable title', (tester) async {
     await _pumpLocalized(tester, english: english, home: const BackupPage());
 
-    final title = find.text('Connecting to Firebase...');
+    final title = find.text('GitHub Gist Backup');
     final tile = find.ancestor(of: title, matching: find.byType(ListTile));
-    final subtitle = find.descendant(of: tile, matching: find.text('Initializing Firebase services. Please wait...'));
-    final progress = find.descendant(of: tile, matching: find.byType(CircularProgressIndicator));
+    final subtitle = find.descendant(
+      of: tile,
+      matching: find.text('Set a token to back up settings to a private Gist and restore by date'),
+    );
 
     expect(tester.widget<Text>(subtitle).maxLines, isNull);
-    expect(tester.getRect(progress).top, greaterThanOrEqualTo(tester.getRect(title).bottom));
+    expect(tester.getRect(subtitle).top, greaterThanOrEqualTo(tester.getRect(title).bottom));
     expect(tester.takeException(), isNull);
   });
 
@@ -314,13 +310,6 @@ class _FixtureFontSettingsController extends FontSettingsController {
 class _FixtureSettingsService extends SettingsService {
   @override
   // The page resolves its explicitly registered controllers through getters.
-  // ignore: must_call_super
-  void onInit() {}
-}
-
-class _FixtureAuthController extends AuthController {
-  @override
-  // Avoid Firebase and network activity in a layout fixture.
   // ignore: must_call_super
   void onInit() {}
 }

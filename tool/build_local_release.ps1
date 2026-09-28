@@ -234,7 +234,6 @@ try {
             -LogPath $commandLog
         Assert-PureLiveCommandSucceeded 'Windows locked dependency resolution' -ExitCode $pubGetExitCode
         & (Join-Path $PSScriptRoot 'prefetch_android_native.ps1') -SkipAndroidMedia
-        & (Join-Path $PSScriptRoot 'prefetch_windows_native.ps1')
 
         $windowsArgs = @(
             'build', 'windows', "--$configurationLower",

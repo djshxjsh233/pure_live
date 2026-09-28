@@ -2,9 +2,7 @@
 useDefault = true
 
 [allowlist]
-description = "Generated output and public Firebase client configuration"
+description = "Generated output directories"
 paths = [
   '''(^|[\\/])(\.dart_tool|\.git|\.gradle|\.local-build|build|ephemeral|local-artifacts)([\\/]|$)''',
-  '''^android[\\/]app[\\/]google-services\.json$''',
-  '''^lib[\\/]firebase_options\.dart$''',
 ]

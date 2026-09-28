@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
-import 'package:pure_live/modules/auth/auth_controller.dart';
 import 'package:pure_live/recorder/services/cache_service.dart';
 import 'package:pure_live/recorder/consts/recorder_config.dart';
 import 'package:pure_live/recorder/consts/recorder_keys.dart';
@@ -34,7 +33,6 @@ class InitialServices {
     Get.lazyPut(() => RecordSettingsController(), fenix: true);
     Get.lazyPut(() => RecorderController(), fenix: true);
     Get.lazyPut(() => StreamResolverService(), fenix: true);
-    Get.lazyPut(() => AuthController(), fenix: true);
   }
 
   static Future<void> init() async {
