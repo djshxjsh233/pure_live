@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:pure_live/core/common/hls_source_query_policy.dart';
 import 'package:pure_live/recorder/services/ffmpeg_hls_input_relay.dart';
+import 'package:pure_live/player/core/flv_splice_relay.dart';
 
 import 'playback_proxy_policy.dart';
 
@@ -95,14 +96,47 @@ class PlaybackSourceTransport {
     return PlaybackInputLease(relay.inputUri, relay.close);
   }
 
+  static Future<PlaybackInputLease> _createSpliceRelay(
+    String url,
+    Map<String, String> headers,
+    DateTime refreshAt,
+    FlvSourceRenewer renew,
+  ) async {
+    final directive = PlaybackProxyPolicy.currentDirective();
+    final relay = await FlvSpliceRelay.start(
+      FlvLeasedSource(Uri.parse(url), refreshAt: refreshAt),
+      renew: renew,
+      headers: headers,
+      findProxy: (_) => directive,
+    );
+    return PlaybackInputLease(relay.inputUri, relay.close, isUsable: () => !relay.isClosed);
+  }
+
+  /// A leased FLV source ([refreshAt] and [renewFlv]) is served through
+  /// [FlvSpliceRelay], which replaces the expiring URL underneath one
+  /// continuous stream.
   Future<void> open({
     required String url,
     required List<String> urls,
     required Map<String, String> headers,
     required HlsSourceQueryPolicy? policy,
     required PlaybackNativeOpen nativeOpen,
+    DateTime? refreshAt,
+    FlvSourceRenewer? renewFlv,
   }) {
     final legacyFactory = _createInput;
+    if (policy == null &&
+        renewFlv != null &&
+        FlvSpliceRelay.appliesTo(url, refreshAt: refreshAt)) {
+      return _open(
+        url: url,
+        urls: urls,
+        headers: headers,
+        nativeOpen: nativeOpen,
+        joinCreationOnCancel: true,
+        createInput: (_) => _createSpliceRelay(url, Map<String, String>.unmodifiable(headers), refreshAt!, renewFlv),
+      );
+    }
     return _open(
       url: url,
       urls: urls,

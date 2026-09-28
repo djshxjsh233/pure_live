@@ -10,6 +10,7 @@ import 'package:pure_live/player/adapters/media_kit_adapter.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
 import 'package:pure_live/core/common/hls_source_query_policy.dart';
 import 'package:pure_live/player/core/playback_source_transport.dart';
+import 'package:pure_live/modules/multiview/models/multiview_models.dart';
 
 /// multiview 单格播放器契约。
 ///
@@ -76,6 +77,12 @@ abstract interface class MultiviewCellPlayerHandle {
 abstract interface class MultiviewOwnedInputHandle {
   Future<void> startOwned(OwnedPlaybackSource source);
   Future<void> openOwned(OwnedPlaybackSource source);
+}
+
+/// Optional lease for the next URL [MultiviewCellPlayerHandle.start] or
+/// [MultiviewCellPlayerHandle.open] receives; null clears it.
+abstract interface class MultiviewSourceLeaseHandle {
+  void setSourceLease(MultiviewSourceLease? lease);
 }
 
 /// Optional end-of-stream signal. A live source that the server closes (for
@@ -288,7 +295,8 @@ class MultiviewCellPlayer
         MultiviewCellPlayerHandle,
         MultiviewOwnedInputHandle,
         MultiviewFrameProgressHandle,
-        MultiviewSourceEndHandle {
+        MultiviewSourceEndHandle,
+        MultiviewSourceLeaseHandle {
   MultiviewCellPlayer({
     required int renderWidth,
     required int renderHeight,
@@ -309,6 +317,10 @@ class MultiviewCellPlayer
   bool _pendingOwned = false;
   OwnedPlaybackSource? _committedOwned;
   Future<void>? _resuming;
+  MultiviewSourceLease? _nextLease;
+
+  @override
+  void setSourceLease(MultiviewSourceLease? lease) => _nextLease = lease;
 
   @override
   VideoController? get videoController => _closed ? null : _backend.videoController;
@@ -339,6 +351,8 @@ class MultiviewCellPlayer
     if (start) _started = true;
     final generation = ++_generation;
     final immutableHeaders = Map<String, String>.unmodifiable(headers);
+    final lease = ownedSource == null ? _nextLease : null;
+    _nextLease = null;
     // Superseding a session acquisition cancels it before entering the native
     // serialization queue. Its late lease/cleanup still belongs to transport.
     final cancellation = _pendingOwned ? _transport.cancelPending() : Future<void>.value();
@@ -374,6 +388,8 @@ class MultiviewCellPlayer
             headers: immutableHeaders,
             policy: policy,
             nativeOpen: nativeOpen,
+            refreshAt: lease?.refreshAt,
+            renewFlv: lease?.renew,
           );
         }
         _committedOwned = ownedSource;
