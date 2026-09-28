@@ -179,7 +179,7 @@ void main() {
     expect(probeProvider, contains('file.isWithin(root)'));
   });
 
-  test('app-owned navigator defers cold share presentation until splash has finished', () {
+  test('app-owned navigator defers cold share presentation until a route exists', () {
     final mainSource = File('lib/main.dart').readAsStringSync();
     final windowSource = File('lib/common/global/platform/desktop_manager.dart').readAsStringSync();
 
@@ -187,7 +187,7 @@ void main() {
     expect(mainSource, contains('releaseAttachment: (path) async'));
     expect(mainSource, contains('FileUtils.cleanupOwnedSharedMediaFile(File(path))'));
     expect(windowSource, contains('appNavigatorKey.currentContext'));
-    expect(windowSource, contains('currentRoute != RoutePath.kSplash'));
+    expect(windowSource, contains('currentRoute.isNotEmpty'));
     expect(windowSource, contains('ShareCommandImportDialog.show(context: navigatorContext'));
     expect(windowSource, isNot(contains('ShareCommandImportDialog.show(context: context')));
 

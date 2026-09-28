@@ -33,14 +33,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.0"
-  animated_splash_plus:
-    dependency: "direct main"
-    description:
-      name: animated_splash_plus
-      sha256: "39ba27fcbc2ebae390176f5e9681787aae2fced5aa5cc2d7f4cdad9f5cd3f697"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   app_links:
     dependency: "direct main"
     description:

@@ -56,11 +56,9 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
   void initState() {
     super.initState();
     // Start favourite verification after the first Flutter frame instead of
-    // waiting until HomePage is created. When the splash page is enabled this
-    // overlaps its one-second animation; when it is disabled the first frame
-    // still wins over network/JSON work. The controller already publishes the
-    // settled room snapshot as one transaction, so cards do not reshuffle as
-    // individual requests finish.
+    // waiting until HomePage is created: the first frame wins over network/JSON
+    // work. The controller already publishes the settled room snapshot as one
+    // transaction, so cards do not reshuffle as individual requests finish.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && Get.isRegistered<FavoriteController>()) {
         Get.find<FavoriteController>();
@@ -168,7 +166,6 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
       builder: (lightDynamic, darkDynamic) {
         return Obx(() {
           final themeColor = SettingsService.to.theme.themeColor;
-          final showSplashPage = SettingsService.to.app.showSplashPage.v;
           final currentFactor = SettingsService.to.font.textScaleFactor.v;
 
           ThemeData lightTheme;
@@ -227,7 +224,7 @@ class _MyAppState extends State<MyApp> with DesktopWindowMixin {
               // from flutter/material.dart and must be registered alongside it.
               material.GlobalMaterialLocalizations.delegate,
             ],
-            initialRoute: showSplashPage ? RoutePath.kSplash : RoutePath.kInitial,
+            initialRoute: RoutePath.kInitial,
             defaultTransition: Transition.native,
             routingCallback: (routing) {
               if (routing != null) {

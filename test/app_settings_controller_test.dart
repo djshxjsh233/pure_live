@@ -46,14 +46,14 @@ void main() {
 
     test('preserves unrelated app fields when updating refresh mode', () {
       final root = <String, dynamic>{
-        'app': {'showSplashPage': false},
+        'app': {'enableFullScreenDefault': false},
         'player': {'engine': 'mpv'},
       };
 
       final merged = AppSettingsController.mergeConfig(root, {'enableHighRefreshRate': false});
 
       expect(merged['player'], {'engine': 'mpv'});
-      expect(merged['app']['showSplashPage'], isFalse);
+      expect(merged['app']['enableFullScreenDefault'], isFalse);
       expect(merged['app']['enableHighRefreshRate'], isFalse);
     });
 

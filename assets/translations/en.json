@@ -604,8 +604,6 @@
   "sleep_timer": "Sleep Timer",
   "sms_login": "SMS Login",
   "speed": "Scroll speed (pixels/second)",
-  "splash_animation": "Splash Animation",
-  "splash_animation_subtitle": "Show logo on startup",
   "start_record_now": "Start recording now",
   "startup": "Start on Boot",
   "startup_subtitle": "Start Pure Live after signing in to Windows.",

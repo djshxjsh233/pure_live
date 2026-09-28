@@ -605,8 +605,6 @@
   "sleep_timer": "定时关闭",
   "sms_login": "短信登陆",
   "speed": "滚动速度（像素/秒）",
-  "splash_animation": "启动动画",
-  "splash_animation_subtitle": "启动时显示 Logo",
   "start_record_now": "立即启动录制",
   "startup": "开机启动",
   "startup_subtitle": "登录 Windows 后自动启动 Pure Live。",

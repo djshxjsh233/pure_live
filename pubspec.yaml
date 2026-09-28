@@ -168,7 +168,6 @@ dependencies:
   # -------------------------- 功能组件 --------------------------
   url_launcher: ^6.1.12 # 打开外部链接
   share_handler: ^0.0.25 # 分享功能
-  animated_splash_plus: ^1.0.3 # 启动动画
 
   flutter_exit_app:
     path: plugins/built_in_kotlin/flutter_exit_app # Local AGP 9 Built‑in Kotlin patch

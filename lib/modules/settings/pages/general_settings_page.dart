@@ -62,12 +62,6 @@ class GeneralSettingsPage extends GetView<SettingsService> {
                 icon: Icons.add_to_photos_outlined,
               ),
             context.buildSwitchTile(
-              title: i18n('splash_animation'),
-              subtitle: i18n("splash_animation_subtitle"),
-              value: SettingsService.to.app.showSplashPage,
-              icon: Remix.rocket_2_line,
-            ),
-            context.buildSwitchTile(
               title: i18n('enable_auto_check_update'),
               subtitle: "",
               value: SettingsService.to.app.enableAutoCheckUpdate,

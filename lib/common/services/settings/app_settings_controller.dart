@@ -40,7 +40,6 @@ class AppSettingsController extends GetxController {
   final RxBool enableAutoCheckUpdate = hiveBool('enableAutoCheckUpdate', true);
   final RxBool useGitHubOriginForUpdates = hiveBool('useGitHubOriginForUpdates', false);
   final RxBool enableFullScreenDefault = hiveBool('enableFullScreenDefault', false);
-  final RxBool showSplashPage = hiveBool('showSplashPage', true);
   late final RxString refreshRateModeName = hiveString('refreshRateMode', _initialRefreshRateMode());
   final RxBool preferRealOnlineCounts = hiveBool('preferRealOnlineCounts', false);
   late final RxList<String> realOnlinePlatforms = hiveStringList('realOnlinePlatforms', defaultRealOnlinePlatforms);
@@ -166,7 +165,6 @@ class AppSettingsController extends GetxController {
       'enableAutoCheckUpdate': enableAutoCheckUpdate.v,
       'useGitHubOriginForUpdates': useGitHubOriginForUpdates.v,
       'enableFullScreenDefault': enableFullScreenDefault.v,
-      'showSplashPage': showSplashPage.v,
       'refreshRateMode': refreshRateMode.storageValue,
       'enableHighRefreshRate': refreshRateMode != AppRefreshRateMode.powerSaving,
       'preferRealOnlineCounts': preferRealOnlineCounts.v,
@@ -194,7 +192,6 @@ class AppSettingsController extends GetxController {
       'enableAutoCheckUpdate': typed<bool>(json['enableAutoCheckUpdate'] ?? true),
       'useGitHubOriginForUpdates': typed<bool>(json['useGitHubOriginForUpdates'] ?? false),
       'enableFullScreenDefault': typed<bool>(json['enableFullScreenDefault'] ?? false),
-      'showSplashPage': typed<bool>(json['showSplashPage'] ?? true),
       'preferRealOnlineCounts': typed<bool>(json['preferRealOnlineCounts'] ?? false),
       'realOnlinePlatforms': typed<List<String>>(
         normalizeRealOnlinePlatforms(List<String>.from(json['realOnlinePlatforms'] ?? defaultRealOnlinePlatforms)),
@@ -219,7 +216,6 @@ class AppSettingsController extends GetxController {
     enableAutoCheckUpdate.v = parsed['enableAutoCheckUpdate'];
     useGitHubOriginForUpdates.v = parsed['useGitHubOriginForUpdates'];
     enableFullScreenDefault.v = parsed['enableFullScreenDefault'];
-    showSplashPage.v = parsed['showSplashPage'];
     setRefreshRateMode(parsed['refreshRateMode']);
     preferRealOnlineCounts.v = parsed['preferRealOnlineCounts'];
     realOnlinePlatforms.v = parsed['realOnlinePlatforms'];
@@ -242,7 +238,6 @@ class AppSettingsController extends GetxController {
       'enableAutoCheckUpdate': app['enableAutoCheckUpdate'] ?? true,
       'useGitHubOriginForUpdates': app['useGitHubOriginForUpdates'] ?? false,
       'enableFullScreenDefault': app['enableFullScreenDefault'] ?? false,
-      'showSplashPage': app['showSplashPage'] ?? true,
       'refreshRateMode': refreshRateModeFromConfig(app).storageValue,
       'enableHighRefreshRate': refreshRateModeFromConfig(app) != AppRefreshRateMode.powerSaving,
       'preferRealOnlineCounts': app['preferRealOnlineCounts'] ?? false,
