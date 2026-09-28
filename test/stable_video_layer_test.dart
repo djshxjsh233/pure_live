@@ -46,7 +46,9 @@ void main() {
     await tester.pumpWidget(build(true));
     expect(mounted, 1);
 
-    await tester.pumpWidget(build(false));
+    // The Windows strategy detaches the subtree instead of hiding it, so the
+    // native texture is disposed and rebuilt on the next attach.
+    await tester.pumpWidget(const SizedBox.shrink());
     expect(disposed, 1);
 
     await tester.pumpWidget(build(true));

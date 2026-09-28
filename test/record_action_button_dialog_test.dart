@@ -176,7 +176,7 @@ void main() {
     expect(recorder.removals, isEmpty);
   });
 
-  testWidgets('record center navigation starts after the dialog reverse transition', (tester) async {
+  testWidgets('record center opens right after the dialog result resolves', (tester) async {
     var opens = 0;
     await open(
       tester,
@@ -188,10 +188,6 @@ void main() {
 
     await tester.tap(find.text(translations['en']!['go_record_center'] as String));
     await tester.pump();
-    expect(opens, 0);
-    await tester.pump(kThemeAnimationDuration - const Duration(milliseconds: 1));
-    expect(opens, 0);
-    await tester.pump(const Duration(milliseconds: 1));
     expect(opens, 1);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('record-action-dialog')), findsNothing);

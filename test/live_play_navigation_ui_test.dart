@@ -22,7 +22,9 @@ void main() {
     );
 
     final finder = find.byKey(const ValueKey('live-danmaku-section-tabs'));
-    final tabBar = tester.widget<TabBar>(finder);
+    // ScrollableTabBar wraps the TabBar (desktop wheel/drag support), so the
+    // row's own TabBar has to be reached through its descendant.
+    final tabBar = tester.widget<TabBar>(find.descendant(of: finder, matching: find.byType(TabBar)));
     expect(tabBar.isScrollable, isFalse);
     expect(tabBar.tabAlignment, TabAlignment.fill);
     for (final label in tabs) {
