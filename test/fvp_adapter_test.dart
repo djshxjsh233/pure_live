@@ -13,8 +13,8 @@ void main() {
 
   test('request headers become CRLF lines and injected lines are dropped', () {
     expect(
-      FvpAdapter.encodeHeaders({'Referer': 'https://live.shopee.co.id/', 'User-Agent': 'UA'}),
-      'Referer: https://live.shopee.co.id/\r\nUser-Agent: UA\r\n',
+      FvpAdapter.encodeHeaders({'Referer': 'https://live.example.com/', 'User-Agent': 'UA'}),
+      'Referer: https://live.example.com/\r\nUser-Agent: UA\r\n',
     );
     expect(FvpAdapter.encodeHeaders({'X-A': 'ok\r\nInjected: 1', 'Bad:Name': 'v', '': 'v'}), isEmpty);
   });
