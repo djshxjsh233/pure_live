@@ -76,7 +76,14 @@ void main() {
       final file = File('${directory.path}/v$version.json')..writeAsStringSync(jsonEncode(source));
       expect(await backup.recover(file), isTrue);
       await Future<void>.delayed(const Duration(milliseconds: 600));
-      expect(detached(backup.exportAllSettings()), expected);
+      // Credential sections are asserted separately below. They are set on this
+      // device *after* `expected` was captured, so they can only differ here by
+      // design: a backup that carries no credential leaves the local one alone.
+      Map<String, dynamic> withoutCredentials(Map<String, dynamic> data) =>
+          Map<String, dynamic>.from(data)
+            ..remove('cookie')
+            ..remove('webdav');
+      expect(withoutCredentials(detached(backup.exportAllSettings())), withoutCredentials(expected));
       expect(settings.cookieManager.huyaCookie.value, 'local-fixture-cookie');
       expect(settings.webdav.currentWebDavConfig.value, 'local-fixture-config');
       await Hive.box('app_settings').flush();
