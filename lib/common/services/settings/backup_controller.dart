@@ -232,6 +232,16 @@ class BackupController extends GetxController {
     _importV2(data);
   }
 
+  /// Whether a credential section actually carries a credential.
+  ///
+  /// `toJson()` always writes every key of `cookie` / `webdav`, so a backup
+  /// taken on a signed-out device still contains the section — with every
+  /// value blank. Importing that would sign this device out of an account it
+  /// already holds, so a section without a single non-blank string counts as
+  /// omitted and leaves the local credentials alone.
+  static bool _carriesCredentials(Map<String, dynamic> section) =>
+      section.values.any((value) => value is String && value.isNotEmpty);
+
   void _importV2(Map<String, dynamic> data) {
     validateSectionStructure(data);
     Get.find<AppSettingsController>().fromJson(Map<String, dynamic>.from(data['app'] ?? {}));
@@ -253,11 +263,13 @@ class BackupController extends GetxController {
     Get.find<HistoryController>().fromJson(Map<String, dynamic>.from(data['history'] ?? {}));
 
     if (data.containsKey('webdav')) {
-      Get.find<WebDavController>().fromJson(Map<String, dynamic>.from(data['webdav'] ?? {}));
+      final webdav = Map<String, dynamic>.from(data['webdav'] ?? {});
+      if (_carriesCredentials(webdav)) Get.find<WebDavController>().fromJson(webdav);
     }
 
     if (data.containsKey('cookie')) {
-      Get.find<CookieSettingsController>().fromJson(Map<String, dynamic>.from(data['cookie'] ?? {}));
+      final cookie = Map<String, dynamic>.from(data['cookie'] ?? {});
+      if (_carriesCredentials(cookie)) Get.find<CookieSettingsController>().fromJson(cookie);
     }
 
     Get.find<ProxySettingsController>().fromJson(Map<String, dynamic>.from(data['proxy'] ?? {}));
