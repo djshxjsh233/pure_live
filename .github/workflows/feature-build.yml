@@ -82,7 +82,8 @@ jobs:
 
     if: ${{ (github.event_name == 'push' && github.ref_type == 'branch') || (github.event_name == 'workflow_dispatch' && inputs.run_quality) }}
 
-    runs-on: ubuntu-latest
+    # Pinned image: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19 (actions/runner-images#14748).
+    runs-on: ubuntu-24.04
 
     timeout-minutes: 35
 
@@ -156,7 +157,7 @@ jobs:
 
     needs: quality
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     timeout-minutes: 55
 
@@ -1347,7 +1348,7 @@ jobs:
       - linux
       - apple
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: write
@@ -1566,7 +1567,7 @@ jobs:
     needs:
       - publish-release
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: write

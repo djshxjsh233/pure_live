@@ -152,7 +152,8 @@ jobs:
     name: Verify and publish all platforms
     needs: windows
     if: ${{ always() && (needs.windows.result == 'success' || needs.windows.result == 'skipped') }}
-    runs-on: ubuntu-latest
+    # Pinned image: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19 (actions/runner-images#14748).
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
       GH_TOKEN: ${{ github.token }}
