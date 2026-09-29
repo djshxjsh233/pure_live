@@ -349,6 +349,27 @@ class PlayerManager {
   bool _isPlaybackCommandCurrent(int revision) =>
       !_disposed && !_isClosing && _playbackRequested && _playbackIntentRevision == revision;
 
+  /// Whether an in-flight engine switch may still be committed.
+  ///
+  /// A manual selection is a user command, so a transient command that landed
+  /// while the candidate was being created (pause, source hand-off, a second
+  /// tap) must not cancel it. Cancelling left the kernel selector showing the
+  /// new engine while the room kept the previous decoder, and because the
+  /// requested engine was rolled back, every later room reused that same
+  /// decoder too: the choice only took effect after restarting the process.
+  /// Automatic switches keep the stale-action guard, which exists so an old
+  /// recovery command cannot overwrite a newer request.
+  bool _honorsSwitchRequest({
+    required int sessionId,
+    required int entryIntentRevision,
+    required bool openCurrentSource,
+    required bool isManual,
+  }) {
+    if (!_isSessionValid(sessionId)) return false;
+    if (isManual) return true;
+    return !openCurrentSource || _isPlaybackCommandCurrent(entryIntentRevision);
+  }
+
   PlaybackSourceCommitSnapshot? get currentSourceCommit => _currentSourceCommit;
 
   Stream<PlaybackSourceCommitSnapshot> get onSourceCommitted => _sourceCommitController.stream;
@@ -468,6 +489,13 @@ class PlayerManager {
 
   UnifiedPlayer? get currentPlayer => _currentPlayer;
   PlayerEngine get currentEngine => _runtimeEngine ?? _defaultEngine ?? PlayerEngine.mediaKit;
+
+  /// The engine the next source open will use.
+  ///
+  /// [currentEngine] reports the active engine first, so it cannot observe a
+  /// selection that was recorded while the previous decoder is still live.
+  @visibleForTesting
+  PlayerEngine? get configuredDefaultEngine => _defaultEngine;
   Stream<PlayerState> get onStateChanged => _stateSubject.stream;
   Stream<bool> get onPlaying => _playingSubject.stream;
   Stream<bool> get onLoading => _loadingSubject.stream;
@@ -1867,10 +1895,18 @@ class PlayerManager {
       if (forceRecreate && identical(candidate, oldPlayer)) {
         throw StateError('Forced player recreation returned the active player instance');
       }
-      if (!_isSessionValid(sessionId) ||
-          (openCurrentSource && !_isPlaybackCommandCurrent(entryIntentRevision)) ||
+      if (!_honorsSwitchRequest(
+            sessionId: sessionId,
+            entryIntentRevision: entryIntentRevision,
+            openCurrentSource: openCurrentSource,
+            isManual: isManual,
+          ) ||
           isStillRequired?.call() == false) {
         await _safeDestroyPlayer(candidate);
+        // The selected engine is a user setting. Even when this immediate
+        // switch cannot be applied, the next request must use it instead of
+        // silently reviving the previous engine.
+        if (isManual) _defaultEngine = engine;
         return;
       }
 
@@ -1888,10 +1924,15 @@ class PlayerManager {
           audioOnly: targetAudioOnly,
           sourceQueryPolicy: sourceSelection?.sourceQueryPolicies[source.url],
         );
-        if (!_isSessionValid(sessionId) ||
-            (openCurrentSource && !_isPlaybackCommandCurrent(entryIntentRevision)) ||
+        if (!_honorsSwitchRequest(
+              sessionId: sessionId,
+              entryIntentRevision: entryIntentRevision,
+              openCurrentSource: openCurrentSource,
+              isManual: isManual,
+            ) ||
             isStillRequired?.call() == false) {
           await _safeDestroyPlayer(candidate);
+          if (isManual) _defaultEngine = engine;
           return;
         }
       }

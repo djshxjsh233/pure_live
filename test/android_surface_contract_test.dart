@@ -3,7 +3,21 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('vendored Android renderer follows the replaceable Surface contract', () {
+  test('media_kit_video patch snapshot is an adoption candidate, not compiled code', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final note = File('third_party/media_kit_video/PURELIVE_PATCH.md').readAsStringSync();
+
+    // The replaceable-Surface assertions below inspect a file that is NOT part
+    // of the build: the dependency resolves from the pinned git revision instead
+    // (confirmed through pubspec.lock and .dart_tool/package_config.json). That
+    // made them a false green for the running renderer, so the state is asserted
+    // here explicitly. Adopting the snapshot has to update this test.
+    expect(pubspec, contains('https://github.com/Predidit/media-kit.git'));
+    expect(pubspec, isNot(contains('path: ./third_party/media_kit_video')));
+    expect(note, contains('NOT WIRED INTO THE BUILD'));
+  });
+
+  test('media_kit_video patch snapshot keeps the replaceable Surface contract', () {
     final source = File(
       'third_party/media_kit_video/android/src/main/java/com/alexmercerind/media_kit_video/VideoOutput.java',
     ).readAsStringSync();

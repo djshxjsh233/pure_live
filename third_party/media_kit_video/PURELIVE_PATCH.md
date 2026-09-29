@@ -1,3 +1,20 @@
+> ## ⚠️ NOT WIRED INTO THE BUILD
+>
+> The compiled dependency is the pinned git revision (`pubspec.yaml` ->
+> `Predidit/media-kit.git`, `ref: 803c4a27912091db6f839d48d1b984a0d9f588c7`;
+> `pubspec.lock` resolves `media_kit_video` from `source: git`, and
+> `.dart_tool/package_config.json` points at the pub cache checkout). Nothing in
+> `third_party/media_kit_video/` is compiled, so the patch described below is
+> **not active**: it is a maintained adoption candidate whose base commit is the
+> same revision that is pinned.
+>
+> `test/android_surface_contract_test.dart` guards this snapshot, not the running
+> code. Adopting it means switching the dependency to
+> `path: ./third_party/media_kit_video`, moving the adapter audio-mode switch to
+> `VideoController.setVideoOutputEnabled`, and updating that test. The build used
+> this directory from `f3121c5b` (2026-08-19) until the `e828a14c` merge
+> (2026-09-25) resolved the dependency back to a git ref.
+
 # PureLive media_kit_video patch
 
 - Upstream: `https://github.com/Predidit/media-kit.git`

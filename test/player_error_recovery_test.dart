@@ -3416,6 +3416,126 @@ void main() {
       await manager.dispose();
     }
   });
+
+  test('a manual kernel choice survives a command that lands while the candidate is created', () async {
+    final room = LiveRoom(roomId: 'manual-switch', platform: 'test');
+    final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);
+    final fvp = _RecoveryFakePlayer(PlayerEngine.fvp, (_) => null);
+    final creating = Completer<void>();
+    final gate = Completer<void>();
+    var creates = 0;
+    final manager = _manager(
+      {PlayerEngine.mediaKit: mediaKit, PlayerEngine.fvp: fvp},
+      playerCreator: (_) {
+        if (creates++ == 0) return mediaKit;
+        creating.complete();
+        return gate.future.then((_) => fvp);
+      },
+    )..configureDefaultEngine(PlayerEngine.mediaKit);
+    try {
+      await manager.play(
+        'https://cdn.example/manual.flv',
+        const <String>['https://cdn.example/manual.flv'],
+        const <String, String>{},
+        room: room,
+      );
+      final switching = manager.switchEngine(PlayerEngine.fvp, isManual: true);
+      await creating.future;
+      // pause() bumps the playback intent revision synchronously, which used to
+      // cancel an in-flight manual switch and leave the selector showing an
+      // engine the room never adopted.
+      await manager.pause();
+      gate.complete();
+      await switching;
+      expect(manager.currentEngine, PlayerEngine.fvp);
+      expect(fvp.disposeCalls, 0);
+    } finally {
+      if (!gate.isCompleted) gate.complete();
+      await manager.dispose();
+    }
+  });
+
+  test('a manual kernel choice is remembered when its switch cannot be committed', () async {
+    final room = LiveRoom(roomId: 'remembered-switch', platform: 'test');
+    final creating = Completer<void>();
+    final gate = Completer<void>();
+    var gating = false;
+    final created = <PlayerEngine>[];
+    final manager = _manager(
+      {
+        PlayerEngine.mediaKit: _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null),
+        PlayerEngine.fvp: _RecoveryFakePlayer(PlayerEngine.fvp, (_) => null),
+      },
+      playerCreator: (engine) async {
+        created.add(engine);
+        if (gating && !creating.isCompleted) {
+          creating.complete();
+          await gate.future;
+        }
+        return _RecoveryFakePlayer(engine, (_) => null);
+      },
+    )..configureDefaultEngine(PlayerEngine.mediaKit);
+    try {
+      await manager.play(
+        'https://cdn.example/remembered.flv',
+        const <String>['https://cdn.example/remembered.flv'],
+        const <String, String>{},
+        room: room,
+      );
+      expect(created, <PlayerEngine>[PlayerEngine.mediaKit]);
+
+      gating = true;
+      final switching = manager.switchEngine(PlayerEngine.fvp, isManual: true);
+      await creating.future;
+      // Teardown invalidates the session, so this switch cannot be committed.
+      // The selection must still be the engine the next request uses; reverting
+      // to the previous default made the selector look effective while every
+      // later room kept the old decoder until the process restarted.
+      final disposing = manager.dispose();
+      gate.complete();
+      await switching;
+      await disposing;
+      expect(manager.configuredDefaultEngine, PlayerEngine.fvp);
+    } finally {
+      if (!gate.isCompleted) gate.complete();
+    }
+  });
+
+  test('an automatic kernel switch still yields to a newer command', () async {
+    final room = LiveRoom(roomId: 'auto-switch', platform: 'test');
+    final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);
+    final fvp = _RecoveryFakePlayer(PlayerEngine.fvp, (_) => null);
+    final creating = Completer<void>();
+    final gate = Completer<void>();
+    var creates = 0;
+    final manager = _manager(
+      {PlayerEngine.mediaKit: mediaKit, PlayerEngine.fvp: fvp},
+      playerCreator: (_) {
+        if (creates++ == 0) return mediaKit;
+        creating.complete();
+        return gate.future.then((_) => fvp);
+      },
+    )..configureDefaultEngine(PlayerEngine.mediaKit);
+    try {
+      await manager.play(
+        'https://cdn.example/auto.flv',
+        const <String>['https://cdn.example/auto.flv'],
+        const <String, String>{},
+        room: room,
+      );
+      final switching = manager.switchEngine(PlayerEngine.fvp);
+      await creating.future;
+      await manager.pause();
+      gate.complete();
+      await switching;
+      expect(manager.currentEngine, PlayerEngine.mediaKit);
+      expect(fvp.disposeCalls, 1);
+    } finally {
+      if (!gate.isCompleted) gate.complete();
+      await manager.dispose();
+    }
+  });
+
 }
 
 PlayerManager _manager(
