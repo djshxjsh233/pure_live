@@ -71,7 +71,7 @@ def fetch_data(url, *, allow_empty=False):
         sys.exit(1)
 
 
-def fetch_all_releases(repository):
+def fetch_all_releases(repository, *, allow_empty_first_page=False):
     """Fetch every release page instead of silently dropping old versions."""
     releases = []
     page = 1
@@ -80,7 +80,7 @@ def fetch_all_releases(repository):
             f"https://api.github.com/repos/{repository}/releases"
             f"?per_page={PAGE_SIZE}&page={page}"
         )
-        batch = fetch_data(url, allow_empty=page > 1)
+        batch = fetch_data(url, allow_empty=page > 1 or allow_empty_first_page)
         if not isinstance(batch, list):
             print("❌ 错误：发布历史接口返回了非列表数据", file=sys.stderr)
             sys.exit(1)
@@ -92,7 +92,9 @@ def fetch_all_releases(repository):
 
 def main():
     # 核心修改：网络获取与严格校验
-    data = fetch_all_releases(REPOSITORY)
+    # 本仓库还没发过 Release 时首页为空是合法状态，历史由上游补齐；
+    # 上游同样为空才是真正的异常（下面那次调用保持严格）。
+    data = fetch_all_releases(REPOSITORY, allow_empty_first_page=True)
 
     # 维护分支保留上游旧版本记录；同名标签优先使用当前仓库的 Release。
     if REPOSITORY != UPSTREAM_REPOSITORY:
