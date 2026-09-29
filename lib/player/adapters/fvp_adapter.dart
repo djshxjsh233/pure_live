@@ -231,25 +231,41 @@ class FvpAdapter
   static const Duration _textureAttachTimeout = Duration(seconds: 4);
   static const Duration _textureRestoreTimeout = Duration(seconds: 8);
 
+  /// Reads the decoded video size, treating a stalled source as unknown rather
+  /// than waiting forever.
+  Future<Size?> _readTextureSize(mdk.Player player) async {
+    try {
+      return await player.textureSize.timeout(_textureAttachTimeout);
+    } on TimeoutException {
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _attachTexture(
     mdk.Player player,
     int generation, {
     bool retried = false,
     bool reattempted = false,
   }) async {
-    Size? size;
-    try {
-      size = await player.textureSize.timeout(_textureAttachTimeout);
-    } on TimeoutException {
-      size = null;
-    } catch (_) {
-      size = null;
-    }
+    var size = await _readTextureSize(player);
     if (generation != _generation || _disposed) return;
     if (size == null) {
-      // fvp settles the video size as null when a live stream stalls or reports
-      // invalid while still loading, and never revisits it, so no texture is
-      // created and decoded frames are dropped (audio only). Re-prepare once.
+      // The size future is also completed with null while a source is still
+      // loading (and, before the player fix, while a previous source unloaded),
+      // so one read is not proof that this stream is unusable. Give the decoder a
+      // beat and read the current future again before restarting a live stream
+      // that is most likely fine.
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      if (generation != _generation || _disposed) return;
+      size = await _readTextureSize(player);
+      if (generation != _generation || _disposed) return;
+    }
+    if (size == null) {
+      // Genuinely unusable: a stalled source that settled on null never
+      // revisits it, so no texture would be created and decoded frames would be
+      // dropped (audio only). Re-prepare once.
       final url = _currentUrl;
       if (retried || url == null || _audioOnly) return;
       player.state = mdk.PlaybackState.stopped;

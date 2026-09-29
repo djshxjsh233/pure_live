@@ -53,6 +53,23 @@ void main() {
     expect(source, isNot(contains('textures.remove(texId);')));
   });
 
+  test('the vendored mdk player republishes the video size after a source switch', () {
+    final player = File('third_party/fvp/lib/src/player.dart').readAsStringSync();
+    final adapter = File('lib/player/adapters/fvp_adapter.dart').readAsStringSync();
+
+    // updateTexture() resolves the size from _videoSize. A source switch used to
+    // leave that future completed with null - the previous media unloaded before
+    // the next one loaded, and the "already completed" guard then refused to
+    // publish the new size - so no texture was ever created. Every source after
+    // the first, including a quality or line switch inside the same room, played
+    // audio with a black picture.
+    expect(player, contains('_videoSize = Completer<ui.Size?>();'));
+    expect(player, isNot(contains('// loading=>loaded, then frame decoded')));
+    // The adapter re-reads the current size before it restarts a live stream.
+    expect(adapter, contains('Future<Size?> _readTextureSize('));
+    expect(adapter, contains('size = await _readTextureSize(player);'));
+  });
+
   test('an adapter that cannot reuse its source is released with the room', () {
     final adapter = File('lib/player/adapters/fvp_adapter.dart').readAsStringSync();
     final manager = File('lib/player/core/player_manager.dart').readAsStringSync();

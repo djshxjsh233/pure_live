@@ -904,8 +904,14 @@ class Player {
 
   void _setVideoSize() {
     if (_videoSize.isCompleted) {
-      // loading=>loaded, then frame decoded
-      return;
+      // A previous media completed this future: with its own size, or with null
+      // because it was unloaded while the next source was being installed. The
+      // media that is loading now still has to publish its size, so replace the
+      // completed future instead of returning. Returning left it on null,
+      // updateTexture() then kept failing, and every source after the first
+      // played audio with a black picture - including a quality or line switch
+      // inside the same room.
+      _videoSize = Completer<ui.Size?>();
     }
     var v = mediaInfo.video?[0];
     // we don't support dynamic texture size change, so use the max video codec width
