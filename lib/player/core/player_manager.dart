@@ -1910,7 +1910,14 @@ class PlayerManager {
         return;
       }
 
-      final source = _currentSource;
+      // The replacement takes the source over only while a playback request is
+      // still active, which covers a retry after a failed open. A closed room
+      // keeps its last source for session re-entry and clears the request, so
+      // switching the kernel from the settings page used to reopen it and start
+      // a decoder nobody was watching - audio with no presentation - which then
+      // broke the next room with a black frame or an endless load. Pausing also
+      // clears the request; [resume] reopens the retained source in that case.
+      final source = _playbackRequested ? _currentSource : null;
       if (openCurrentSource && source != null) {
         if (candidate is SourceTransitionAwarePlayer) {
           (candidate as SourceTransitionAwarePlayer).beginSourceTransition();

@@ -3501,6 +3501,36 @@ void main() {
     }
   });
 
+  test('an engine switch after a closed room never reopens the last source', () async {
+    final room = LiveRoom(roomId: 'closed-switch', platform: 'test');
+    final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);
+    final fvp = _RecoveryFakePlayer(PlayerEngine.fvp, (_) => null);
+    final manager = _manager(
+      {PlayerEngine.mediaKit: mediaKit, PlayerEngine.fvp: fvp},
+      playerCreator: (engine) => engine == PlayerEngine.mediaKit ? mediaKit : fvp,
+    )..configureDefaultEngine(PlayerEngine.mediaKit);
+    try {
+      await manager.play(
+        'https://cdn.example/closed.flv',
+        const <String>['https://cdn.example/closed.flv'],
+        const <String, String>{},
+        room: room,
+      );
+      expect(mediaKit.openedUrls, <String>['https://cdn.example/closed.flv']);
+
+      await manager.close();
+      // Switching the kernel from the settings page used to reopen this room on
+      // the replacement player, which started a decoder nobody was watching:
+      // audio with no presentation, and a broken next room.
+      await manager.switchEngine(PlayerEngine.fvp, isManual: true);
+
+      expect(fvp.openedUrls, isEmpty);
+      expect(manager.currentEngine, PlayerEngine.fvp);
+    } finally {
+      await manager.dispose();
+    }
+  });
+
   test('an automatic kernel switch still yields to a newer command', () async {
     final room = LiveRoom(roomId: 'auto-switch', platform: 'test');
     final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);

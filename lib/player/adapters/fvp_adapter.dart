@@ -295,11 +295,10 @@ class FvpAdapter
     if (_disposed || !_initialized || _audioOnly) return;
     final player = _player;
     if (player == null) return;
-    // A replaced producer surface is re-bound by the engine: the plugin hands
-    // the new Surface back to MDK from `onSurfaceAvailable`. Only a missing
-    // texture proves that the presentation was lost, and re-creating a texture
-    // that still exists would tear down a live surface during the resume.
-    if (player.textureId.value != null && _sizeNotifier.value != null) return;
+    // MDK can also keep writing into a surface the system already dropped while
+    // the texture entry stays alive, and that failure is invisible from Dart, so
+    // the foreground path rebuilds the output unconditionally: an idle texture
+    // costs one blip, a stale one costs the whole picture until a restart.
     final generation = _generation;
     try {
       await _attachTexture(player, generation).timeout(_textureRestoreTimeout);
