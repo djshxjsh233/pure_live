@@ -3502,6 +3502,51 @@ void main() {
     }
   });
 
+  test('a source change replaces the player when the adapter cannot reuse it', () async {
+    final room = LiveRoom(roomId: 'fvp-line', platform: 'test');
+    Future<List<_RecoveryFakePlayer>> runSwitch(PlayerEngine engine) async {
+      final created = <_RecoveryFakePlayer>[];
+      final manager = _manager(
+        {engine: _RecoveryFakePlayer(engine, (_) => null)},
+        playerCreator: (requested) {
+          final player = _RecoveryFakePlayer(requested, (_) => null);
+          created.add(player);
+          return player;
+        },
+      )..configureDefaultEngine(engine);
+      try {
+        await manager.play(
+          'https://cdn.example/line-1.flv',
+          const <String>['https://cdn.example/line-1.flv'],
+          const <String, String>{},
+          room: room,
+        );
+        // Same room, another line: it is a second source on the same player.
+        await manager.play(
+          'https://cdn.example/line-2.flv',
+          const <String>['https://cdn.example/line-2.flv'],
+          const <String, String>{},
+          room: room,
+        );
+        return created;
+      } finally {
+        await manager.dispose();
+      }
+    }
+
+    // mdk only renders the first source of a player instance, so the line switch
+    // has to run on a fresh player.
+    final fvp = await runSwitch(PlayerEngine.fvp);
+    expect(fvp, hasLength(2));
+    expect(fvp.first.openedUrls, <String>['https://cdn.example/line-1.flv']);
+    expect(fvp.last.openedUrls, <String>['https://cdn.example/line-2.flv']);
+
+    // An adapter that can reuse its source keeps the same player.
+    final mediaKit = await runSwitch(PlayerEngine.mediaKit);
+    expect(mediaKit, hasLength(1));
+    expect(mediaKit.single.openedUrls, <String>['https://cdn.example/line-1.flv', 'https://cdn.example/line-2.flv']);
+  });
+
   test('a long background stay replaces the FVP player instead of resuming it', () async {
     final room = LiveRoom(roomId: 'fvp-resume', platform: 'test');
     final replacements = <_RecoveryFakePlayer>[];

@@ -1450,6 +1450,9 @@ class PlayerManager {
     if (_disposed || _isClosing) return;
     final mySessionId = ++_sessionId;
     final sourceIntentRevision = _playbackIntentRevision;
+    // Whether a source is already open, i.e. this call replaces one. Captured
+    // before the flag is cleared for the new transaction below.
+    final replacingOpenSource = _sourceOpened;
     _sourceOpened = false;
     final committedSelection = replaceSourceSelection ? sourceSelection : _sourceSelectionForCurrentCohort();
     // A warm candidate leaves the previous source intact until commit. Only
@@ -1512,7 +1515,7 @@ class PlayerManager {
 
     if (!_isSessionValid(mySessionId) || !_isPlaybackCommandCurrent(sourceIntentRevision)) return;
 
-    final player = _currentPlayer;
+    var player = _currentPlayer;
 
     if (player == null) {
       if (!_isSessionValid(mySessionId)) {
@@ -1520,6 +1523,22 @@ class PlayerManager {
       }
 
       throw PlayerException(message: 'Current player is null', type: PlayerErrorType.lifecycle);
+    }
+
+    // An adapter that cannot open another source in place must be replaced for a
+    // source change, exactly like a room switch does. mdk only renders the first
+    // source of a player instance, so reusing it left a quality or line switch
+    // inside a room playing audio with a black picture.
+    // Only a source *change* needs this: the first open of a room already runs on
+    // a player that was created for it in this call.
+    if (replacingOpenSource &&
+        player is SourceReuseAwarePlayer &&
+        !(player as SourceReuseAwarePlayer).supportsSourceReuse) {
+      await _switchEngineInternal(currentEngine, forceRecreate: true, openCurrentSource: false);
+      if (!_isSessionValid(mySessionId) || !_isPlaybackCommandCurrent(sourceIntentRevision)) return;
+      final replacement = _currentPlayer;
+      if (replacement == null) return;
+      player = replacement;
     }
 
     _startAndroidPipObservation();
