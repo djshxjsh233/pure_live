@@ -107,13 +107,21 @@ void main() {
         .first;
     await tester.scrollUntilVisible(image, 240, scrollable: scrollable, maxScrolls: 30);
     await tester.tap(image);
-    await tester.pumpAndSettle();
+    // PhotoView keeps scheduling frames while its AssetImage resolves, so
+    // pumpAndSettle can keep pumping until the runner budget expires on a busy
+    // machine (it did in CI). The pushed route and the preview widget are in the
+    // tree after the first frame, which is all this test needs to assert.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
 
     expect(find.byType(PhotoView), findsOneWidget);
     final close = find.byTooltip('Close image preview');
     expect(close.hitTestable(), findsOneWidget);
     await tester.tap(close);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    // The pop transition plus route removal, without waiting for PhotoView to
+    // finish decoding the asset it is still holding.
+    await tester.pump(const Duration(seconds: 1));
     expect(find.byType(PhotoView), findsNothing);
     expect(tester.takeException(), isNull);
   });
