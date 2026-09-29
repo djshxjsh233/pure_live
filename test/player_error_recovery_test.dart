@@ -24,6 +24,7 @@ import 'package:pure_live/player/core/engine_fallback_manager.dart';
 import 'package:pure_live/player/core/line_fallback_manager.dart';
 import 'package:pure_live/player/core/player_manager.dart';
 import 'package:pure_live/player/core/playback_source_transport.dart';
+import 'package:pure_live/player/core/playback_lifecycle_coordinator.dart';
 import 'package:pure_live/player/core/portrait_stream_support.dart';
 import 'package:pure_live/player/interface/unified_player_interface.dart';
 import 'package:pure_live/player/models/player_engine.dart';
@@ -3501,6 +3502,58 @@ void main() {
     }
   });
 
+  test('a long background stay replaces the FVP player instead of resuming it', () async {
+    final room = LiveRoom(roomId: 'fvp-resume', platform: 'test');
+    final replacements = <_RecoveryFakePlayer>[];
+    final fvp = _RecoveryFakePlayer(PlayerEngine.fvp, (_) => null);
+    final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);
+    var creates = 0;
+    final manager = _manager(
+      {PlayerEngine.fvp: fvp, PlayerEngine.mediaKit: mediaKit},
+      playerCreator: (engine) {
+        if (creates++ == 0) return fvp;
+        final replacement = _RecoveryFakePlayer(engine, (_) => null);
+        replacements.add(replacement);
+        return replacement;
+      },
+      fvpBackgroundRecreateAfter: Duration.zero,
+    )..configureDefaultEngine(PlayerEngine.fvp);
+    final coordinator = PlaybackLifecycleCoordinator(
+      pauseForLifecycle: manager.pauseForLifecycle,
+      resumeFromLifecycle: manager.resumeFromLifecycle,
+      shouldContinueInBackground: () => false,
+      isAudioOnly: () => false,
+      isSleepSessionActive: () => false,
+      commitAudioOnlyPowerSaving: () async {},
+      prepareAudioOnlyVideoRestore: () async {},
+      hiddenPauseDelay: Duration.zero,
+    );
+    try {
+      await manager.play(
+        'https://cdn.example/fvp.flv',
+        const <String>['https://cdn.example/fvp.flv'],
+        const <String, String>{},
+        room: room,
+      );
+      expect(fvp.openedUrls, <String>['https://cdn.example/fvp.flv']);
+
+      await coordinator.handleState(AppLifecycleState.hidden);
+      await coordinator.handleState(AppLifecycleState.resumed);
+      // FVP cannot survive a background stay, so the room must come back on a
+      // fresh player - the only state that renders on device - with the source
+      // reopened rather than resumed.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(replacements, hasLength(1));
+      expect(replacements.single.engine, PlayerEngine.fvp);
+      expect(replacements.single.openedUrls, <String>['https://cdn.example/fvp.flv']);
+      expect(manager.currentPlayer, same(replacements.single));
+    } finally {
+      await coordinator.dispose();
+      await manager.dispose();
+    }
+  });
+
   test('an engine switch after a closed room never reopens the last source', () async {
     final room = LiveRoom(roomId: 'closed-switch', platform: 'test');
     final mediaKit = _RecoveryFakePlayer(PlayerEngine.mediaKit, (_) => null);
@@ -3576,6 +3629,7 @@ PlayerManager _manager(
   Duration unexpectedPauseGrace = const Duration(milliseconds: 1200),
   Duration? unexpectedPauseFailureGrace,
   Duration bufferingStallTimeout = const Duration(seconds: 12),
+  Duration fvpBackgroundRecreateAfter = const Duration(seconds: 5),
   Duration videoFrameStallTimeout = const Duration(seconds: 10),
   Duration recoveryBudgetResetDelay = const Duration(seconds: 30),
   Duration windowsHuyaProactiveRefreshInterval = const Duration(seconds: 40),
@@ -3602,6 +3656,7 @@ PlayerManager _manager(
     recoveryBudgetResetDelay: recoveryBudgetResetDelay,
     windowsHuyaProactiveRefreshInterval: windowsHuyaProactiveRefreshInterval,
     transientLiveRetryDelays: transientLiveRetryDelays,
+    fvpBackgroundRecreateAfter: fvpBackgroundRecreateAfter,
     useHardStopOnExit: () => false,
     audioModeServiceSync: (_, _) async {},
     audioSessionStart: (_) async {},

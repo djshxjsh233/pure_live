@@ -211,6 +211,7 @@ class PlayerManager {
   final Duration videoFrameStallTimeout;
   final Duration recoveryBudgetResetDelay;
   final List<Duration> transientLiveRetryDelays;
+  final Duration fvpBackgroundRecreateAfter;
   final Duration idlePlayerReleaseDelay;
   final bool enableActiveContentProbe;
 
@@ -252,6 +253,7 @@ class PlayerManager {
   int _bufferingRecoveryRevision = 0;
   int _playingRecoveryRevision = 0;
   final Set<_PlaybackSuspensionReason> _playbackSuspensions = <_PlaybackSuspensionReason>{};
+  DateTime? _lifecycleHiddenAt;
   Timer? _continuityTimer;
   Timer? _bufferingStallTimer;
   Timer? _videoFrameStallTimer;
@@ -302,6 +304,10 @@ class PlayerManager {
     this.videoFrameStallTimeout = const Duration(seconds: 10),
     this.recoveryBudgetResetDelay = const Duration(seconds: 30),
     this.transientLiveRetryDelays = const <Duration>[Duration(milliseconds: 750), Duration(seconds: 2)],
+    // FVP's native renderer keeps writing into the surface Android dropped while
+    // the app was hidden and its live stream does not come back either, so only a
+    // fresh player restores the room. Short app switches stay untouched.
+    this.fvpBackgroundRecreateAfter = const Duration(seconds: 5),
     this.idlePlayerReleaseDelay = const Duration(seconds: 45),
     this.windowsHuyaProactiveRefreshInterval = const Duration(seconds: 40),
     // media_kit's screenshot path temporarily detaches the Android hardware
@@ -537,6 +543,7 @@ class PlayerManager {
       _playbackRequested = true;
     }
     final token = (sessionId: _sessionId, intentRevision: _playbackIntentRevision);
+    if (reason == _PlaybackSuspensionReason.lifecycle) _lifecycleHiddenAt = DateTime.now();
     _playbackSuspensions.add(reason);
     _cancelContinuityRecovery();
     _cancelVideoFrameStallRecovery();
@@ -561,6 +568,25 @@ class PlayerManager {
         !_playbackRequested ||
         !_playbackSuspensions.remove(reason)) {
       return false;
+    }
+    if (reason == _PlaybackSuspensionReason.lifecycle) {
+      final hiddenAt = _lifecycleHiddenAt;
+      _lifecycleHiddenAt = null;
+      if (hiddenAt != null &&
+          player.engine == PlayerEngine.fvp &&
+          DateTime.now().difference(hiddenAt) >= fvpBackgroundRecreateAfter) {
+        // FVP cannot survive a background stay: it keeps rendering into the
+        // surface the system dropped, and reopening the source alone leaves the
+        // picture black (verified on device). Replacing the player reaches the
+        // one state that works there - the state a process restart reaches.
+        // Marked manual so a command that raced the resume cannot cancel it.
+        unawaited(
+          _enqueuePlayerLifecycle(
+            () => _switchEngineInternal(player.engine, isManual: true, forceRecreate: true, openCurrentSource: true),
+          ),
+        );
+        return true;
+      }
     }
     if (_playbackSuspensions.isNotEmpty || isPlayingNow || player.isPlayingNow) {
       _restoreVideoOutputAfterForeground(player);
