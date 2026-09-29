@@ -57,8 +57,10 @@ jobs:
     name: Analyze, test and probe
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_quality }}
     needs: []
-    # Pinned image: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19 (actions/runner-images#14748).
-    runs-on: ubuntu-24.04
+    # Pinned image instead of ubuntu-latest: the label migrates to Ubuntu 26 on
+    # 2026-10-19 (actions/runner-images#14748). Tracking the new image explicitly
+    # keeps the toolchain a deliberate choice rather than a silent upgrade.
+    runs-on: ubuntu-26.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,7 +102,7 @@ jobs:
         inputs.build_android &&
         (needs.quality.result == 'success' || needs.quality.result == 'skipped')
       }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -397,7 +399,7 @@ jobs:
         (!inputs.build_android || needs.android.result == 'success') &&
         (!inputs.build_windows || needs.windows.result == 'success') }}
     needs: [quality, android, windows]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -734,7 +736,7 @@ jobs:
       - windows
       - linux
       - apple
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
@@ -898,7 +900,7 @@ jobs:
     if: ${{ always() && inputs.create_release && needs.publish-release.result == 'success' }}
     needs:
       - publish-release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:

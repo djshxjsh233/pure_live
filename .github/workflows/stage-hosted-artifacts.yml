@@ -32,8 +32,10 @@ concurrency:
 jobs:
   validate-and-stage:
     name: Validate and stage ${{ inputs.artifact_name }}
-    # Pinned image: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19 (actions/runner-images#14748).
-    runs-on: ubuntu-24.04
+    # Pinned image instead of ubuntu-latest: the label migrates to Ubuntu 26 on
+    # 2026-10-19 (actions/runner-images#14748). Tracking the new image explicitly
+    # keeps the toolchain a deliberate choice rather than a silent upgrade.
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     steps:
