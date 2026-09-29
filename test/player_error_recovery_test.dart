@@ -3664,7 +3664,8 @@ PlayerManager _manager(
   );
 }
 
-class _RecoveryFakePlayer implements UnifiedPlayer, PrivateInputAwarePlayer, AudioOutputSuppressionAwarePlayer {
+class _RecoveryFakePlayer
+    implements UnifiedPlayer, PrivateInputAwarePlayer, AudioOutputSuppressionAwarePlayer, SourceReuseAwarePlayer {
   bool _privateInput = false;
   final openedPrivateInputs = <bool>[];
   final openedSourceIdentities = <String?>[];
@@ -3723,6 +3724,10 @@ class _RecoveryFakePlayer implements UnifiedPlayer, PrivateInputAwarePlayer, Aud
   int softStopCalls = 0;
   final List<bool> audioOutputSuppressionWrites = <bool>[];
   bool audioOutputWasSuppressedBeforeInit = false;
+
+  /// Mirrors the adapters: only fvp refuses to open another source in place.
+  @override
+  bool get supportsSourceReuse => engine != PlayerEngine.fvp;
 
   @override
   void setAudioOutputSuppressed(bool suppressed) {

@@ -27,7 +27,8 @@ class FvpAdapter
         SourceTransitionAwarePlayer,
         AudioOutputSuppressionAwarePlayer,
         PrivateInputAwarePlayer,
-        VideoOutputRestorablePlayer {
+        VideoOutputRestorablePlayer,
+        SourceReuseAwarePlayer {
   mdk.Player? _player;
   bool _initialized = false;
   bool _disposed = false;
@@ -404,7 +405,15 @@ class FvpAdapter
     _player = null;
     if (player != null) {
       player.volume = 0.0;
-      player.dispose();
+      try {
+        // mdk tears the native player down asynchronously. Creating the next
+        // player while that is still running leaves it without a working video
+        // output, so wait for it - bounded, because a stuck native teardown
+        // must not wedge the lifecycle queue.
+        await player.dispose().timeout(const Duration(seconds: 3));
+      } catch (_) {
+        // Best effort: the queue keeps moving and the room can still switch.
+      }
     }
     _stateSubject.add(PlayerState.disposed);
     _sizeNotifier.dispose();
@@ -425,6 +434,12 @@ class FvpAdapter
   bool get isPlayingNow => _playingSubject.value;
   @override
   bool get isReusable => true;
+
+  /// mdk only renders the first source opened on a player instance; a second
+  /// open keeps the audio and leaves the picture black. Every room therefore
+  /// gets a fresh player instead of reusing this one.
+  @override
+  bool get supportsSourceReuse => false;
   @override
   Stream<PlayerState> get onStateChanged => _stateSubject.stream;
   @override

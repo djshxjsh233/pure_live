@@ -53,6 +53,26 @@ void main() {
     expect(source, isNot(contains('textures.remove(texId);')));
   });
 
+  test('an adapter that cannot reuse its source is released with the room', () {
+    final adapter = File('lib/player/adapters/fvp_adapter.dart').readAsStringSync();
+    final manager = File('lib/player/core/player_manager.dart').readAsStringSync();
+    final player = File('third_party/fvp/lib/src/player.dart').readAsStringSync();
+
+    // mdk only renders the first source opened on a player instance: a second
+    // open keeps the audio and leaves the picture black, so the room must not
+    // hand its player to the next one. The behavioural path cannot be unit
+    // tested here (the harness cannot complete a close), so the contract is
+    // asserted directly instead.
+    expect(adapter, contains('SourceReuseAwarePlayer'));
+    expect(adapter, contains('bool get supportsSourceReuse => false;'));
+    expect(manager, contains('SourceReuseAwarePlayer'));
+    expect(manager, contains('reuseBlocked'));
+    // Creating the next player while the previous teardown still runs leaves it
+    // without a working video output, so the teardown has to be awaitable.
+    expect(player, contains('Future<void> dispose() async'));
+    expect(adapter, contains('await player.dispose().timeout('));
+  });
+
   test('fvp adapter re-asserts its video output after the app is foregrounded', () {
     final adapter = File('lib/player/adapters/fvp_adapter.dart').readAsStringSync();
 

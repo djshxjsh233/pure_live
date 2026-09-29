@@ -3729,7 +3729,14 @@ class PlayerManager {
     await _awaitBoundedWidgetUnmount();
     try {
       await LiveAudioService.stop();
-      if (_useHardStopOnExit()) {
+      // A player whose adapter cannot open another source in place is released
+      // with the room, so the next one is built fresh. FVP needs that: its
+      // native player only renders the first source it opened, and reusing it
+      // left the next room playing audio with a black picture.
+      final activePlayer = _currentPlayer;
+      final reuseBlocked =
+          activePlayer is SourceReuseAwarePlayer && !(activePlayer as SourceReuseAwarePlayer).supportsSourceReuse;
+      if (_useHardStopOnExit() || reuseBlocked) {
         await _hardDisposeInternal();
       } else {
         await softStop();

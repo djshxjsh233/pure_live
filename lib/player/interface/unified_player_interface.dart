@@ -146,6 +146,18 @@ abstract interface class VideoOutputRestorablePlayer {
   Future<void> restoreVideoOutput();
 }
 
+/// Optional capability: whether the native player may open the next live
+/// source in place.
+///
+/// Returning false releases the player when a room closes, so the next room
+/// builds a fresh one. FVP needs that: its native player does not survive a
+/// second source open (the room keeps playing audio with a black picture),
+/// while a fresh instance renders correctly. Adapters that do not implement
+/// this keep the previous reuse behaviour.
+abstract interface class SourceReuseAwarePlayer {
+  bool get supportsSourceReuse;
+}
+
 /// Optional capability for adapters that can prove that video frames reached
 /// the presentation surface, rather than merely reporting that the transport
 /// is in a `playing` state.

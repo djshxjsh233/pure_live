@@ -172,8 +172,12 @@ class Player {
     Libfvp.registerType(nativeHandle, 0, false);
   }
 
-  /// Release resources
-  void dispose() async {
+  /// Release resources.
+  ///
+  /// Awaitable so a caller can be sure the native player is gone before it
+  /// creates the next one; the teardown otherwise races a fresh player and its
+  /// video output never attaches.
+  Future<void> dispose() async {
     if (_pp == nullptr) {
       textureId.dispose();
       return;
