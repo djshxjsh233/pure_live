@@ -5,10 +5,7 @@
 // found in the LICENSE file.
 package com.mediadevkit.fvp;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 
@@ -38,21 +35,18 @@ public class FvpPlugin implements FlutterPlugin, MethodCallHandler {
   private TextureRegistry texRegistry;
   private Map<Long, TextureEntry> textures; // SurfaceProducer or SurfaceTextureEntry
   private Map<Long, Surface> surfaces;
-  private boolean impeller;
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    Bundle metaData = null;
-    Context appCtx = flutterPluginBinding.getApplicationContext();
-    try {
-        metaData = appCtx.getPackageManager().getApplicationInfo(appCtx.getPackageName(), PackageManager.GET_META_DATA).metaData;
-    } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-    }
-    impeller = false;
-    if (metaData != null) {
-      impeller = metaData.getBoolean("io.flutter.embedding.android.EnableImpeller", false);
-    }
-    Log.i("FvpPlugin", "metaData: " + metaData + ", impeller: " + impeller);
+    // Do not infer the surface API from the `EnableImpeller` manifest flag.
+    // Flutter 3.29+ enables Impeller by default on Android, so an absent flag
+    // means "engine default", not "Skia". Reading it with a `false` default
+    // selected the legacy SurfaceTexture entry point on Impeller builds, and
+    // that path registers no surface callbacks: after a background/foreground
+    // cycle the renderer kept writing into an abandoned buffer queue, so the
+    // picture never came back while the audio track kept playing.
+    // createSurfaceProducer() is preferred here and only falls back when the
+    // running engine does not implement it yet.
+    Log.i("FvpPlugin", "onAttachedToEngine");
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "fvp");
     channel.setMethodCallHandler(this);
     texRegistry = flutterPluginBinding.getTextureRegistry();
@@ -73,7 +67,14 @@ public class FvpPlugin implements FlutterPlugin, MethodCallHandler {
       final boolean tunnel = (boolean)call.argument("tunnel");
       TextureEntry te = null;
       Surface surface = null;
-      final SurfaceProducer sp = impeller ? texRegistry.createSurfaceProducer() : null;
+      SurfaceProducer produced = null;
+      try {
+        produced = texRegistry.createSurfaceProducer();
+      } catch (Throwable e) {
+        Log.w("FvpPlugin", "createSurfaceProducer unavailable, using SurfaceTexture: " + e);
+        produced = null;
+      }
+      final SurfaceProducer sp = produced;
       if (sp != null) {
         sp.setSize(width, height);
         surface = sp.getSurface();
@@ -107,7 +108,11 @@ public class FvpPlugin implements FlutterPlugin, MethodCallHandler {
                   @Override
                   public void onSurfaceCleanup() {
                     Log.d("FvpPlugin", "SurfaceProducer.onSurfaceCleanup for textureId " + texId);
-                    textures.remove(texId);
+                    // Keep the entry registered: the surface is gone, but the
+                    // TextureEntry still owns engine resources and is released
+                    // by ReleaseRT. Dropping it here skipped that release and
+                    // leaked one ImageReader per background/foreground cycle.
+                    surfaces.remove(texId);
                     nativeSetSurface(handle, texId, null, 0, 0, tunnel);
                   }
                 }

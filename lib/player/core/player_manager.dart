@@ -534,12 +534,32 @@ class PlayerManager {
         !_playbackSuspensions.remove(reason)) {
       return false;
     }
-    if (_playbackSuspensions.isNotEmpty || isPlayingNow || player.isPlayingNow) return true;
+    if (_playbackSuspensions.isNotEmpty || isPlayingNow || player.isPlayingNow) {
+      _restoreVideoOutputAfterForeground(player);
+      return true;
+    }
     await player.play();
+    _restoreVideoOutputAfterForeground(player);
     _armVideoFrameStallRecovery(player, token.sessionId);
     _scheduleRecoveryBudgetReset(player, token.sessionId);
     _scheduleProactiveSourceRefresh(player, token.sessionId);
     return !_disposed && !_isClosing && _sessionId == token.sessionId;
+  }
+
+  /// Re-asserts a native video output whose presentation surface the operating
+  /// system replaced while the application was hidden.
+  ///
+  /// Engines that own their surface through the engine's surface producer API
+  /// are re-bound by the engine itself. Adapters still using the legacy
+  /// Android `SurfaceTexture` entry point are not notified at all, so their
+  /// renderer keeps writing into an abandoned buffer queue: the room shows
+  /// black video with live audio and only recovers by restarting the process.
+  /// A failure inside the adapter is surfaced as a texture error instead, which
+  /// routes the room through the normal source/engine recovery pipeline.
+  void _restoreVideoOutputAfterForeground(UnifiedPlayer player) {
+    if (player is! VideoOutputRestorablePlayer) return;
+    if (_disposed || _isClosing || _runtimeAudioOnly || !_videoPresentationVisible) return;
+    unawaited((player as VideoOutputRestorablePlayer).restoreVideoOutput());
   }
 
   /// Selects the first engine without allocating a native player yet.

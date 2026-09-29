@@ -127,6 +127,25 @@ abstract interface class DecoderRecoveryAwarePlayer {
   Future<bool> prepareSoftwareDecoderFallback(PlayerException error);
 }
 
+/// Optional capability for adapters whose native video output must be
+/// re-asserted after the operating system replaced the presentation surface.
+///
+/// Android destroys the surface behind the Flutter view while the application
+/// is hidden. Engines that own their surface through the engine's surface
+/// producer API are notified by the engine itself; adapters still backed by
+/// the legacy `SurfaceTexture` entry point are not, so the renderer keeps
+/// writing into an abandoned buffer queue. That presents as a black room whose
+/// audio and overlay widgets are unaffected, and nothing restores it until the
+/// process is replaced.
+///
+/// Implementations must be safe to call while the current source keeps
+/// playing, and must not throw: a failure here is reported through
+/// [UnifiedPlayer.onError] so the manager recovery pipeline can reopen the
+/// source instead.
+abstract interface class VideoOutputRestorablePlayer {
+  Future<void> restoreVideoOutput();
+}
+
 /// Optional capability for adapters that can prove that video frames reached
 /// the presentation surface, rather than merely reporting that the transport
 /// is in a `playing` state.

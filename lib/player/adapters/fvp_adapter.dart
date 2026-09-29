@@ -26,7 +26,8 @@ class FvpAdapter
         VideoFitAwarePlayer,
         SourceTransitionAwarePlayer,
         AudioOutputSuppressionAwarePlayer,
-        PrivateInputAwarePlayer {
+        PrivateInputAwarePlayer,
+        VideoOutputRestorablePlayer {
   mdk.Player? _player;
   bool _initialized = false;
   bool _disposed = false;
@@ -222,8 +223,27 @@ class FvpAdapter
     if (!audioOnly) unawaited(_attachTexture(player, generation));
   }
 
-  Future<void> _attachTexture(mdk.Player player, int generation, {bool retried = false}) async {
-    final size = await player.textureSize;
+  /// A stalled live source can keep `mediaInfo.video` unresolved forever, and
+  /// `updateTexture` may then never publish a texture. Without a deadline the
+  /// room receives no texture at all and presents as a black screen that still
+  /// plays audio, with nothing retrying the attach.
+  static const Duration _textureAttachTimeout = Duration(seconds: 4);
+  static const Duration _textureRestoreTimeout = Duration(seconds: 8);
+
+  Future<void> _attachTexture(
+    mdk.Player player,
+    int generation, {
+    bool retried = false,
+    bool reattempted = false,
+  }) async {
+    Size? size;
+    try {
+      size = await player.textureSize.timeout(_textureAttachTimeout);
+    } on TimeoutException {
+      size = null;
+    } catch (_) {
+      size = null;
+    }
     if (generation != _generation || _disposed) return;
     if (size == null) {
       // fvp settles the video size as null when a live stream stalls or reports
@@ -236,12 +256,60 @@ class FvpAdapter
       final result = await player.prepare();
       if (generation != _generation || _disposed || result < 0) return;
       player.state = mdk.PlaybackState.playing;
-      return _attachTexture(player, generation, retried: true);
+      return _attachTexture(player, generation, retried: true, reattempted: reattempted);
     }
-    _widthSubject.add(size.width.toInt());
-    _heightSubject.add(size.height.toInt());
-    _sizeNotifier.value = size;
-    await player.updateTexture();
+    final resolved = size;
+    _widthSubject.add(resolved.width.toInt());
+    _heightSubject.add(resolved.height.toInt());
+    _sizeNotifier.value = resolved;
+    try {
+      await player.updateTexture();
+    } catch (_) {
+      if (generation != _generation || _disposed) return;
+      _fail('fvp: texture attach failed', PlayerErrorType.texture);
+      return;
+    }
+    if (generation != _generation || _disposed) return;
+    if (player.textureId.value == null && !reattempted) {
+      // updateTexture releases the previous entry before it resolves the video
+      // size, so an unresolvable size leaves `textureId` null. The video widget
+      // then renders nothing while audio keeps playing, and no later event
+      // retries the attach. Give it one bounded second chance.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (generation != _generation || _disposed) return;
+      return _attachTexture(player, generation, retried: retried, reattempted: true);
+    }
+  }
+
+  /// Re-asserts the native video output after the presentation surface changed.
+  ///
+  /// The engine destroys and re-creates the Flutter view surface while the
+  /// application is hidden. `SurfaceProducer`-backed engines are notified by
+  /// the engine; the legacy `SurfaceTexture` entry point used by this plugin
+  /// receives no callback at all, so MDK keeps writing into the abandoned
+  /// buffer queue and the room stays black with its audio alive. Re-creating
+  /// the texture hands MDK a live surface again. A failure here is reported as
+  /// a texture error so the manager recovery pipeline can reopen the source.
+  @override
+  Future<void> restoreVideoOutput() async {
+    if (_disposed || !_initialized || _audioOnly) return;
+    final player = _player;
+    if (player == null) return;
+    // A replaced producer surface is re-bound by the engine: the plugin hands
+    // the new Surface back to MDK from `onSurfaceAvailable`. Only a missing
+    // texture proves that the presentation was lost, and re-creating a texture
+    // that still exists would tear down a live surface during the resume.
+    if (player.textureId.value != null && _sizeNotifier.value != null) return;
+    final generation = _generation;
+    try {
+      await _attachTexture(player, generation).timeout(_textureRestoreTimeout);
+    } on TimeoutException {
+      if (generation != _generation || _disposed) return;
+      _fail('fvp: video output restore timed out', PlayerErrorType.texture);
+    } catch (_) {
+      if (generation != _generation || _disposed) return;
+      _fail('fvp: video output restore failed', PlayerErrorType.texture);
+    }
   }
 
   @override
