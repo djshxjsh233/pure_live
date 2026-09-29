@@ -12,6 +12,43 @@ bool supportsOrientationLockForLogicalDisplay(Size logicalDisplaySize) {
   return logicalDisplaySize.shortestSide < 600;
 }
 
+/// Android bridge for orientation modes that Flutter cannot express.
+///
+/// `SystemChrome.setPreferredOrientations` only maps onto lock-respecting
+/// constants: `[]` becomes `UNSPECIFIED`, `[landscapeLeft, landscapeRight]`
+/// becomes `USER_LANDSCAPE` and all four become `FULL_USER`. A device with the
+/// system rotation lock enabled therefore never rotates, while native video
+/// players ask for `SENSOR_LANDSCAPE` / `FULL_SENSOR`, which follow the sensor
+/// regardless of that lock. Playback fullscreen uses this bridge so a room
+/// behaves like those players; every other screen keeps the lock-respecting
+/// request, so browsing stays portrait while the user locked the rotation.
+const MethodChannel _orientationChannel = MethodChannel('pure_live/orientation');
+
+/// Requests the sensor-driven landscape mode.
+///
+/// Returns false when the platform side is unavailable (iOS, desktop), so the
+/// caller can fall back to the lock-respecting Flutter API.
+@visibleForTesting
+Future<bool> requestSensorLandscape() async {
+  try {
+    return await _orientationChannel.invokeMethod<bool>('setSensorLandscape') ?? false;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Clears a native orientation request so the system rotation lock applies
+/// again.
+@visibleForTesting
+Future<void> releaseNativeOrientation() async {
+  try {
+    await _orientationChannel.invokeMethod<void>('releaseOrientation');
+  } catch (_) {
+    // The Flutter-side release in the same paths still resets the activity.
+  }
+}
+
+
 @visibleForTesting
 Future<void> enterDesktopFullscreen({
   required bool isWindows,
@@ -264,6 +301,10 @@ class WindowService {
         await document.documentElement?.requestFullscreen();
       } else if (Platform.isAndroid || Platform.isIOS) {
         if (!_canApplyMobileOrientationLock()) return;
+        // Sensor-driven landscape follows the phone even while the system
+        // rotation lock is enabled, which is what a fullscreen video should
+        // do. The Flutter list below stays as the fallback.
+        if (Platform.isAndroid && await requestSensorLandscape()) return;
         await SystemChrome.setPreferredOrientations([
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight,
@@ -285,6 +326,7 @@ class WindowService {
 
   Future<void> followSystemOrientation() async {
     if (!(Platform.isAndroid || Platform.isIOS)) return;
+    await releaseNativeOrientation();
     await SystemChrome.setPreferredOrientations(const <DeviceOrientation>[]);
   }
 
@@ -304,6 +346,7 @@ class WindowService {
         document.exitFullscreen();
       } else if (Platform.isAndroid || Platform.isIOS) {
         await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+        await releaseNativeOrientation();
         await Future.microtask(() {});
         SystemChrome.setSystemUIOverlayStyle(
           const SystemUiOverlayStyle(statusBarIconBrightness: Brightness.dark, statusBarBrightness: Brightness.light),

@@ -1,6 +1,7 @@
 package com.mystyle.purelive
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.hardware.display.DisplayManager
 import android.media.AudioManager
 import android.net.wifi.WifiManager
@@ -24,6 +25,7 @@ class MainActivity : AudioServiceActivity() {
         private const val DISPLAY_MODE_CHANNEL = "pure_live/display_mode"
         private const val BACKGROUND_PLAYBACK_CHANNEL = "pure_live/background_playback"
         private const val PREDICTIVE_BACK_CHANNEL = "pure_live/predictive_back"
+        private const val ORIENTATION_CHANNEL = "pure_live/orientation"
         private var playbackWakeLock: PowerManager.WakeLock? = null
         private var playbackWifiLock: WifiManager.WifiLock? = null
         private var activeActivity: WeakReference<MainActivity>? = null
@@ -158,6 +160,31 @@ class MainActivity : AudioServiceActivity() {
                     }
                     else -> result.notImplemented()
                 }
+            }
+        }
+        // Flutter's SystemChrome.setPreferredOrientations can only express
+        // orientation modes that respect the system rotation lock: `[]` maps to
+        // UNSPECIFIED and `[landscapeLeft, landscapeRight]` to USER_LANDSCAPE.
+        // Playback fullscreen has to follow the phone like a native video
+        // player, so it asks for the sensor-driven mode through this channel.
+        // Every other screen keeps the lock-respecting Flutter request, which
+        // is why browsing stays portrait while the user locked the rotation.
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            ORIENTATION_CHANNEL,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "setSensorLandscape" -> {
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                    result.success(true)
+                }
+
+                "releaseOrientation" -> {
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    result.success(null)
+                }
+
+                else -> result.notImplemented()
             }
         }
         applyPreferredDisplayMode(highRefreshRateEnabled)
