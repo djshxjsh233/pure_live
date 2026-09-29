@@ -3,18 +3,20 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('media_kit_video patch snapshot is an adoption candidate, not compiled code', () {
+  test('media_kit_video patch is the dependency that is compiled', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
+    final lock = File('pubspec.lock').readAsStringSync();
     final note = File('third_party/media_kit_video/PURELIVE_PATCH.md').readAsStringSync();
 
-    // The replaceable-Surface assertions below inspect a file that is NOT part
-    // of the build: the dependency resolves from the pinned git revision instead
-    // (confirmed through pubspec.lock and .dart_tool/package_config.json). That
-    // made them a false green for the running renderer, so the state is asserted
-    // here explicitly. Adopting the snapshot has to update this test.
-    expect(pubspec, contains('https://github.com/Predidit/media-kit.git'));
-    expect(pubspec, isNot(contains('path: ./third_party/media_kit_video')));
-    expect(note, contains('NOT WIRED INTO THE BUILD'));
+    // The replaceable-Surface assertions below are only meaningful while this
+    // directory is the resolved dependency. Between the e828a14c merge and
+    // 2026-09-29 it was not, which silently turned them into a green light for a
+    // file that nothing compiled; assert the wiring so that cannot recur.
+    expect(pubspec, contains('path: ./third_party/media_kit_video'));
+    expect(pubspec, isNot(contains('path: ./media_kit_video')));
+    expect(lock, contains('path: "third_party/media_kit_video"'));
+    expect(note, contains('WIRED INTO THE BUILD'));
+    expect(note, isNot(contains('NOT WIRED')));
   });
 
   test('media_kit_video patch snapshot keeps the replaceable Surface contract', () {

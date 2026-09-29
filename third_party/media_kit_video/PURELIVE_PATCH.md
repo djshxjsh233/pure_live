@@ -1,19 +1,23 @@
-> ## ⚠️ NOT WIRED INTO THE BUILD
+> ## WIRED INTO THE BUILD
 >
-> The compiled dependency is the pinned git revision (`pubspec.yaml` ->
-> `Predidit/media-kit.git`, `ref: 803c4a27912091db6f839d48d1b984a0d9f588c7`;
-> `pubspec.lock` resolves `media_kit_video` from `source: git`, and
-> `.dart_tool/package_config.json` points at the pub cache checkout). Nothing in
-> `third_party/media_kit_video/` is compiled, so the patch described below is
-> **not active**: it is a maintained adoption candidate whose base commit is the
-> same revision that is pinned.
+> `media_kit_video` resolves from this directory: `pubspec.yaml` declares
+> `path: ./third_party/media_kit_video`, `pubspec.lock` reports `source: path`,
+> and `.dart_tool/package_config.json` / `.flutter-plugins-dependencies` point
+> here for every platform. The patch described below is therefore the renderer
+> that ships.
 >
-> `test/android_surface_contract_test.dart` guards this snapshot, not the running
-> code. Adopting it means switching the dependency to
-> `path: ./third_party/media_kit_video`, moving the adapter audio-mode switch to
-> `VideoController.setVideoOutputEnabled`, and updating that test. The build used
-> this directory from `f3121c5b` (2026-08-19) until the `e828a14c` merge
-> (2026-09-25) resolved the dependency back to a git ref.
+> `media_kit` itself stays on the pinned git revision
+> `803c4a27912091db6f839d48d1b984a0d9f588c7` (the commit this patch was replayed
+> onto), and the adapter's Android audio-mode switch goes through
+> `VideoController.setVideoOutputEnabled` so the controller stays the single
+> owner of mpv's `vid`.
+>
+> History: the build used this directory from `f3121c5b` (2026-08-19) until the
+> `e828a14c` merge (2026-09-25) resolved the dependency back to a git ref, which
+> silently dropped the patch. It was re-wired on 2026-09-29.
+>
+> `test/android_surface_contract_test.dart` asserts both this state and the
+> replaceable-Surface contract below.
 
 # PureLive media_kit_video patch
 

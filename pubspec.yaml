@@ -58,11 +58,12 @@ dependencies:
       ref: 803c4a27912091db6f839d48d1b984a0d9f588c7
       path: ./media_kit
 
+  # PureLive patch (PURELIVE_PATCH.md) on top of the media_kit revision pinned
+  # above: the Android controller owns mpv's `vid` together with the
+  # WID/Surface lifecycle, so an audio-only toggle can no longer race a
+  # rotation, PiP or surface replacement.
   media_kit_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      path: ./media_kit_video
-      ref: 803c4a27912091db6f839d48d1b984a0d9f588c7
+    path: ./third_party/media_kit_video
 
   better_player_plus: ^1.4.1
 

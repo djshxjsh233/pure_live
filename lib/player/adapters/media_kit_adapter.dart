@@ -1048,11 +1048,15 @@ class MediaKitAdapter
 
     try {
       if (PlatformUtils.isAndroid) {
-        // Android's patched video controller serializes `vid` with WID/Surface
-        // updates. Disabling decode here saves battery during long ASMR sessions
-        // while retaining the same player, demuxer and network connection.
+        // Android's video controller owns mpv's `vid` together with the
+        // WID/Surface lifecycle, so this request has to go through it: writing
+        // `vid` directly can be overwritten by an in-flight rotation, PiP or
+        // surface update and then leave the room waiting for a track that never
+        // comes back. Video mode always selects `auto`; only an explicit
+        // audio-only request selects `no`. Disabling decode still saves battery
+        // during long ASMR sessions while keeping player, demuxer and network.
         if (audioOnly) {
-          await _player.setVideoTrack(VideoTrack.no());
+          await _controller.setVideoOutputEnabled(false);
         } else {
           await _restoreAndroidVideoOutput();
         }
@@ -1096,7 +1100,7 @@ class MediaKitAdapter
       // The stream is broadcast, but arm after attaching the listener so a
       // stale cached state can never be mistaken for the next decoded frame.
       armed = true;
-      await _player.setVideoTrack(VideoTrack.auto());
+      await _controller.setVideoOutputEnabled(true);
 
       var observedFreshFrame = true;
       await frameReady.future.timeout(
