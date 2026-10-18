@@ -1363,14 +1363,17 @@ jobs:
 
     if: >-
       ${{ always() &&
-        github.event_name == 'workflow_dispatch' &&
-        inputs.create_release &&
-        (inputs.build_android || inputs.build_windows || inputs.build_linux || inputs.build_macos || inputs.build_ios) &&
-        (needs.quality.result == 'success' || needs.quality.result == 'skipped') &&
-        (!inputs.build_android || needs.android.result == 'success') &&
-        (!inputs.build_windows || needs.windows.result == 'success') &&
-        (!inputs.build_linux || needs.linux.result == 'success') &&
-        (!(inputs.build_macos || inputs.build_ios) || needs.apple.result == 'success') }}
+        ((github.event_name == 'push' &&
+          github.ref_type == 'branch' &&
+          needs.android.result == 'success') ||
+         (github.event_name == 'workflow_dispatch' &&
+          inputs.create_release &&
+          (inputs.build_android || inputs.build_windows || inputs.build_linux || inputs.build_macos || inputs.build_ios) &&
+          (!inputs.build_android || needs.android.result == 'success') &&
+          (!inputs.build_windows || needs.windows.result == 'success') &&
+          (!inputs.build_linux || needs.linux.result == 'success') &&
+          (!(inputs.build_macos || inputs.build_ios) || needs.apple.result == 'success'))) &&
+        (needs.quality.result == 'success' || needs.quality.result == 'skipped') }}
     needs:
       - quality
       - android
@@ -1389,13 +1392,31 @@ jobs:
       # Validate release tag
       # -----------------------------------------------------
 
-      - name: Validate release tag
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: master
+          fetch-depth: 0
+
+      # -----------------------------------------------------
+      # Resolve release tag
+      # -----------------------------------------------------
+
+      - name: Resolve release tag
+        id: tag
         shell: bash
         env:
-          TAG: ${{ inputs.release_tag }}
+          INPUT_TAG: ${{ inputs.release_tag }}
         run: |
           set -euo pipefail
 
+          if [[ "${GITHUB_EVENT_NAME}" == push ]]; then
+            # A push build publishes itself, so the tag comes from pubspec.yaml.
+            VERSION="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | head -n 1)"
+            TAG="v${VERSION%%+*}"
+          else
+            TAG="${INPUT_TAG:-}"
+          fi
 
           if [[ -z "$TAG" ]]; then
             echo "release_tag is required when create_release=true."
@@ -1408,15 +1429,8 @@ jobs:
             exit 1
           fi
 
-      # -----------------------------------------------------
-      # Checkout
-      # -----------------------------------------------------
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: master
-          fetch-depth: 0
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $TAG"
 
       # -----------------------------------------------------
       # Download artifacts
@@ -1506,7 +1520,7 @@ jobs:
         id: release_body
         shell: bash
         env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ steps.tag.outputs.tag }}
           RELEASE_DESCRIPTION: ${{ fromJson(steps.version.outputs.content).version_desc }}
         run: |
           set -euo pipefail
@@ -1568,8 +1582,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
-          tag_name: ${{ inputs.release_tag }}
-          name: ${{ inputs.release_tag }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
 
           body_path: ${{ steps.release_body.outputs.body_path }}
 

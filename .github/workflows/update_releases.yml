@@ -1,11 +1,8 @@
 name: 手动更新历史发布数据
 
 on:
+  # Push-only by hand: the 48h schedule kept opening bot commits nobody asked for.
   workflow_dispatch:
-
-  schedule:
-    # 每 48 小时执行一次
-    - cron: '0 0 */2 * *'
 
 permissions:
   contents: read
