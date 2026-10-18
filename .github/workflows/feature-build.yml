@@ -225,6 +225,34 @@ jobs:
       # Build
       # -----------------------------------------------------
 
+      - name: Provision Android NDK for this runner image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Hosted images stopped preinstalling the NDK Flutter pins. When AGP
+          # installs it during configuration, that external sdkmanager process
+          # invalidates Gradle's configuration cache and the build fails before
+          # compiling anything. Provision it up front and disable the cache for
+          # this job so an image refresh cannot break the build again.
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          NDK_VERSION="28.2.13676358"
+
+          if [[ ! -d "$SDK_ROOT/ndk/$NDK_VERSION" ]]; then
+            # printf, not yes: a self-inflicted SIGPIPE on the writer would trip
+            # pipefail and fail the step for no reason.
+            printf 'y\n' |
+              "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+                --sdk_root="$SDK_ROOT" --install "ndk;$NDK_VERSION" \
+                > /dev/null ||
+              echo "sdkmanager could not provision the NDK; AGP will retry."
+          fi
+
+          sed -i \
+            's/^org\.gradle\.configuration-cache=true$/org.gradle.configuration-cache=false/' \
+            android/gradle.properties
+          grep '^org.gradle.configuration-cache=' android/gradle.properties
+
       - name: Build Android arm64-v8a release APK
         run: |
           flutter build apk \
@@ -303,7 +331,7 @@ jobs:
             PureLive-*-android-arm64-v8a-release.apk
             PureLive-*-android-arm64-v8a-release.apk.sha256
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 90
 
 
 # =========================================================
