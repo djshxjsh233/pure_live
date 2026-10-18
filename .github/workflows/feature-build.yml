@@ -1577,9 +1577,9 @@ jobs:
 
           ### 🔧 构建信息
 
-          - Commit: `$GITHUB_SHA`
-          - 触发方式: $GITHUB_EVENT_NAME
-          - 构建链接: ${{ github.server_url }}/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID
+          - Commit: `${{ github.sha }}`
+          - 触发方式: ${{ github.event_name }}
+          - 构建链接: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
           EOF
 
