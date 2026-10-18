@@ -1526,6 +1526,9 @@ jobs:
         env:
           RELEASE_TAG: ${{ steps.tag.outputs.tag }}
           RELEASE_DESCRIPTION: ${{ fromJson(steps.version.outputs.content).version_desc }}
+          BUILD_COMMIT: ${{ github.sha }}
+          BUILD_EVENT: ${{ github.event_name }}
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
 
@@ -1577,9 +1580,9 @@ jobs:
 
           ### 🔧 构建信息
 
-          - Commit: `${{ github.sha }}`
-          - 触发方式: ${{ github.event_name }}
-          - 构建链接: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Commit: $BUILD_COMMIT
+          - 触发方式: $BUILD_EVENT
+          - 构建链接: $BUILD_URL
 
           EOF
 
