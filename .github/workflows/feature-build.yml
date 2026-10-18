@@ -1411,22 +1411,26 @@ jobs:
           set -euo pipefail
 
           if [[ "${GITHUB_EVENT_NAME}" == push ]]; then
-            # A push build publishes itself, so the tag comes from pubspec.yaml.
+            # Every push keeps its own release, so an older known-good APK stays
+            # downloadable: v<versionName>-<buildNumber>-b<runNumber>.
             VERSION="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | head -n 1)"
-            TAG="v${VERSION%%+*}"
+            NAME="${VERSION%%+*}"
+            BUILD="${VERSION##*+}"
+            [[ "$BUILD" == "$VERSION" ]] && BUILD="0"
+            TAG="v${NAME}-${BUILD}-b${GITHUB_RUN_NUMBER}"
           else
             TAG="${INPUT_TAG:-}"
-          fi
 
-          if [[ -z "$TAG" ]]; then
-            echo "release_tag is required when create_release=true."
-            exit 1
-          fi
+            if [[ -z "$TAG" ]]; then
+              echo "release_tag is required when create_release=true."
+              exit 1
+            fi
 
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid release tag: $TAG"
-            echo "Expected format: v1.2.3"
-            exit 1
+            if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid release tag: $TAG"
+              echo "Expected format: v1.2.3"
+              exit 1
+            fi
           fi
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -1570,6 +1574,12 @@ jobs:
           ### 📝 本次更新
 
           $RELEASE_DESCRIPTION
+
+          ### 🔧 构建信息
+
+          - Commit: `$GITHUB_SHA`
+          - 触发方式: $GITHUB_EVENT_NAME
+          - 构建链接: ${{ github.server_url }}/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID
 
           EOF
 
