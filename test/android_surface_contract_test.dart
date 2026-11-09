@@ -87,7 +87,14 @@ void main() {
     // Creating the next player while the previous teardown still runs leaves it
     // without a working video output, so the teardown has to be awaitable.
     expect(player, contains('Future<void> dispose() async'));
-    expect(adapter, contains('await player.dispose().timeout('));
+    // The teardown is captured, published so the next player creation can wait
+    // for it, and only then awaited with a bound: a teardown that outlives the
+    // bound has to stay visible instead of being dropped.
+    expect(adapter, contains('final teardown = player.dispose();'));
+    expect(adapter, contains('await teardown.timeout('));
+    expect(adapter, contains('static Future<void>? _pendingTeardown;'));
+    expect(adapter, contains('static Future<void> awaitPendingTeardown() async'));
+    expect(manager, contains('await FvpAdapter.awaitPendingTeardown();'));
   });
 
   test('fvp adapter re-asserts its video output after the app is foregrounded', () {
