@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:pure_live/core/common/core_log.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -30,6 +31,14 @@ class FvpAdapter
         VideoOutputRestorablePlayer,
         SourceReuseAwarePlayer {
   mdk.Player? _player;
+
+  // [fvp-fix] The plugin disposes `player.textureId` inside its own
+  // dispose(). Feeding that notifier straight to ValueListenableBuilder
+  // meant a swapped-out player left the picture permanently unbuildable
+  // (audio alive, black frame) until the app restarted. This mirror is
+  // owned by the adapter and survives every player swap.
+  final ValueNotifier<int?> _textureMirror = ValueNotifier<int?>(null);
+  mdk.Player? _mirrorSource;
   bool _initialized = false;
   bool _disposed = false;
   bool _audioOnly = false;
@@ -287,15 +296,22 @@ class FvpAdapter
       return;
     }
     if (generation != _generation || _disposed) return;
-    if (player.textureId.value == null && !reattempted) {
-      // updateTexture releases the previous entry before it resolves the video
-      // size, so an unresolvable size leaves `textureId` null. The video widget
-      // then renders nothing while audio keeps playing, and no later event
-      // retries the attach. Give it one bounded second chance.
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+    // [fvp-fix] One bounded retry was not enough: when updateTexture settles on
+    // a null id the widget renders nothing forever while audio plays. Retry
+    // with backoff and report the final failure instead of ending silently.
+    var waited = 0;
+    while (player.textureId.value == null && waited < 3) {
+      waited++;
+      await Future<void>.delayed(Duration(milliseconds: 300 * waited));
       if (generation != _generation || _disposed) return;
-      return _attachTexture(player, generation, retried: retried, reattempted: true);
+      await player.updateTexture();
+      if (generation != _generation || _disposed) return;
+      CoreLog.i('[fvp-fix] texture retry $waited id=${player.textureId.value}');
     }
+    _bindTextureMirror(player);
+    _syncTextureMirror();
+    CoreLog.i('[fvp-fix] attach done gen=$generation id=${player.textureId.value} '
+        'size=${resolved.width.toInt()}x${resolved.height.toInt()}');
   }
 
   /// Re-asserts the native video output after the presentation surface changed.
@@ -328,13 +344,27 @@ class FvpAdapter
     }
   }
 
+  void _bindTextureMirror(mdk.Player player) {
+    if (identical(_mirrorSource, player)) return;
+    _mirrorSource?.textureId.removeListener(_syncTextureMirror);
+    _mirrorSource = player;
+    player.textureId.addListener(_syncTextureMirror);
+    _syncTextureMirror();
+  }
+
+  void _syncTextureMirror() {
+    final value = _mirrorSource?.textureId.value;
+    if (_textureMirror.value != value) _textureMirror.value = value;
+  }
+
   @override
   Widget getVideoWidget({BoxFit? fit}) {
     if (fit != null) _fit = fit;
     final player = _player;
     if (player == null || _audioOnly) return const SizedBox.shrink();
+    _bindTextureMirror(player);
     return ValueListenableBuilder<int?>(
-      valueListenable: player.textureId,
+      valueListenable: _textureMirror,
       builder: (context, textureId, _) {
         final size = _sizeNotifier.value;
         if (textureId == null || size == null || size.isEmpty) return const SizedBox.expand();
@@ -406,6 +436,30 @@ class FvpAdapter
     _player?.volume = _volume;
   }
 
+  /// The mdk teardown a previous player started and has not finished yet.
+  ///
+  /// mdk tears its native player down asynchronously, and the fvp plugin keeps
+  /// `Player.dispose()` awaitable so a caller can be sure the native player is
+  /// gone *before* it creates the next one. A teardown that races a fresh
+  /// player leaves that player without a working video output: audio keeps
+  /// playing, the picture never attaches, and only a process restart recovers.
+  /// [hardDispose] bounds its own wait so the lifecycle queue cannot wedge;
+  /// this keeps the still-running teardown visible to whoever creates the next
+  /// player instead of dropping it.
+  static Future<void>? _pendingTeardown;
+
+  /// Waits for an in-flight mdk teardown before a new native player is built.
+  static Future<void> awaitPendingTeardown() async {
+    final pending = _pendingTeardown;
+    if (pending == null) return;
+    try {
+      await pending.timeout(const Duration(seconds: 20));
+    } catch (_) {
+      // A teardown that has not settled in 20s is past what this gate can fix;
+      // let the caller build its player rather than block the lifecycle queue.
+    }
+  }
+
   @override
   Future<void> hardDispose() async {
     if (_disposed) return;
@@ -421,14 +475,28 @@ class FvpAdapter
     _player = null;
     if (player != null) {
       player.volume = 0.0;
+      final teardown = player.dispose();
+      // Publish the teardown before awaiting it: the lifecycle queue must not
+      // wedge on it, but the next player creation has to see it and wait
+      // (awaitPendingTeardown) instead of racing it.
+      late final Future<void> settled;
+      settled = teardown
+          .then<void>((_) {}, onError: (Object _) {})
+          .whenComplete(() {
+            if (identical(_pendingTeardown, settled)) _pendingTeardown = null;
+          });
+      _pendingTeardown = settled;
+      // [fvp-fix] A 3s cap made a slow teardown invisible: mdk's native
+      // player (and the plugin's texture entry) survived a half-finished
+      // dispose, which is what left every later engine without a picture
+      // until the app restarted. Wait for the real teardown instead.
+      final started = DateTime.now();
       try {
-        // mdk tears the native player down asynchronously. Creating the next
-        // player while that is still running leaves it without a working video
-        // output, so wait for it - bounded, because a stuck native teardown
-        // must not wedge the lifecycle queue.
-        await player.dispose().timeout(const Duration(seconds: 3));
-      } catch (_) {
-        // Best effort: the queue keeps moving and the room can still switch.
+        await teardown.timeout(const Duration(seconds: 10));
+        CoreLog.i('[fvp-fix] teardown settled in '
+            '${DateTime.now().difference(started).inMilliseconds}ms');
+      } catch (e) {
+        CoreLog.i('[fvp-fix] teardown FAILED after 10s: $e, native player left to the OS');
       }
     }
     _stateSubject.add(PlayerState.disposed);

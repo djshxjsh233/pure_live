@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:pure_live/core/common/core_log.dart';
 import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
@@ -44,6 +45,7 @@ import 'package:pure_live/player/utils/pip_window_widget.dart';
 import 'package:pure_live/player/core/live_audio_service.dart';
 import 'package:pure_live/common/utils/latest_async_value_queue.dart';
 import 'package:pure_live/player/adapters/player_adapter_factory.dart';
+import 'package:pure_live/player/adapters/fvp_adapter.dart';
 import 'package:pure_live/player/interface/media_kit_player_accessor.dart';
 import 'package:pure_live/player/utils/media_kit_content_probe.dart';
 import 'package:pure_live/modules/live_play/controllers/player_state.dart';
@@ -1162,6 +1164,13 @@ class PlayerManager {
     bool audioOnly = false,
     bool suppressAudioOutput = false,
   }) async {
+    // Never build a native player while mdk is still tearing one down. The
+    // fvp plugin's dispose() is awaitable for exactly this reason: a teardown
+    // that races a fresh player leaves it with no video output (audio only,
+    // until the process restarts). The engine switch creates its replacement
+    // before destroying the previous player, so this gate is what closes that
+    // window for every engine, not just fvp.
+    await FvpAdapter.awaitPendingTeardown();
     final player = await _playerCreator(engine);
     try {
       if (player is AudioOutputSuppressionAwarePlayer) {
@@ -1511,6 +1520,15 @@ class PlayerManager {
       await _switchEngineInternal(_defaultEngine!, isManual: false, audioOnly: audioOnly, openCurrentSource: false);
     } else if (_runtimeAudioOnly != audioOnly || _requestedAudioOnly != audioOnly) {
       await setAudioOnlyMode(audioOnly);
+    }
+
+    // [pm-init-fix] A player can survive an earlier kernel switch; the widget
+    // gates on isInitialized, so never leave a live player behind a spinner.
+    final surviving = _currentPlayer;
+    if (!isInitialized.value && surviving != null) {
+      isInitialized.value = true;
+      videoPresentationRevision.value++;
+      CoreLog.i('[pm-init-fix] repaired initialized on play (${surviving.engine.name})');
     }
 
     if (!_isSessionValid(mySessionId) || !_isPlaybackCommandCurrent(sourceIntentRevision)) return;
@@ -1931,6 +1949,8 @@ class PlayerManager {
     var candidateInstalled = false;
 
     try {
+      CoreLog.i('[pm-fix] switch -> ${engine.name} manual=$isManual '
+          'force=$forceRecreate openSrc=$openCurrentSource from=${oldEngine?.name}');
       final suppressFallbackAudio =
           !isManual &&
           engine != PlayerEngine.mediaKit &&
@@ -2055,6 +2075,7 @@ class PlayerManager {
         }
       }
       if (oldPlayer != null && !identical(oldPlayer, candidate)) {
+        CoreLog.i('[pm-fix] destroying ${oldPlayer.engine.name}');
         await _safeDestroyPlayer(oldPlayer);
       }
       // A replacement player is a new native/render generation. The same
@@ -2062,6 +2083,12 @@ class PlayerManager {
       _errorDedupeSession = sessionId;
       _errorDedupeSignatures.clear();
       videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
+      // [pm-init-fix] A committed replacement is a live player, so publish the
+      // state the video widget gates on. Leaving it false here is what kept
+      // the room on a spinner (audio only) after a kernel switch.
+      isInitialized.value = true;
+      videoPresentationRevision.value++;
+      CoreLog.i('[pm-init-fix] published initialized for ${engine.name}');
       _scheduleAudioServiceSync(candidate, targetAudioOnly, room: currentFloatRoom, sessionId: sessionId);
       _scheduleRecoveryBudgetReset(candidate, sessionId);
       if (openCurrentSource && source != null) {
